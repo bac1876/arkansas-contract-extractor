@@ -216,6 +216,13 @@ export class ImageMagickExtractor {
       
       console.log(`✅ Extraction complete: ${fieldsExtracted}/${totalFields} fields (${extractionRate}%)`);
       
+      // Log key fields to verify extraction
+      console.log('🔑 Key Fields Extracted:');
+      console.log('  - Buyers:', extractedData.buyers || 'NOT FOUND');
+      console.log('  - Property:', extractedData.property_address || 'NOT FOUND');
+      console.log('  - Purchase Type:', extractedData.purchase_type || 'NOT FOUND');
+      console.log('  - Amount:', extractedData.cash_amount || extractedData.purchase_price || 'NOT FOUND');
+      
       return {
         success: true,
         data: extractedData as ContractExtractionResult,
@@ -247,7 +254,7 @@ export class ImageMagickExtractor {
     console.log('📏 Image size:', img.length, 'bytes');
     
     const response = await this.openai.chat.completions.create({
-      model: "gpt-5",  // Updated to GPT-5 for better accuracy and lower cost
+      model: "gpt-4o",  // GPT-5 returns empty responses, using GPT-4o
       messages: [{
         role: "user",
         content: [
@@ -299,11 +306,17 @@ Return JSON:
 
     const content = response.choices[0].message.content || '{}';
     console.log('🔍 GPT-4o Page 1 Raw Response:', content.substring(0, 500)); // Log first 500 chars
+    console.log('📊 Full Page 1 Response Length:', content.length, 'characters');
     
     const result = content.replace(/```json\n?/g, '').replace(/```/g, '').trim();
     try {
       const parsed = JSON.parse(result);
       console.log('✅ Parsed Page 1 Data:', JSON.stringify(parsed, null, 2));
+      
+      // Alert if we see test data
+      if (parsed.buyers && parsed.buyers.includes('John Doe')) {
+        console.error('⚠️ WARNING: Test data detected! This should be real extraction!');
+      }
       return parsed;
     } catch (err) {
       console.error('❌ Failed to parse Page 1 response:', err);
@@ -316,7 +329,7 @@ Return JSON:
     const img = await fs.readFile(imagePath);
     
     const response = await this.openai.chat.completions.create({
-      model: "gpt-5",  // Updated to GPT-5 for better accuracy and lower cost
+      model: "gpt-4o",  // GPT-5 returns empty responses, using GPT-4o
       messages: [{
         role: "user",
         content: [
@@ -355,7 +368,7 @@ Return JSON:
     const img = await fs.readFile(imagePath);
     
     const response = await this.openai.chat.completions.create({
-      model: "gpt-5",  // Updated to GPT-5 for better accuracy and lower cost
+      model: "gpt-4o",  // GPT-5 returns empty responses, using GPT-4o
       messages: [{
         role: "user",
         content: [
@@ -418,7 +431,7 @@ Return JSON:
     const img = await fs.readFile(imagePath);
     
     const response = await this.openai.chat.completions.create({
-      model: "gpt-5",  // Updated to GPT-5 for better accuracy and lower cost
+      model: "gpt-4o",  // GPT-5 returns empty responses, using GPT-4o
       messages: [{
         role: "user",
         content: [
@@ -448,7 +461,7 @@ Return JSON with title_option`
     const img = await fs.readFile(imagePath);
     
     const response = await this.openai.chat.completions.create({
-      model: "gpt-5",  // Updated to GPT-5 for better accuracy and lower cost
+      model: "gpt-4o",  // GPT-5 returns empty responses, using GPT-4o
       messages: [{
         role: "user",
         content: [
@@ -496,7 +509,7 @@ Return JSON:
     const img = await fs.readFile(imagePath);
     
     const response = await this.openai.chat.completions.create({
-      model: "gpt-5",  // Updated to GPT-5 for better accuracy and lower cost
+      model: "gpt-4o",  // GPT-5 returns empty responses, using GPT-4o
       messages: [{
         role: "user",
         content: [
@@ -528,7 +541,7 @@ Return JSON with contingency ('YES' or 'NO') and contingency_details`
     const img = await fs.readFile(imagePath);
     
     const response = await this.openai.chat.completions.create({
-      model: "gpt-5",  // Updated to GPT-5 for better accuracy and lower cost
+      model: "gpt-4o",  // GPT-5 returns empty responses, using GPT-4o
       messages: [{
         role: "user",
         content: [
@@ -566,7 +579,7 @@ Return JSON with home_warranty ('YES' or 'NO'), warranty_details, warranty_paid_
         const page10Path = path.join(tempFolder, pngFiles[9]);
         const img = await fs.readFile(page10Path);
         const resp = await this.openai.chat.completions.create({
-          model: "gpt-5",  // Updated to GPT-5 for better accuracy and lower cost
+          model: "gpt-4o",  // Using GPT-4o for vision tasks
           messages: [{
             role: "user",
             content: [
@@ -587,7 +600,7 @@ Return JSON with home_warranty ('YES' or 'NO'), warranty_details, warranty_paid_
         const page11Path = path.join(tempFolder, pngFiles[10]);
         const img = await fs.readFile(page11Path);
         const resp = await this.openai.chat.completions.create({
-          model: "gpt-5",  // Updated to GPT-5 for better accuracy and lower cost
+          model: "gpt-4o",  // Using GPT-4o for vision tasks
           messages: [{
             role: "user",
             content: [
@@ -608,7 +621,7 @@ Return JSON with home_warranty ('YES' or 'NO'), warranty_details, warranty_paid_
         const page12Path = path.join(tempFolder, pngFiles[11]);
         const img = await fs.readFile(page12Path);
         const resp = await this.openai.chat.completions.create({
-          model: "gpt-5",  // Updated to GPT-5 for better accuracy and lower cost
+          model: "gpt-4o",  // Using GPT-4o for vision tasks
           messages: [{
             role: "user",
             content: [
@@ -632,7 +645,7 @@ Return: {"contract_date": "date", "closing_date": "date"}` },
         const page13Path = path.join(tempFolder, pngFiles[12]);
         const img = await fs.readFile(page13Path);
         const resp = await this.openai.chat.completions.create({
-          model: "gpt-5",  // Updated to GPT-5 for better accuracy and lower cost
+          model: "gpt-4o",  // Using GPT-4o for vision tasks
           messages: [{
             role: "user",
             content: [
@@ -654,7 +667,7 @@ Return: {"contract_date": "date", "closing_date": "date"}` },
         const page14Path = path.join(tempFolder, pngFiles[13]);
         const img = await fs.readFile(page14Path);
         const resp = await this.openai.chat.completions.create({
-          model: "gpt-5",  // Updated to GPT-5 for better accuracy and lower cost
+          model: "gpt-4o",  // Using GPT-4o for vision tasks
           messages: [{
             role: "user",
             content: [

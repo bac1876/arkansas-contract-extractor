@@ -80,9 +80,22 @@ app.post('/api/extract', upload.single('contract'), async (req, res) => {
     const result = await extractionService.extractFromPDF(filePath);
 
     if (!result.success) {
+      console.error('❌ Extraction failed:', result.error);
       return res.status(500).json({ 
         error: result.error || 'Extraction failed'
       });
+    }
+    
+    // Log extracted data to verify it's real
+    console.log('📊 Extraction Result Summary:');
+    console.log('  - Success:', result.success);
+    console.log('  - Fields:', `${result.fieldsExtracted}/${result.totalFields}`);
+    console.log('  - Buyers:', result.data?.buyers);
+    console.log('  - Property:', result.data?.property_address);
+    
+    // Alert if test data detected
+    if (result.data?.buyers?.includes('John Doe')) {
+      console.error('⚠️ WARNING: Test data in production! This should never happen!');
     }
 
     // Clean up uploaded file
