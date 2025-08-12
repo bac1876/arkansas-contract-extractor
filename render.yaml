@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: arkansas-contract-extractor
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: OPENAI_API_KEY
+        sync: false  # Will be set in Render dashboard
+    healthCheckPath: /api/health
+    plan: starter  # or your preferred plan

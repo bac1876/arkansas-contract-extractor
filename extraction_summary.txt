@@ -1,0 +1,24 @@
+
+ARKANSAS CONTRACT EXTRACTION SUMMARY
+=====================================
+Document: sample_contract.pdf
+Extracted: 2025-08-11T13:24:28.325Z
+Overall Confidence: 75%
+
+KEY FIELDS EXTRACTED:
+--------------------
+• Parties (Para 1): "
+• Property: ______________________________________________________________________________
+• Purchase Price (Para 3): $Not found
+• Loan Type: Not specified
+• Earnest Money (Para 7): No
+• Non-refundable (Para 8): Yes
+• Title Option (Para 10): Not selected
+• Survey Payment (Para 11): Not specified
+• Contingency (Para 14): Yes
+• Home Warranty (Para 15): Yes
+• Contract Serial (Para 39): Prepared
+
+Note: This is a pattern-matching extraction. For more accurate results, 
+integrate with OpenAI API or SmythOS platform.
+    

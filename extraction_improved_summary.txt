@@ -1,0 +1,22 @@
+
+IMPROVED ARKANSAS CONTRACT EXTRACTION
+======================================
+Extraction Method: Improved OpenAI GPT-4 with A/B handling
+Overall Confidence: 99%
+
+KEY FIELDS:
+-----------
+• Buyers: Not found
+• Property: Not found
+• Purchase Price: $Not found
+• Loan Type: Not found
+• Earnest Money (Para 7): YES [95% conf]
+• Non-refundable (Para 8): NO [0% conf]
+• Title Option (Para 10): B [90% conf]
+• Survey (Para 11): Not specified [0% conf]
+• Home Warranty (Para 15): NO [0% conf]
+• Contract Date: Not found
+• Serial Number: Not found
+
+Missing Fields: paragraph1, paragraph3_price, paragraph7, paragraph38, paragraph39
+    

@@ -1,0 +1,52 @@
+
+ARKANSAS CONTRACT EXTRACTION SUMMARY (OpenAI GPT-4)
+===================================================
+Document: sample_contract.pdf
+Extracted: 2025-08-11T14:09:29.265Z
+Method: OpenAI GPT-4
+Overall Confidence: 71%
+
+KEY FIELDS EXTRACTED:
+--------------------
+1. PARTIES (Para 1):
+   • Buyers: Mary Ann Womack
+   • Property: 1171 S Splash Dr Fayetteville, AR 72701
+   • Confidence: 100%
+
+2. FINANCIAL TERMS:
+   • Purchase Price (Para 3): $282,000
+   • Loan Type: Conventional
+   • Earnest Money (Para 7): No
+
+3. PARAGRAPH 5 FILL-INS:
+   No data found
+
+4. CONTRACT TERMS:
+   • Non-refundable (Para 8): No
+   • Title Option (Para 10): Not selected
+   • Survey (Para 11): Not specified
+   • Contingency (Para 14): No
+   • Home Warranty (Para 15): No
+   
+
+5. CUSTOM TEXT:
+   • Para 13: None
+   • Para 32: None
+
+6. CHECKBOX SELECTIONS:
+   • Para 16: None
+   • Para 18: None
+   • Para 19: None
+   • Para 20: None
+   • Para 37: None
+
+7. IMPORTANT DATES:
+   • Para 22 Date: June 12, 2025
+   • Para 38 Date: Not found
+
+8. OTHER:
+   • Possession (Para 23): Not specified
+   • Contract Serial (Para 39): Not found
+
+MISSING FIELDS: None
+    

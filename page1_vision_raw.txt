@@ -1,0 +1,9 @@
+```json
+{
+  "property_type": "Single family detached",
+  "loan_type": "FHA",
+  "purchase_price": 295000,
+  "property_address": "3521 Justice Dr, Springdale, AR 72764",
+  "buyers": ["Litzy Ivet Medina", "Gerardo Garcia Sanchez"]
+}
+```

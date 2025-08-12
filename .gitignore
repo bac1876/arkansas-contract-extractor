@@ -1,0 +1,57 @@
+# Dependencies
+node_modules/
+dist/
+
+# Environment variables
+.env
+.env.local
+.env.production
+
+# Temp directories
+uploads/
+temp_extraction/
+magick_temp_*/
+pdf2pic_temp_*/
+temp_images/
+temp_test/
+test_temp_dir/
+
+# Output files (but keep important config files)
+*.json
+*.csv
+*.log
+!package.json
+!package-lock.json
+!tsconfig.json
+!railway.json
+!Dockerfile
+
+# Keep test PDFs for demo
+*.pdf
+!test_contract2.pdf
+
+# Image files from conversions
+*.png
+*.jpg
+*.jpeg
+contract2_pages/
+pages/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Backup files
+backups/
+*.backup
+
+# Local instructions
+CLAUDE.local.md
+
+# Executables
+*.exe
+*.zip
