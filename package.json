@@ -4,7 +4,7 @@
   "description": "SmythOS agent for extracting information from Arkansas real estate contracts",
   "main": "dist/index.js",
   "scripts": {
-    "build": "tsc",
+    "build": "tsc --skipLibCheck",
     "dev": "ts-node server-imagemagick.ts",
     "test": "jest",
     "deploy": "smythos deploy",
