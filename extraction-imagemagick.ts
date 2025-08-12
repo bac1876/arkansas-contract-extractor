@@ -111,10 +111,18 @@ export class ImageMagickExtractor {
       
       // Use ImageMagick to convert PDF to PNG at 300 DPI (recommended for OCR/Vision)
       const outputPattern = path.join(tempFolder, 'page-%d.png');
-      const magickPath = 'C:\\Program Files\\ImageMagick-7.1.2-Q16\\magick.exe';
       
-      // Use cmd /c to ensure proper Windows command execution
-      const command = `cmd /c ""${magickPath}" -density 300 "${pdfPath}" "${outputPattern}""`;
+      // Detect OS and use appropriate command
+      const isWindows = process.platform === 'win32';
+      let command: string;
+      
+      if (isWindows) {
+        const magickPath = 'C:\\Program Files\\ImageMagick-7.1.2-Q16\\magick.exe';
+        command = `cmd /c ""${magickPath}" -density 300 "${pdfPath}" "${outputPattern}""`;
+      } else {
+        // On Linux/Unix, ImageMagick is available as 'magick' or 'convert'
+        command = `magick -density 300 "${pdfPath}" "${outputPattern}"`;
+      }
       
       console.log('Running:', command);
       const { stdout, stderr } = await execAsync(command);
