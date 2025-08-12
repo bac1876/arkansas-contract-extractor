@@ -131,7 +131,27 @@ export class ImageMagickExtractor {
         ? 'C:\\Program Files\\ImageMagick-7.1.2-Q16\\magick.exe'
         : 'magick';
       
-      const args = ['-density', '300', pdfPath, outputPattern];
+      // Use parameters that work with GPT-4o vision
+      // CRITICAL: Must remove alpha and use white background for proper rendering
+      const args = isWindows ? [
+        'convert',                    // Use convert command for proper rendering
+        '-density', '150',            // 150 DPI works well
+        pdfPath,
+        '-alpha', 'remove',           // Remove alpha channel - CRITICAL!
+        '-background', 'white',        // White background
+        '-resize', '1224x1584',        // Resize to standard dimensions
+        '-depth', '8',                 // 8-bit depth
+        outputPattern
+      ] : [
+        // Linux/Unix version
+        '-density', '150',
+        pdfPath,
+        '-alpha', 'remove',
+        '-background', 'white',
+        '-resize', '1224x1584',
+        '-depth', '8',
+        outputPattern
+      ];
       
       console.log('Running ImageMagick:', magickExecutable);
       console.log('With args:', args);
