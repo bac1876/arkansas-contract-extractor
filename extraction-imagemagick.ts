@@ -8,10 +8,7 @@ import OpenAI from 'openai';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import * as dotenv from 'dotenv';
-import { exec } from 'child_process';
-import { promisify } from 'util';
-
-const execAsync = promisify(exec);
+import { spawn } from 'child_process';
 dotenv.config();
 
 export interface ContractExtractionResult {
@@ -85,19 +82,33 @@ export class ImageMagickExtractor {
       pdfPath = path.resolve(pdfPath);
       console.log(`🔍 ImageMagick Extractor: Starting extraction for: ${pdfPath}`);
       
-      // Verify the file exists
+      // Verify the file exists - handle case sensitivity issues
       try {
         await fs.access(pdfPath);
       } catch (err) {
-        // Try with lowercase path as fallback
-        const lowerPath = pdfPath.toLowerCase().replace('claude code projects', 'claude code projects');
-        const altPath = pdfPath.replace('Claude Code Projects', 'claude code projects');
-        try {
-          await fs.access(altPath);
-          pdfPath = altPath;
-          console.log(`📝 Using alternate path: ${pdfPath}`);
-        } catch {
-          throw new Error(`PDF file not found: ${pdfPath}`);
+        // Try different case variations
+        const variations = [
+          pdfPath.replace(/claude code projects/i, 'Claude Code Projects'),
+          pdfPath.replace(/claude code projects/i, 'claude code projects'),
+          pdfPath.replace(/smthosexp/i, 'SmthosExp'),
+          pdfPath.replace(/smthosexp/i, 'smthosexp')
+        ];
+        
+        let found = false;
+        for (const variant of variations) {
+          try {
+            await fs.access(variant);
+            pdfPath = variant;
+            console.log(`📝 Using path variant: ${pdfPath}`);
+            found = true;
+            break;
+          } catch {
+            // Continue trying
+          }
+        }
+        
+        if (!found) {
+          throw new Error(`PDF file not found. Tried: ${pdfPath} and ${variations.length} variations`);
         }
       }
       
@@ -114,22 +125,39 @@ export class ImageMagickExtractor {
       
       // Detect OS and use appropriate command
       const isWindows = process.platform === 'win32';
-      let command: string;
       
-      if (isWindows) {
-        const magickPath = 'C:\\Program Files\\ImageMagick-7.1.2-Q16\\magick.exe';
-        command = `cmd /c ""${magickPath}" -density 300 "${pdfPath}" "${outputPattern}""`;
-      } else {
-        // On Linux/Unix, ImageMagick is available as 'magick' or 'convert'
-        command = `magick -density 300 "${pdfPath}" "${outputPattern}"`;
-      }
+      // Use spawn to avoid cmd /c wrapper issues on Windows
+      const magickExecutable = isWindows 
+        ? 'C:\\Program Files\\ImageMagick-7.1.2-Q16\\magick.exe'
+        : 'magick';
       
-      console.log('Running:', command);
-      const { stdout, stderr } = await execAsync(command);
+      const args = ['-density', '300', pdfPath, outputPattern];
       
-      if (stderr && !stderr.includes('Warning')) {
-        throw new Error(`ImageMagick error: ${stderr}`);
-      }
+      console.log('Running ImageMagick:', magickExecutable);
+      console.log('With args:', args);
+      console.log('PDF exists at:', pdfPath, '?', require('fs').existsSync(pdfPath));
+      
+      // Run ImageMagick using spawn
+      await new Promise<void>((resolve, reject) => {
+        const proc = spawn(magickExecutable, args);
+        
+        let stderr = '';
+        proc.stderr.on('data', (data) => {
+          stderr += data.toString();
+        });
+        
+        proc.on('close', (code) => {
+          if (code === 0) {
+            resolve();
+          } else {
+            reject(new Error(`ImageMagick failed with code ${code}: ${stderr}`));
+          }
+        });
+        
+        proc.on('error', (err) => {
+          reject(new Error(`Failed to spawn ImageMagick: ${err.message}`));
+        });
+      });
       
       // Get list of generated PNG files
       const files = await fs.readdir(tempFolder);

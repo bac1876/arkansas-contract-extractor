@@ -71,10 +71,11 @@ app.post('/api/extract', upload.single('contract'), async (req, res) => {
     }
 
     filePath = req.file.path;
-    console.log(`📤 Processing upload: ${req.file.originalname}`);
+    console.log(`📤 [SPAWN VERSION] Processing upload: ${req.file.originalname}`);
     console.log(`📁 File path from multer: ${filePath}`);
     console.log(`🎯 Using ImageMagick + GPT-4 Vision API`);
-    console.log(`💯 This is REAL extraction, not test data!`);
+    console.log(`💯 Using SPAWN instead of EXEC - no cmd /c wrapper!`);
+    console.log(`🔧 Server built at: ${new Date().toISOString()}`);
 
     // Use ImageMagick extraction with GPT-4 Vision API
     const result = await extractionService.extractFromPDF(filePath);
