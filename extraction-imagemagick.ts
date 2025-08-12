@@ -181,7 +181,15 @@ export class ImageMagickExtractor {
       
       // Get list of generated PNG files
       const files = await fs.readdir(tempFolder);
-      const pngFiles = files.filter(f => f.endsWith('.png')).sort();
+      // Sort files numerically, not alphabetically!
+      const pngFiles = files
+        .filter(f => f.endsWith('.png'))
+        .sort((a, b) => {
+          // Extract number from filename (page-0.png -> 0)
+          const numA = parseInt(a.match(/\d+/)?.[0] || '0');
+          const numB = parseInt(b.match(/\d+/)?.[0] || '0');
+          return numA - numB;
+        });
       
       console.log(`✅ Converted ${pngFiles.length} pages to PNG`);
       
@@ -414,6 +422,7 @@ Return JSON:
 
   private async extractPage4(imagePath: string): Promise<Partial<ContractExtractionResult>> {
     const img = await fs.readFile(imagePath);
+    console.log('📸 Processing Page 4 image:', imagePath);
     
     const response = await this.openai.chat.completions.create({
       model: "gpt-4o",  // GPT-5 returns empty responses, using GPT-4o
@@ -436,13 +445,15 @@ PARAGRAPH 6 - APPRAISAL:
 
 PARAGRAPH 7 - EARNEST MONEY:
 - Is there earnest money? (A. Yes or B. No)
-- If Yes, what is the AMOUNT? (look for $ amount)
+- If Yes, what is the AMOUNT? (look for $ amount after "in the amount of $")
 - WHO holds it? (look for "held by" or broker/title company name)
+- NOTE: If it says "see Earnest Money Addendum", return amount and holder as null
 
 PARAGRAPH 8 - NON-REFUNDABLE DEPOSIT:
-- Is deposit non-refundable? (A. Yes or B. No)
-- If Yes, what AMOUNT becomes non-refundable?
-- WHEN does it become non-refundable? (date or days)
+- Which option is checked?
+- A: "The Deposit is not applicable" (means NO non-refundable deposit)
+- B: "Buyer will pay to Seller the Deposit" (means YES, look for amount and timing)
+- If B is checked, what AMOUNT and WHEN?
 
 Return JSON:
 {
@@ -454,6 +465,7 @@ Return JSON:
   "earnest_money": "YES" or "NO",
   "earnest_money_amount": number or null,
   "earnest_money_held_by": "holder name" or null,
+  "earnest_money_addendum": true or false,
   "non_refundable": "YES" or "NO",
   "non_refundable_amount": number or null,
   "non_refundable_when": "when it becomes non-refundable" or null
@@ -467,10 +479,15 @@ Return JSON:
     });
 
     const content = response.choices[0].message.content || '{}';
+    console.log('🔍 Page 4 Raw Response:', content.substring(0, 200));
     const result = content.replace(/```json\n?/g, '').replace(/```/g, '').trim();
     try {
-      return JSON.parse(result);
-    } catch {
+      const parsed = JSON.parse(result);
+      console.log('✅ Page 4 Parsed:', Object.keys(parsed).length, 'fields');
+      return parsed;
+    } catch (err) {
+      console.error('❌ Page 4 Parse Error:', err.message);
+      console.error('Raw content:', content.substring(0, 200));
       return {};
     }
   }
@@ -567,7 +584,15 @@ Return JSON:
 Which option is checked (A=No or B=Yes)?
 If B, what is the contingency text?
 
-Return JSON with contingency ('YES' or 'NO') and contingency_details`
+Look carefully at which option is checked:
+- Option A means NO contingency
+- Option B means YES contingency (look for details in the blank)
+
+Return JSON:
+{
+  "contingency": "YES" or "NO",
+  "contingency_details": "text from blank" or null
+}`
           },
           { type: "image_url", image_url: { url: `data:image/png;base64,${img.toString('base64')}`, detail: "high" } }
         ]
@@ -599,7 +624,14 @@ Return JSON with contingency ('YES' or 'NO') and contingency_details`
 PARAGRAPH 15 - HOME WARRANTY (YES/NO and details)
 PARAGRAPH 16 - INSPECTION option (A, B, C, or D)
 
-Return JSON with home_warranty ('YES' or 'NO'), warranty_details, warranty_paid_by, inspection_option, inspection_details`
+Return JSON:
+{
+  "home_warranty": "YES" or "NO",
+  "warranty_details": "any warranty details",
+  "warranty_paid_by": "who pays (Buyer/Seller/Split)" or null,
+  "inspection_option": "A" or "B" or "C" or "D",
+  "inspection_details": "details about inspection terms"
+}`
           },
           { type: "image_url", image_url: { url: `data:image/png;base64,${img.toString('base64')}`, detail: "high" } }
         ]
@@ -707,15 +739,14 @@ Return: {"contract_date": "date", "closing_date": "date"}` },
       } catch (e) { console.log('  ⚠️ Page 13 error:', e instanceof Error ? e.message : 'Unknown'); }
     }
 
-    // Page 14-16 - Additional Terms & Serial Number
+    // Page 14 - Additional Terms
     if (pngFiles.length >= 14) {
       try {
-        console.log('  📄 Processing Pages 14-16 - Additional Terms...');
-        // Try page 14 first for additional terms
+        console.log('  📄 Processing Page 14 - Additional Terms...');
         const page14Path = path.join(tempFolder, pngFiles[13]);
         const img = await fs.readFile(page14Path);
         const resp = await this.openai.chat.completions.create({
-          model: "gpt-4o",  // Using GPT-4o for vision tasks
+          model: "gpt-4o",
           messages: [{
             role: "user",
             content: [
@@ -726,7 +757,49 @@ Return: {"contract_date": "date", "closing_date": "date"}` },
           max_tokens: 300
         });
         Object.assign(results, JSON.parse(resp.choices[0].message.content?.replace(/```json\n?/g, '').replace(/```/g, '').trim() || '{}'));
-      } catch (e) { console.log('  ⚠️ Pages 14-16 error:', e instanceof Error ? e.message : 'Unknown'); }
+      } catch (e) { console.log('  ⚠️ Page 14 error:', e instanceof Error ? e.message : 'Unknown'); }
+    }
+
+    // Page 15 - Para 37 (License Disclosure)
+    if (pngFiles.length >= 15) {
+      try {
+        console.log('  📄 Processing Page 15 - Para 37...');
+        const page15Path = path.join(tempFolder, pngFiles[14]);
+        const img = await fs.readFile(page15Path);
+        const resp = await this.openai.chat.completions.create({
+          model: "gpt-4o",
+          messages: [{
+            role: "user",
+            content: [
+              { type: "text", text: `Look for PARAGRAPH 37 - Which option is checked (A, B, C, or D)? Return: {"para37_option": "letter"}` },
+              { type: "image_url", image_url: { url: `data:image/png;base64,${img.toString('base64')}`, detail: "high" } }
+            ]
+          }],
+          max_tokens: 100
+        });
+        Object.assign(results, JSON.parse(resp.choices[0].message.content?.replace(/```json\n?/g, '').replace(/```/g, '').trim() || '{}'));
+      } catch (e) { console.log('  ⚠️ Page 15 error:', e instanceof Error ? e.message : 'Unknown'); }
+    }
+
+    // Page 16 - Acceptance Date (Signatures)
+    if (pngFiles.length >= 16) {
+      try {
+        console.log('  📄 Processing Page 16 - Acceptance/Signatures...');
+        const page16Path = path.join(tempFolder, pngFiles[15]);
+        const img = await fs.readFile(page16Path);
+        const resp = await this.openai.chat.completions.create({
+          model: "gpt-4o",
+          messages: [{
+            role: "user",
+            content: [
+              { type: "text", text: `Look for any signatures with dates. Find the earliest date which is the acceptance date. Return: {"acceptance_date": "date found"}` },
+              { type: "image_url", image_url: { url: `data:image/png;base64,${img.toString('base64')}`, detail: "high" } }
+            ]
+          }],
+          max_tokens: 100
+        });
+        Object.assign(results, JSON.parse(resp.choices[0].message.content?.replace(/```json\n?/g, '').replace(/```/g, '').trim() || '{}'));
+      } catch (e) { console.log('  ⚠️ Page 16 error:', e instanceof Error ? e.message : 'Unknown'); }
     }
 
     return results;
