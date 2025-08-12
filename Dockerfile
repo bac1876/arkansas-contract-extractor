@@ -1,13 +1,19 @@
-# Use Node.js LTS version
-FROM node:18-alpine
+# Use Node.js 20 LTS version (required for some packages)
+FROM node:20-alpine
 
-# Install ImageMagick and required dependencies
+# Install ImageMagick and required dependencies for canvas
 RUN apk add --no-cache \
     imagemagick \
     ghostscript \
     python3 \
     make \
-    g++
+    g++ \
+    cairo-dev \
+    jpeg-dev \
+    pango-dev \
+    giflib-dev \
+    pixman-dev \
+    pkgconf
 
 # Set working directory
 WORKDIR /app
