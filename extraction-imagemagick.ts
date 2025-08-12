@@ -243,8 +243,11 @@ export class ImageMagickExtractor {
   private async extractPage1(imagePath: string): Promise<Partial<ContractExtractionResult>> {
     const img = await fs.readFile(imagePath);
     
+    console.log('📸 Processing Page 1 image:', imagePath);
+    console.log('📏 Image size:', img.length, 'bytes');
+    
     const response = await this.openai.chat.completions.create({
-      model: "gpt-4o",
+      model: "gpt-5",  // Updated to GPT-5 for better accuracy and lower cost
       messages: [{
         role: "user",
         content: [
@@ -295,10 +298,16 @@ Return JSON:
     });
 
     const content = response.choices[0].message.content || '{}';
+    console.log('🔍 GPT-4o Page 1 Raw Response:', content.substring(0, 500)); // Log first 500 chars
+    
     const result = content.replace(/```json\n?/g, '').replace(/```/g, '').trim();
     try {
-      return JSON.parse(result);
-    } catch {
+      const parsed = JSON.parse(result);
+      console.log('✅ Parsed Page 1 Data:', JSON.stringify(parsed, null, 2));
+      return parsed;
+    } catch (err) {
+      console.error('❌ Failed to parse Page 1 response:', err);
+      console.error('Raw content:', content);
       return {};
     }
   }
@@ -307,7 +316,7 @@ Return JSON:
     const img = await fs.readFile(imagePath);
     
     const response = await this.openai.chat.completions.create({
-      model: "gpt-4o",
+      model: "gpt-5",  // Updated to GPT-5 for better accuracy and lower cost
       messages: [{
         role: "user",
         content: [
@@ -346,7 +355,7 @@ Return JSON:
     const img = await fs.readFile(imagePath);
     
     const response = await this.openai.chat.completions.create({
-      model: "gpt-4o",
+      model: "gpt-5",  // Updated to GPT-5 for better accuracy and lower cost
       messages: [{
         role: "user",
         content: [
@@ -409,7 +418,7 @@ Return JSON:
     const img = await fs.readFile(imagePath);
     
     const response = await this.openai.chat.completions.create({
-      model: "gpt-4o",
+      model: "gpt-5",  // Updated to GPT-5 for better accuracy and lower cost
       messages: [{
         role: "user",
         content: [
@@ -439,7 +448,7 @@ Return JSON with title_option`
     const img = await fs.readFile(imagePath);
     
     const response = await this.openai.chat.completions.create({
-      model: "gpt-4o",
+      model: "gpt-5",  // Updated to GPT-5 for better accuracy and lower cost
       messages: [{
         role: "user",
         content: [
@@ -487,7 +496,7 @@ Return JSON:
     const img = await fs.readFile(imagePath);
     
     const response = await this.openai.chat.completions.create({
-      model: "gpt-4o",
+      model: "gpt-5",  // Updated to GPT-5 for better accuracy and lower cost
       messages: [{
         role: "user",
         content: [
@@ -519,7 +528,7 @@ Return JSON with contingency ('YES' or 'NO') and contingency_details`
     const img = await fs.readFile(imagePath);
     
     const response = await this.openai.chat.completions.create({
-      model: "gpt-4o",
+      model: "gpt-5",  // Updated to GPT-5 for better accuracy and lower cost
       messages: [{
         role: "user",
         content: [
@@ -557,7 +566,7 @@ Return JSON with home_warranty ('YES' or 'NO'), warranty_details, warranty_paid_
         const page10Path = path.join(tempFolder, pngFiles[9]);
         const img = await fs.readFile(page10Path);
         const resp = await this.openai.chat.completions.create({
-          model: "gpt-4o",
+          model: "gpt-5",  // Updated to GPT-5 for better accuracy and lower cost
           messages: [{
             role: "user",
             content: [
@@ -578,7 +587,7 @@ Return JSON with home_warranty ('YES' or 'NO'), warranty_details, warranty_paid_
         const page11Path = path.join(tempFolder, pngFiles[10]);
         const img = await fs.readFile(page11Path);
         const resp = await this.openai.chat.completions.create({
-          model: "gpt-4o",
+          model: "gpt-5",  // Updated to GPT-5 for better accuracy and lower cost
           messages: [{
             role: "user",
             content: [
@@ -599,7 +608,7 @@ Return JSON with home_warranty ('YES' or 'NO'), warranty_details, warranty_paid_
         const page12Path = path.join(tempFolder, pngFiles[11]);
         const img = await fs.readFile(page12Path);
         const resp = await this.openai.chat.completions.create({
-          model: "gpt-4o",
+          model: "gpt-5",  // Updated to GPT-5 for better accuracy and lower cost
           messages: [{
             role: "user",
             content: [
@@ -623,7 +632,7 @@ Return: {"contract_date": "date", "closing_date": "date"}` },
         const page13Path = path.join(tempFolder, pngFiles[12]);
         const img = await fs.readFile(page13Path);
         const resp = await this.openai.chat.completions.create({
-          model: "gpt-4o",
+          model: "gpt-5",  // Updated to GPT-5 for better accuracy and lower cost
           messages: [{
             role: "user",
             content: [
@@ -645,7 +654,7 @@ Return: {"contract_date": "date", "closing_date": "date"}` },
         const page14Path = path.join(tempFolder, pngFiles[13]);
         const img = await fs.readFile(page14Path);
         const resp = await this.openai.chat.completions.create({
-          model: "gpt-4o",
+          model: "gpt-5",  // Updated to GPT-5 for better accuracy and lower cost
           messages: [{
             role: "user",
             content: [
