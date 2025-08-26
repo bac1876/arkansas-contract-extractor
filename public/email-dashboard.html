@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contract Email Processing Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .dashboard {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        header {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .email-info {
+            color: #666;
+            font-size: 18px;
+            margin-bottom: 20px;
+        }
+
+        .email-address {
+            background: #f0f0f0;
+            padding: 10px 20px;
+            border-radius: 8px;
+            display: inline-block;
+            font-family: monospace;
+            font-size: 16px;
+            color: #4a00e0;
+            font-weight: bold;
+        }
+
+        .status-bar {
+            display: flex;
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .status-item {
+            flex: 1;
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .status-value {
+            font-size: 32px;
+            font-weight: bold;
+            color: #4a00e0;
+        }
+
+        .status-label {
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .card h2 {
+            color: #333;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .inbox-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .email-item {
+            padding: 15px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .email-item:hover {
+            background: #f8f9fa;
+            transform: translateX(5px);
+        }
+
+        .email-item.processing {
+            background: #fff3cd;
+            border-color: #ffc107;
+        }
+
+        .email-item.completed {
+            background: #d1f2eb;
+            border-color: #28a745;
+        }
+
+        .email-from {
+            font-weight: bold;
+            color: #333;
+        }
+
+        .email-subject {
+            color: #666;
+            margin: 5px 0;
+        }
+
+        .email-date {
+            color: #999;
+            font-size: 12px;
+        }
+
+        .email-status {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: bold;
+            margin-top: 5px;
+        }
+
+        .status-new {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+
+        .status-processing {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status-complete {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .recent-extractions {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .extraction-item {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+
+        .extraction-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .extraction-file {
+            font-weight: bold;
+            color: #333;
+        }
+
+        .extraction-rate {
+            background: #28a745;
+            color: white;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+
+        .extraction-details {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            font-size: 14px;
+        }
+
+        .detail-item {
+            color: #666;
+        }
+
+        .detail-label {
+            font-weight: bold;
+            color: #333;
+        }
+
+        .instructions {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .instructions h2 {
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .instructions ol {
+            margin-left: 20px;
+            color: #666;
+            line-height: 1.8;
+        }
+
+        .instructions li {
+            margin-bottom: 10px;
+        }
+
+        .connection-status {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: white;
+            padding: 15px 20px;
+            border-radius: 8px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        .status-connected {
+            background: #28a745;
+        }
+
+        .status-disconnected {
+            background: #dc3545;
+        }
+
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(40, 167, 69, 0.7);
+            }
+            70% {
+                box-shadow: 0 0 0 10px rgba(40, 167, 69, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(40, 167, 69, 0);
+            }
+        }
+
+        .btn {
+            background: #4a00e0;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .btn:hover {
+            background: #3a00c0;
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard">
+        <header>
+            <h1>📧 Contract Email Processing Dashboard</h1>
+            <div class="email-info">
+                Send contracts to: <span class="email-address">contractextraction@gmail.com</span>
+            </div>
+            
+            <div class="status-bar">
+                <div class="status-item">
+                    <div class="status-value" id="totalProcessed">0</div>
+                    <div class="status-label">Contracts Processed</div>
+                </div>
+                <div class="status-item">
+                    <div class="status-value" id="todayCount">0</div>
+                    <div class="status-label">Today</div>
+                </div>
+                <div class="status-item">
+                    <div class="status-value" id="avgExtraction">0%</div>
+                    <div class="status-label">Avg Extraction Rate</div>
+                </div>
+                <div class="status-item">
+                    <div class="status-value">$<span id="totalCost">0.00</span></div>
+                    <div class="status-label">Total Cost (GPT-5)</div>
+                </div>
+            </div>
+        </header>
+
+        <div class="main-grid">
+            <div class="card">
+                <h2>📬 Email Inbox</h2>
+                <div class="inbox-list" id="inboxList">
+                    <!-- Sample email items -->
+                    <div class="email-item">
+                        <div class="email-from">John Smith</div>
+                        <div class="email-subject">Contract - 123 Main St</div>
+                        <div class="email-date">2025-08-13 10:30 AM</div>
+                        <span class="email-status status-new">NEW</span>
+                    </div>
+                    <div class="email-item processing">
+                        <div class="email-from">Jane Doe</div>
+                        <div class="email-subject">Purchase Agreement</div>
+                        <div class="email-date">2025-08-13 10:15 AM</div>
+                        <span class="email-status status-processing">PROCESSING</span>
+                    </div>
+                    <div class="email-item completed">
+                        <div class="email-from">Bob Johnson</div>
+                        <div class="email-subject">3461 Alliance Dr Contract</div>
+                        <div class="email-date">2025-08-13 9:45 AM</div>
+                        <span class="email-status status-complete">COMPLETE</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>✅ Recent Extractions</h2>
+                <div class="recent-extractions" id="extractionsList">
+                    <div class="extraction-item">
+                        <div class="extraction-header">
+                            <span class="extraction-file">3461_Alliance_Dr.pdf</span>
+                            <span class="extraction-rate">93%</span>
+                        </div>
+                        <div class="extraction-details">
+                            <div class="detail-item">
+                                <span class="detail-label">Buyer:</span> Crystal Webb
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Price:</span> $275,000
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Agent:</span> Caitlynn Moses
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Cost:</span> $0.023
+                            </div>
+                        </div>
+                    </div>
+                    <div class="extraction-item">
+                        <div class="extraction-header">
+                            <span class="extraction-file">3315_Alliance_Dr.pdf</span>
+                            <span class="extraction-rate">85%</span>
+                        </div>
+                        <div class="extraction-details">
+                            <div class="detail-item">
+                                <span class="detail-label">Buyer:</span> Carlos Santos
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Price:</span> $265,000
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Agent:</span> Jonathan Melendez
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Cost:</span> $0.023
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="instructions">
+            <h2>📋 How to Use</h2>
+            <ol>
+                <li><strong>Send Contract:</strong> Email your PDF contract to <strong>contractextraction@gmail.com</strong></li>
+                <li><strong>Automatic Processing:</strong> The system will automatically extract all 47 fields</li>
+                <li><strong>View Results:</strong> Extracted data appears here and gets saved to Google Sheets</li>
+                <li><strong>Seller Net Sheet:</strong> Automatically calculated based on extracted terms</li>
+                <li><strong>Cost:</strong> Only $0.023 per contract using GPT-5-mini</li>
+            </ol>
+            <div style="margin-top: 20px;">
+                <button class="btn" onclick="checkEmails()">🔄 Check for New Emails</button>
+                <button class="btn btn-secondary" onclick="exportToSheets()">📊 Export to Google Sheets</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="connection-status">
+        <div class="status-indicator status-connected"></div>
+        <span>Email Monitor Active</span>
+    </div>
+
+    <script>
+        // Mock functions for demo
+        function checkEmails() {
+            alert('Checking for new emails...');
+        }
+
+        function exportToSheets() {
+            alert('Exporting to Google Sheets...');
+        }
+
+        // WebSocket connection for real-time updates
+        function connectWebSocket() {
+            // This would connect to the email monitor service
+            console.log('Connecting to email monitor...');
+        }
+
+        // Initialize dashboard
+        document.addEventListener('DOMContentLoaded', () => {
+            connectWebSocket();
+            updateStats();
+        });
+
+        function updateStats() {
+            // Update statistics from server
+            fetch('/api/email-stats')
+                .then(res => res.json())
+                .then(data => {
+                    document.getElementById('totalProcessed').textContent = data.total || 0;
+                    document.getElementById('todayCount').textContent = data.today || 0;
+                    document.getElementById('avgExtraction').textContent = data.avgRate || '0%';
+                    document.getElementById('totalCost').textContent = ((data.total || 0) * 0.023).toFixed(2);
+                })
+                .catch(err => console.log('Stats not available yet'));
+        }
+
+        // Refresh stats every 30 seconds
+        setInterval(updateStats, 30000);
+    </script>
+</body>
+</html>

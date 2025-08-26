@@ -42,6 +42,7 @@ export interface ContractExtractionResult {
   home_warranty: 'YES' | 'NO';
   warranty_details: string;
   warranty_paid_by: string;
+  warranty_amount: number | null;
   inspection_option: string;
   inspection_details: string;
   wood_infestation: string;
@@ -58,6 +59,13 @@ export interface ContractExtractionResult {
   // Page 3 Agency fields
   agency_option: string;
   agency_type: string;
+  // Page 14 Paragraph 32 specific terms
+  para32_other_terms: string;
+  // Page 16 Selling Agent info
+  selling_agent_name: string;
+  selling_agent_license: string;
+  selling_agent_email: string;
+  selling_agent_phone: string;
 }
 
 export class ImageMagickExtractor {
@@ -265,8 +273,8 @@ export class ImageMagickExtractor {
         console.warn('⚠️ Could not clean up temp folder:', err.message);
       });
       
-      // Calculate extraction rate - match original system  
-      const totalFields = 41; // Same as original working system
+      // Calculate extraction rate - updated with new fields  
+      const totalFields = 47; // Updated: 41 original + 5 new agent/para32 fields + 1 warranty amount
       const fieldsExtracted = Object.values(extractedData).filter(v => v !== null && v !== undefined && v !== '').length;
       const extractionRate = Math.round((fieldsExtracted / totalFields) * 100);
       
@@ -332,13 +340,15 @@ export class ImageMagickExtractor {
    - 3B: "PURCHASE PURSUANT TO LOAN ASSUMPTION"
    - 3C: "PURCHASE PURSUANT TO CASH" (has cash amount, no loan)
    
-   If 3A is checked, extract:
-   - Purchase price amount (number after $ sign)
-   - Loan type (CONVENTIONAL/VA/FHA/USDA-RD/OTHER)
+   If 3A is checked (FINANCED), extract:
+   - purchase_price: number after $ sign
+   - cash_amount: null (MUST be null for financed)
+   - loan_type: CONVENTIONAL/VA/FHA/USDA-RD/OTHER
    
-   If 3C is checked, extract:
-   - Cash amount (number after "exact sum of $")
-   - Note: loan_type should be "CASH" or null
+   If 3C is checked (CASH), extract:
+   - cash_amount: number after "exact sum of $"
+   - purchase_price: null (MUST be null for cash)
+   - loan_type: "CASH" or null
 
 Return JSON:
 {
@@ -348,8 +358,8 @@ Return JSON:
   "property_type": "exact type selected",
   "purchase_type": "FINANCED" or "CASH" or "LOAN_ASSUMPTION",
   "para3_option_checked": "3A" or "3B" or "3C",
-  "purchase_price": number (if 3A),
-  "cash_amount": number (if 3C),
+  "purchase_price": number if 3A (financed) OR null if 3C (cash),
+  "cash_amount": number if 3C (cash) OR null if 3A (financed),
   "loan_type": "FHA/VA/CONVENTIONAL/USDA-RD/OTHER/CASH" or null
 }`
           },
@@ -540,18 +550,20 @@ PARAGRAPH 11 - SURVEY:
 - Or text like "Buyer declines survey"
 
 PARAGRAPH 13 - FIXTURES AND ATTACHED EQUIPMENT:
-IMPORTANT: There are TWO blanks to fill:
-1. FIRST BLANK (after the list of standard fixtures like "garage door openers..."): Look for handwritten text showing items that CONVEY/are INCLUDED with the property
-2. SECOND BLANK (after "Buyer is aware the following items are not owned by Seller or do not convey with the Property:"): Look for handwritten text showing items that DO NOT convey/are EXCLUDED
+CRITICAL: Only extract ACTUAL handwritten/typed text that appears in the blanks. If blanks are empty, return null.
+There are TWO separate blanks to check:
+1. FIRST BLANK (after the standard fixtures list): Look for ANY handwritten/typed additions to what conveys
+2. SECOND BLANK (after "do not convey with the Property:"): Look for items that are EXCLUDED
 
-Look for any handwritten or typed text in these blanks (like "fridge" or "curtains").
+IMPORTANT: If a blank is empty (no handwriting/typing), you MUST return null for that field.
+Do not make up examples or return placeholder text.
 
 Return JSON:
 {
   "survey_option": "A" or "B" or "C" or "text",
   "survey_details": "exact text if custom or decline",
-  "para13_items_included": "items in first blank that convey" or null,
-  "para13_items_excluded": "items in second blank that don't convey" or null
+  "para13_items_included": "EXACT text from first blank or null if empty",
+  "para13_items_excluded": "EXACT text from second blank or null if empty"
 }`
           },
           { type: "image_url", image_url: { url: `data:image/png;base64,${img.toString('base64')}`, detail: "high" } }
@@ -621,12 +633,18 @@ Return JSON:
           {
             type: "text",
             text: `Extract:
-PARAGRAPH 15 - HOME WARRANTY (YES/NO and details)
+PARAGRAPH 15 - HOME WARRANTY:
+- Is warranty provided? (YES/NO checkbox)
+- Look for warranty amount (e.g., "$500" or specific dollar amount)
+- Who pays? (Buyer/Seller/Split)
+- Any other warranty details
+
 PARAGRAPH 16 - INSPECTION option (A, B, C, or D)
 
 Return JSON:
 {
   "home_warranty": "YES" or "NO",
+  "warranty_amount": number or null,
   "warranty_details": "any warranty details",
   "warranty_paid_by": "who pays (Buyer/Seller/Split)" or null,
   "inspection_option": "A" or "B" or "C" or "D",
@@ -739,10 +757,10 @@ Return: {"contract_date": "date", "closing_date": "date"}` },
       } catch (e) { console.log('  ⚠️ Page 13 error:', e instanceof Error ? e.message : 'Unknown'); }
     }
 
-    // Page 14 - Additional Terms
+    // Page 14 - Additional Terms and Paragraph 32
     if (pngFiles.length >= 14) {
       try {
-        console.log('  📄 Processing Page 14 - Additional Terms...');
+        console.log('  📄 Processing Page 14 - Additional Terms & Para 32...');
         const page14Path = path.join(tempFolder, pngFiles[13]);
         const img = await fs.readFile(page14Path);
         const resp = await this.openai.chat.completions.create({
@@ -750,11 +768,15 @@ Return: {"contract_date": "date", "closing_date": "date"}` },
           messages: [{
             role: "user",
             content: [
-              { type: "text", text: `Extract any additional terms and look for serial number at bottom of page. Return: {"additional_terms": "text", "serial_number": "number"}` },
+              { type: "text", text: `Extract:
+1. PARAGRAPH 32 "OTHER:" section - extract ALL handwritten/typed text after "OTHER:"
+2. Any additional terms on the page
+3. Serial number at bottom of page
+Return: {"para32_other_terms": "all text from para 32 OTHER section", "additional_terms": "other text", "serial_number": "number"}` },
               { type: "image_url", image_url: { url: `data:image/png;base64,${img.toString('base64')}`, detail: "high" } }
             ]
           }],
-          max_tokens: 300
+          max_tokens: 500
         });
         Object.assign(results, JSON.parse(resp.choices[0].message.content?.replace(/```json\n?/g, '').replace(/```/g, '').trim() || '{}'));
       } catch (e) { console.log('  ⚠️ Page 14 error:', e instanceof Error ? e.message : 'Unknown'); }
@@ -781,10 +803,10 @@ Return: {"contract_date": "date", "closing_date": "date"}` },
       } catch (e) { console.log('  ⚠️ Page 15 error:', e instanceof Error ? e.message : 'Unknown'); }
     }
 
-    // Page 16 - Acceptance Date (Signatures)
+    // Page 16 - Acceptance Date and Selling Agent Info
     if (pngFiles.length >= 16) {
       try {
-        console.log('  📄 Processing Page 16 - Acceptance/Signatures...');
+        console.log('  📄 Processing Page 16 - Acceptance/Signatures & Agent Info...');
         const page16Path = path.join(tempFolder, pngFiles[15]);
         const img = await fs.readFile(page16Path);
         const resp = await this.openai.chat.completions.create({
@@ -792,11 +814,24 @@ Return: {"contract_date": "date", "closing_date": "date"}` },
           messages: [{
             role: "user",
             content: [
-              { type: "text", text: `Look for any signatures with dates. Find the earliest date which is the acceptance date. Return: {"acceptance_date": "date found"}` },
+              { type: "text", text: `Extract:
+1. The earliest signature date (acceptance date)
+2. Selling Agent information:
+   - Agent name (printed name directly above "Selling Agent" label)
+   - AREC License # (after "AREC License #")
+   - Agent email (after "Agent email:")
+   - Agent cell number (after "Agent cell number:")
+Return: {
+  "acceptance_date": "date",
+  "selling_agent_name": "agent name",
+  "selling_agent_license": "license number",
+  "selling_agent_email": "email",
+  "selling_agent_phone": "phone number"
+}` },
               { type: "image_url", image_url: { url: `data:image/png;base64,${img.toString('base64')}`, detail: "high" } }
             ]
           }],
-          max_tokens: 100
+          max_tokens: 300
         });
         Object.assign(results, JSON.parse(resp.choices[0].message.content?.replace(/```json\n?/g, '').replace(/```/g, '').trim() || '{}'));
       } catch (e) { console.log('  ⚠️ Page 16 error:', e instanceof Error ? e.message : 'Unknown'); }
@@ -810,7 +845,9 @@ Return: {"contract_date": "date", "closing_date": "date"}` },
       'Buyers', 'Property Address', 'Property Type', 'Purchase Type',
       'Purchase Price', 'Cash Amount', 'Loan Type',
       'Para 13 Items Included', 'Para 13 Items Excluded',
-      'Contingency', 'Home Warranty', 'Closing Date'
+      'Contingency', 'Home Warranty', 'Warranty Amount', 'Closing Date',
+      'Para 32 Other Terms', 'Selling Agent Name', 'Agent License',
+      'Agent Email', 'Agent Phone'
     ];
     
     const values = [
@@ -825,7 +862,13 @@ Return: {"contract_date": "date", "closing_date": "date"}` },
       data.para13_items_excluded || '',
       data.contingency || '',
       data.home_warranty || '',
-      data.closing_date || ''
+      data.warranty_amount || '',
+      data.closing_date || '',
+      data.para32_other_terms || '',
+      data.selling_agent_name || '',
+      data.selling_agent_license || '',
+      data.selling_agent_email || '',
+      data.selling_agent_phone || ''
     ];
     
     return headers.join(',') + '\n' + values.map(v => `"${v}"`).join(',');

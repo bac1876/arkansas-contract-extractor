@@ -31,11 +31,13 @@ const fieldGroups = {
         { key: 'contingency', label: 'Contingency (Para 14)' },
         { key: 'contingency_details', label: 'Contingency Details' },
         { key: 'home_warranty', label: 'Home Warranty (Para 15)' },
+        { key: 'warranty_amount', label: 'Warranty Amount' },
         { key: 'warranty_details', label: 'Warranty Details' },
         { key: 'inspection_option', label: 'Inspection (Para 16)' },
         { key: 'wood_infestation', label: 'Wood Infestation (Para 18)' },
         { key: 'termite_option', label: 'Termite (Para 19)' },
-        { key: 'lead_paint_option', label: 'Lead Paint (Para 20)' }
+        { key: 'lead_paint_option', label: 'Lead Paint (Para 20)' },
+        { key: 'para32_other_terms', label: 'Other Terms (Para 32)' }
     ],
     dates: [
         { key: 'contract_date', label: 'Contract Date' },
@@ -47,6 +49,12 @@ const fieldGroups = {
     para13: [
         { key: 'para13_items_included', label: 'Items Included (convey with property)' },
         { key: 'para13_items_excluded', label: 'Items Excluded (don\'t convey)' }
+    ],
+    agent: [
+        { key: 'selling_agent_name', label: 'Selling Agent Name' },
+        { key: 'selling_agent_license', label: 'Agent License #' },
+        { key: 'selling_agent_email', label: 'Agent Email' },
+        { key: 'selling_agent_phone', label: 'Agent Phone' }
     ]
 };
 
@@ -159,6 +167,11 @@ function displayResults(result) {
     currentData = result.data;
     currentFilename = result.filename;
     
+    // Show net sheet summary if available
+    if (result.netSheet) {
+        displayNetSheetSummary(result.netSheet);
+    }
+    
     // Show summary card
     displaySummary(result.data);
     
@@ -182,6 +195,59 @@ function displayResults(result) {
     
     // Show results section
     document.getElementById('results').style.display = 'block';
+}
+
+function displayNetSheetSummary(netSheet) {
+    // Create net sheet summary element if it doesn't exist
+    let netSheetDiv = document.getElementById('netSheetSummary');
+    if (!netSheetDiv) {
+        netSheetDiv = document.createElement('div');
+        netSheetDiv.id = 'netSheetSummary';
+        netSheetDiv.style.cssText = 'background: #d4edda; border-radius: 12px; padding: 20px; margin-bottom: 20px; border: 2px solid #28a745;';
+        
+        // Insert before the summary card
+        const summaryCard = document.getElementById('summaryCard');
+        summaryCard.parentNode.insertBefore(netSheetDiv, summaryCard);
+    }
+    
+    const netPercent = ((netSheet.cash_to_seller / netSheet.sales_price * 100) || 0).toFixed(2);
+    
+    netSheetDiv.innerHTML = `
+        <h3 style="color: #155724; margin-bottom: 15px;">💰 Seller Net Sheet Summary</h3>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+            <div>
+                <strong>Sales Price:</strong><br>
+                $${netSheet.sales_price?.toLocaleString() || 0}
+            </div>
+            <div>
+                <strong>Total Costs:</strong><br>
+                $${netSheet.total_costs?.toLocaleString() || 0}
+            </div>
+            <div>
+                <strong>Net to Seller:</strong><br>
+                <span style="font-size: 1.2em; color: #155724; font-weight: bold;">
+                    $${netSheet.cash_to_seller?.toLocaleString() || 0}
+                </span>
+            </div>
+            <div>
+                <strong>Net Percentage:</strong><br>
+                ${netPercent}%
+            </div>
+        </div>
+        <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #c3e6cb;">
+            <details>
+                <summary style="cursor: pointer; color: #155724; font-weight: bold;">View Detailed Breakdown</summary>
+                <div style="margin-top: 10px; display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; font-size: 0.9em;">
+                    <div>Seller Concessions: $${netSheet.seller_concessions?.toLocaleString() || 0}</div>
+                    <div>Commission: $${netSheet.commission_seller?.toLocaleString() || 0}</div>
+                    <div>Title Insurance: $${netSheet.title_insurance?.toLocaleString() || 0}</div>
+                    <div>Home Warranty: $${netSheet.home_warranty?.toLocaleString() || 0}</div>
+                    <div>Prorated Taxes: $${netSheet.taxes_prorated?.toLocaleString() || 0}</div>
+                    <div>Other Fees: $${((netSheet.closing_fee || 0) + (netSheet.title_search || 0) + (netSheet.pest_transfer || 0))?.toLocaleString()}</div>
+                </div>
+            </details>
+        </div>
+    `;
 }
 
 function displaySummary(data) {
@@ -224,6 +290,12 @@ function displayGroupedFields(data) {
     
     // Para 13 fields (special)
     displayFieldGroup('para13Fields', fieldGroups.para13, data);
+    
+    // Agent fields - show if container exists
+    const agentContainer = document.getElementById('agentFields');
+    if (agentContainer) {
+        displayFieldGroup('agentFields', fieldGroups.agent, data);
+    }
 }
 
 function displayFieldGroup(containerId, fields, data) {

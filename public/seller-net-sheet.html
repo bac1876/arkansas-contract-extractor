@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Seller Net Sheet Viewer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 18px;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 30px;
+        }
+
+        .sidebar {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            max-height: 600px;
+            overflow-y: auto;
+        }
+
+        .net-sheet-display {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            min-height: 600px;
+        }
+
+        .contract-list {
+            list-style: none;
+        }
+
+        .contract-item {
+            padding: 15px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .contract-item:hover {
+            background: #f8f9fa;
+            transform: translateX(5px);
+        }
+
+        .contract-item.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .contract-property {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .contract-buyer {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .contract-item.active .contract-buyer {
+            color: #e0e0ff;
+        }
+
+        .net-sheet-content {
+            padding: 20px;
+        }
+
+        .net-sheet-header {
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+
+        .property-info {
+            font-size: 18px;
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        .net-sheet-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .net-sheet-table th,
+        .net-sheet-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .net-sheet-table th {
+            background-color: #f5f5f5;
+            font-weight: bold;
+        }
+
+        .amount {
+            text-align: right;
+            font-family: 'Courier New', monospace;
+        }
+
+        .total-row {
+            font-weight: bold;
+            background-color: #f9f9f9;
+        }
+
+        .net-row {
+            font-weight: bold;
+            font-size: 20px;
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .btn {
+            background: #667eea;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+            margin-right: 10px;
+        }
+
+        .btn:hover {
+            background: #5a67d8;
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 50px;
+            color: #666;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 50px;
+            color: #999;
+        }
+
+        .controls {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .controls input {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📊 Seller Net Sheet Viewer</h1>
+            <div class="subtitle">View and manage seller net sheets from processed contracts</div>
+        </header>
+
+        <div class="main-content">
+            <div class="sidebar">
+                <h2 style="margin-bottom: 20px;">Processed Contracts</h2>
+                <ul class="contract-list" id="contractList">
+                    <div class="loading">Loading contracts...</div>
+                </ul>
+            </div>
+
+            <div class="net-sheet-display">
+                <div id="netSheetContent">
+                    <div class="empty-state">
+                        <h2>Select a Contract</h2>
+                        <p>Choose a contract from the list to view its seller net sheet</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let contracts = [];
+        let currentContract = null;
+
+        // Format currency
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: 'USD'
+            }).format(amount);
+        }
+
+        // Load contracts from server
+        async function loadContracts() {
+            try {
+                // For now, we'll use sample data
+                // In production, this would fetch from the server
+                contracts = [
+                    {
+                        id: '1755102694353',
+                        property: '3315 Alliance Drive, Springdale, AR',
+                        buyer: 'Carlos Santos Gutierrez',
+                        price: 265000,
+                        date: '2025-08-13',
+                        netSheetPath: 'processed_contracts/seller_net_sheets/1755102694353_Offer (EXE)-3315 Alliance Dr_result_net_sheet.json'
+                    }
+                ];
+
+                displayContractList();
+            } catch (error) {
+                console.error('Error loading contracts:', error);
+            }
+        }
+
+        // Display contract list
+        function displayContractList() {
+            const listElement = document.getElementById('contractList');
+            
+            if (contracts.length === 0) {
+                listElement.innerHTML = '<div class="empty-state">No contracts found</div>';
+                return;
+            }
+
+            listElement.innerHTML = contracts.map((contract, index) => `
+                <li class="contract-item" data-index="${index}" onclick="selectContract(${index})">
+                    <div class="contract-property">${contract.property}</div>
+                    <div class="contract-buyer">Buyer: ${contract.buyer}</div>
+                    <div class="contract-buyer">Price: ${formatCurrency(contract.price)}</div>
+                </li>
+            `).join('');
+        }
+
+        // Select and display a contract
+        async function selectContract(index) {
+            // Update active state
+            document.querySelectorAll('.contract-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            document.querySelector(`[data-index="${index}"]`).classList.add('active');
+
+            currentContract = contracts[index];
+            
+            // Generate net sheet data (in production, fetch from server)
+            const netSheetData = {
+                sales_price: 265000,
+                seller_concessions: 8000,
+                taxes_prorated: 2360,
+                commission_seller: 7950,
+                buyer_agency_fees: 7950,
+                closing_fee: 400,
+                title_search: 300,
+                title_insurance: 1325,
+                title_recording_fees: 100,
+                pest_transfer: 450,
+                tax_stamps: 437.25,
+                home_warranty: 750,
+                total_costs: 30022.25,
+                cash_to_seller: 234977.75,
+                days_of_tax: 236,
+                tax_per_day: 10
+            };
+
+            displayNetSheet(netSheetData);
+        }
+
+        // Display net sheet
+        function displayNetSheet(data) {
+            const content = document.getElementById('netSheetContent');
+            
+            content.innerHTML = `
+                <div class="net-sheet-content">
+                    <div class="net-sheet-header">
+                        <h2>Seller Net Sheet</h2>
+                        <div class="property-info">Property: ${currentContract.property}</div>
+                        <div class="property-info">Buyer: ${currentContract.buyer}</div>
+                        <div class="property-info">Date: ${new Date(currentContract.date).toLocaleDateString()}</div>
+                    </div>
+
+                    <div class="controls">
+                        <label>Annual Taxes: $</label>
+                        <input type="number" id="annualTaxes" value="3650" onchange="recalculate()">
+                        <label>Commission %:</label>
+                        <input type="number" id="commissionPercent" value="3" step="0.1" onchange="recalculate()">
+                        <button class="btn" onclick="recalculate()">Recalculate</button>
+                        <button class="btn btn-secondary" onclick="exportPDF()">Export PDF</button>
+                        <button class="btn btn-secondary" onclick="exportExcel()">Export Excel</button>
+                    </div>
+
+                    <table class="net-sheet-table">
+                        <tr>
+                            <th>Description</th>
+                            <th class="amount">Amount</th>
+                        </tr>
+                        
+                        <tr>
+                            <td><strong>Sales Price</strong></td>
+                            <td class="amount"><strong>${formatCurrency(data.sales_price)}</strong></td>
+                        </tr>
+                        
+                        <tr>
+                            <td colspan="2" style="padding-top: 20px;"><strong>Less Seller's Costs:</strong></td>
+                        </tr>
+                        
+                        <tr>
+                            <td>Seller Concessions</td>
+                            <td class="amount">${formatCurrency(data.seller_concessions)}</td>
+                        </tr>
+                        
+                        <tr>
+                            <td>Prorated Taxes (${data.days_of_tax} days @ ${formatCurrency(data.tax_per_day)}/day)</td>
+                            <td class="amount">${formatCurrency(data.taxes_prorated)}</td>
+                        </tr>
+                        
+                        <tr>
+                            <td>Seller's Commission</td>
+                            <td class="amount">${formatCurrency(data.commission_seller)}</td>
+                        </tr>
+                        
+                        <tr>
+                            <td>Buyer Agency Fees</td>
+                            <td class="amount">${formatCurrency(data.buyer_agency_fees)}</td>
+                        </tr>
+                        
+                        <tr>
+                            <td>Closing Fee</td>
+                            <td class="amount">${formatCurrency(data.closing_fee)}</td>
+                        </tr>
+                        
+                        <tr>
+                            <td>Title Search</td>
+                            <td class="amount">${formatCurrency(data.title_search)}</td>
+                        </tr>
+                        
+                        <tr>
+                            <td>Title Insurance</td>
+                            <td class="amount">${formatCurrency(data.title_insurance)}</td>
+                        </tr>
+                        
+                        <tr>
+                            <td>Title & Recording Fees</td>
+                            <td class="amount">${formatCurrency(data.title_recording_fees)}</td>
+                        </tr>
+                        
+                        <tr>
+                            <td>Pest Transfer</td>
+                            <td class="amount">${formatCurrency(data.pest_transfer)}</td>
+                        </tr>
+                        
+                        <tr>
+                            <td>Tax Stamps</td>
+                            <td class="amount">${formatCurrency(data.tax_stamps)}</td>
+                        </tr>
+                        
+                        <tr>
+                            <td>Home Warranty</td>
+                            <td class="amount">${formatCurrency(data.home_warranty)}</td>
+                        </tr>
+                        
+                        <tr class="total-row">
+                            <td><strong>Total Costs</strong></td>
+                            <td class="amount"><strong>${formatCurrency(data.total_costs)}</strong></td>
+                        </tr>
+                        
+                        <tr class="net-row">
+                            <td><strong>ESTIMATED NET TO SELLER</strong></td>
+                            <td class="amount"><strong>${formatCurrency(data.cash_to_seller)}</strong></td>
+                        </tr>
+                    </table>
+
+                    <div style="margin-top: 30px; padding: 20px; background: #f8f9fa; border-radius: 8px;">
+                        <h3>Summary</h3>
+                        <ul style="list-style: none; padding: 0;">
+                            <li>📊 Sales Price: ${formatCurrency(data.sales_price)}</li>
+                            <li>📉 Total Deductions: ${formatCurrency(data.total_costs)}</li>
+                            <li>💰 Net to Seller: ${formatCurrency(data.cash_to_seller)}</li>
+                            <li>📈 Net Percentage: ${((data.cash_to_seller / data.sales_price) * 100).toFixed(2)}%</li>
+                        </ul>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Recalculate with new values
+        function recalculate() {
+            alert('Recalculation would happen here with new tax and commission values');
+        }
+
+        // Export functions
+        function exportPDF() {
+            alert('PDF export would be implemented here');
+        }
+
+        function exportExcel() {
+            alert('Excel export would be implemented here');
+        }
+
+        // Initialize on load
+        document.addEventListener('DOMContentLoaded', () => {
+            loadContracts();
+        });
+    </script>
+</body>
+</html>

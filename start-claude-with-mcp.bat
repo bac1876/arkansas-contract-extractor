@@ -1,0 +1,3 @@
+@echo off
+echo Starting Claude Code with MCP servers...
+claude --mcp-config "C:\Users\Owner\claude code projects\smthosexp\arkansas-contract-agent\claude-code-mcp-config.json"
