@@ -3,7 +3,7 @@
  * Creates professional, branded PDF documents for sellers
  */
 
-import puppeteer from 'puppeteer';
+// import puppeteer from 'puppeteer'; // Disabled for Railway deployment
 import * as fs from 'fs/promises';
 import * as path from 'path';
 
@@ -35,34 +35,19 @@ export class PDFGenerator {
     // Generate HTML content
     const htmlContent = this.generateHTML(netSheetData, propertyAddress, contractData);
     
-    // Launch puppeteer and generate PDF
-    const browser = await puppeteer.launch({ 
-      headless: true,
-      args: ['--no-sandbox', '--disable-setuid-sandbox']
-    });
-    
+    // For Railway deployment, just save HTML for now (puppeteer not available)
+    // In production, you could use a PDF service API or different library
     try {
-      const page = await browser.newPage();
-      await page.setContent(htmlContent, { waitUntil: 'networkidle0' });
+      // Save as HTML file instead of PDF for now
+      const htmlPath = filePath.replace('.pdf', '.html');
+      await fs.writeFile(htmlPath, htmlContent);
       
-      // Generate PDF with professional settings
-      await page.pdf({
-        path: filePath,
-        format: 'letter',
-        printBackground: true,
-        margin: {
-          top: '0.75in',
-          right: '0.75in',
-          bottom: '0.75in',
-          left: '0.75in'
-        }
-      });
+      console.log(`📄 Net sheet saved as HTML (PDF generation disabled): ${htmlPath}`);
+      return htmlPath;
       
-      console.log(`📄 PDF net sheet saved: ${filePath}`);
-      return filePath;
-      
-    } finally {
-      await browser.close();
+    } catch (error) {
+      console.error('Failed to save net sheet:', error);
+      throw error;
     }
   }
   
