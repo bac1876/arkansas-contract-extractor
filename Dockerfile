@@ -14,7 +14,7 @@ COPY package*.json ./
 COPY tsconfig.json ./
 
 # Install all dependencies (including dev for ts-node)
-RUN npm ci
+RUN npm install
 
 # Install TypeScript and ts-node globally
 RUN npm install -g typescript ts-node
