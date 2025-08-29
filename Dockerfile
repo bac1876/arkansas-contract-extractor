@@ -37,5 +37,5 @@ RUN mkdir -p processed_contracts/pdfs \
 # Expose port for health checks
 EXPOSE 3000
 
-# Run the email monitor
-CMD ["node", "-r", "ts-node/register", "email-monitor.ts"]
+# Use simple Node.js start script (no TypeScript initially)
+CMD ["node", "start.js"]

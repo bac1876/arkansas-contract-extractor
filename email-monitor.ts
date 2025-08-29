@@ -3,30 +3,7 @@
  * Monitors offers@searchnwa.com for incoming contracts
  */
 
-// START HEALTH CHECK SERVER IMMEDIATELY FOR RAILWAY
-const express = require('express');
-const app = express();
-const PORT = process.env.PORT || 3000;
-
-// Health check endpoints - must be available immediately
-app.get('/health', (req, res) => {
-  res.status(200).json({ status: 'healthy', service: 'email-monitor' });
-});
-
-app.get('/api/health', (req, res) => {
-  res.status(200).json({ status: 'healthy', service: 'email-monitor' });
-});
-
-app.get('/', (req, res) => {
-  res.status(200).send('Arkansas Contract Email Monitor v3.5');
-});
-
-// Start server immediately
-app.listen(PORT, '0.0.0.0', () => {
-  console.log(`🏥 Health check server running on port ${PORT}`);
-});
-
-// Now load other dependencies
+// Load dependencies
 const Imap = require('imap');
 const { simpleParser } = require('mailparser');
 import * as fs from 'fs/promises';
