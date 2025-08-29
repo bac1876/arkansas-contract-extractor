@@ -19,8 +19,8 @@ import AgentInfoSheetGenerator from './agent-info-sheet-generator';
 import CSVExporter from './csv-exporter';
 import { ListingInfoService } from './listing-info-service';
 import * as dotenv from 'dotenv';
-import * as express from 'express';
-import * as http from 'http';
+const express = require('express');
+const http = require('http');
 
 dotenv.config();
 
