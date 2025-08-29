@@ -864,8 +864,7 @@ if (require.main === module) {
     res.status(200).send('Email Monitor is running');
   });
   
-  const server = http.createServer(app);
-  server.listen(PORT, () => {
+  app.listen(PORT, '0.0.0.0', () => {
     console.log(`🏥 Health check server running on port ${PORT}`);
   });
 
@@ -887,7 +886,6 @@ if (require.main === module) {
   process.on('SIGINT', () => {
     console.log('\n👋 Shutting down email monitor...');
     monitor.disconnect();
-    server.close();
     process.exit(0);
   });
 }
