@@ -1,0 +1,463 @@
+✅ Google Sheets API initialized
+✅ Google Drive API initialized
+📁 Using Shared Drive: Arkansas Contract Data
+✅ Connecting to email server...
+🔐 Attempting connection with:
+   Email: offers@searchnwa.com
+   Password: ggao****mt zpfz
+   Host: imap.gmail.com
+📧 Connecting to offers@searchnwa.com...
+📊 Google Sheets integration configured and initialized
+📝 Loaded 18 processed email IDs
+[connection] Connected to host
+<= '* OK Gimap ready for requests from 2601:280:4900:4d10:71da:ef73:d5ed:b209 2ea640d94c315-4748531a7c8mb192150969a9'
+=> 'A0 CAPABILITY'
+<= '* CAPABILITY IMAP4rev1 UNSELECT IDLE NAMESPACE QUOTA ID XLIST CHILDREN X-GM-EXT-1 XYZZY SASL-IR AUTH=XOAUTH2 AUTH=PLAIN AUTH=PLAIN-CLIENTTOKEN AUTH=OAUTHBEARER'
+<= 'A0 OK Thats all she wrote! 2ea640d94c315-4748531a7c8mb192150969a9'
+=> 'A1 LOGIN "offers@searchnwa.com" "ggao mydb xnmt zpfz"'
+✅ Connected to Shared Drive: Arkansas Contract Data
+📁 Google Drive integration ready
+<= '* CAPABILITY IMAP4rev1 UNSELECT IDLE NAMESPACE QUOTA ID XLIST CHILDREN X-GM-EXT-1 UIDPLUS COMPRESS=DEFLATE ENABLE MOVE CONDSTORE ESEARCH UTF8=ACCEPT LIST-EXTENDED LIST-STATUS LITERAL- SPECIAL-USE APPENDLIMIT=35651584'
+<= 'A1 OK offers@searchnwa.com authenticated (Success)'
+=> 'A2 NAMESPACE'
+<= '* NAMESPACE (("" "/")) NIL NIL'
+<= 'A2 OK Success'
+=> 'A3 LIST "" ""'
+<= '* LIST (\\Noselect) "/" "/"'
+<= 'A3 OK Success'
+✅ Connected to email server
+=> 'A4 SELECT "INBOX" (CONDSTORE)'
+✅ Email monitor is running...
+📧 Send contracts to: offers@searchnwa.com
+Press Ctrl+C to stop
+📊 Loaded 10 property listings with tax and commission data
+📋 Listing info service ready
+<= '* FLAGS (\\Answered \\Flagged \\Draft \\Deleted \\Seen $Forwarded $NotPhishing $Phishing Forwarded)'
+<= '* OK [PERMANENTFLAGS (\\Answered \\Flagged \\Draft \\Deleted \\Seen $Forwarded $NotPhishing $Phishing Forwarded \\*)] Flags permitted.'
+<= '* OK [UIDVALIDITY 1] UIDs valid.'
+<= '* 4 EXISTS'
+<= '* 0 RECENT'
+<= '* OK [UIDNEXT 13690] Predicted next UID.'
+<= '* OK [HIGHESTMODSEQ 1749946]'
+<= 'A4 OK [READ-WRITE] INBOX selected. (Success)'
+📬 Monitoring inbox (4 messages)
+⏰ Setting up 30-second polling interval...
+=> 'A5 UID SEARCH UNSEEN'
+<= '* SEARCH 13687 13688 13689'
+<= 'A5 OK SEARCH completed (Success)'
+📨 Found 3 unread email(s)
+=> 'A6 UID FETCH 13687 (X-GM-THRID X-GM-MSGID X-GM-LABELS MODSEQ UID FLAGS INTERNALDATE BODY.PEEK[])'
+<= '* 2 FETCH (X-GM-THRID 1841813836250891774 X-GM-MSGID 1841813836250891774 X-GM-LABELS () UID 13687 MODSEQ (1749912) INTERNALDATE "29-Aug-2025 18:02:31 +0000" FLAGS () BODY[] {226358}'
+<= '* 2 FETCH (X-GM-THRID 1841813836250891774 X-GM-MSGID 1841813836250891774 X-GM-LABELS () UID 13687 MODSEQ (1749912) INTERNALDATE "29-Aug-2025 18:02:31 +0000" FLAGS () )'
+<= 'A6 OK Success'
+=> 'IDLE IDLE'
+⏭️  Skipping already processed email: Test Contract - 890 Clark - 2025-08-29T18:02:27.645Z
+<= '+ idling'
+=> DONE
+<= 'IDLE OK IDLE terminated (Success)'
+=> 'A7 UID FETCH 13688 (X-GM-THRID X-GM-MSGID X-GM-LABELS MODSEQ UID FLAGS INTERNALDATE BODY.PEEK[])'
+<= '* 3 FETCH (X-GM-THRID 1841815123800780252 X-GM-MSGID 1841815123800780252 X-GM-LABELS () UID 13688 MODSEQ (1749914) INTERNALDATE "29-Aug-2025 18:22:59 +0000" FLAGS () BODY[] {226356}'
+<= '* 3 FETCH (X-GM-THRID 1841815123800780252 X-GM-MSGID 1841815123800780252 X-GM-LABELS () UID 13688 MODSEQ (1749914) INTERNALDATE "29-Aug-2025 18:22:59 +0000" FLAGS () )'
+<= 'A7 OK Success'
+=> 'IDLE IDLE'
+
+============================================================
+📧 Processing email from: "Test Sender" <contractextraction@gmail.com>
+📋 Subject: Test Contract - 890 Clark - 2025-08-29T18:22:56.141Z
+📅 Date: Fri Aug 29 2025 12:22:56 GMT-0600 (Mountain Daylight Time)
+📎 Found PDF: 890 Clark.pdf
+🔍 Starting robust extraction with automatic retries...
+🚀 Starting Robust Extraction Process
+📄 PDF: 1756498135343_890 Clark.pdf
+
+📊 Phase 1: Primary Extraction (GPT-5-mini)
+
+🔄 Attempt 1/3
+🔍 GPT-5 Extractor: Starting extraction for: C:\Users\Owner\Claude Code Projects\SmthosExp\arkansas-contract-agent\processed_contracts\pdfs\1756498135343_890 Clark.pdf
+🖼️ Converting PDF to PNG using ImageMagick...
+<= '+ idling'
+
+============================================================
+📊 SYSTEM HEALTH REPORT
+============================================================
+⏱️  Uptime: 1 minutes
+📈 Success Rate: 100.0%
+✅ Successful: 11
+⚠️  Partial: 0
+❌ Failed: 0
+🔄 Pending Retry: 0
+📋 Manual Review Queue: 0 items
+✅ Last Success: 101 minutes ago
+============================================================
+
+✅ Converted 17 pages to PNG
+🤖 Using GPT-5 Responses API for extraction...
+📄 Processing page 1...
+✅ Page 1: Extracted 5 fields
+  Page 1 returned: [ 'buyers', 'property_address', 'purchase_price', 'loan_type' ]
+⏭️  Skipping page 2 (not needed)
+⏭️  Skipping page 3 (not needed)
+📄 Processing page 4...
+✅ Page 4: Extracted 4 fields
+  Page 4 returned: [
+  'seller_pays_buyer_costs',
+  'earnest_money',
+  'non_refundable',
+  'non_refundable_amount'
+]
+📄 Processing page 5...
+🔄 Checking for new emails... [2:09:24 PM]
+⏳ Already processing emails, skipping...
+✅ Page 5: Extracted 1 fields
+  Page 5 returned: [ 'para10_title_option' ]
+📄 Processing page 6...
+✅ Page 6: Extracted 4 fields
+  Page 6 returned: [
+  'para11_survey_option',
+  'para11_survey_paid_by',
+  'para13_items_included',
+  'para13_items_excluded'
+]
+📄 Processing page 7...
+✅ Page 7: Extracted 2 fields
+  Page 7 returned: [ 'para14_contingency', 'para14_binding_type' ]
+📄 Processing page 8...
+✅ Page 8: Extracted 3 fields
+  Page 8 returned: [
+  'para15_home_warranty',
+  'para15_warranty_paid_by',
+  'para15_warranty_cost'
+]
+⏭️  Skipping page 9 (not needed)
+📄 Processing page 10...
+🔄 Checking for new emails... [2:09:54 PM]
+⏳ Already processing emails, skipping...
+✅ Page 10: Extracted 1 fields
+  Page 10 returned: [ 'para19_termite_option' ]
+⏭️  Skipping page 11 (not needed)
+📄 Processing page 12...
+✅ Page 12: Extracted 1 fields
+  Page 12 returned: [ 'closing_date' ]
+⏭️  Skipping page 13 (not needed)
+📄 Processing page 14...
+✅ Page 14: Extracted 2 fields
+  Page 14 returned: [ 'buyer_agency_fee', 'other_terms' ]
+⏭️  Skipping page 15 (not needed)
+📄 Processing page 16...
+✅ Page 16: Extracted 6 fields
+  Page 16 returned: [
+  'para38_expiration_date',
+  'selling_firm_name',
+  'selling_agent_name',
+  'selling_agent_arec',
+  'selling_agent_email',
+  'selling_agent_phone'
+]
+⏭️  Skipping page 17 (not needed)
+🧹 Cleaning up temp files...
+✅ GPT-5 Extraction complete: 29/28 fields identified (100%)
+   📊 26 fields have values, 3 fields correctly identified as empty
+💭 Total reasoning tokens used: 2488
+
+📋 EXTRACTION VALIDATION REPORT
+=========================================
+
+📄 File: 1756498135343_890 Clark.pdf
+🏠 Extracted Address: 890 Clark Cir Bentonville, AR 72713
+💰 Purchase Price: $450,000
+👥 Buyers: Bob Smith, Sue Smith
+
+⚠️  WARNINGS:
+   ⚠️ Paragraph 3 financing option not identified
+
+✅ Extraction appears valid
+=========================================
+
+✅ Successfully extracted with gpt-5-mini
+  ✅ GPT-5-mini succeeded: 29 fields in 79.3s
+✅ Successful extraction with 29 fields!
+📊 Extraction completed after 1 attempt(s)
+   Method: GPT-5-mini
+   Fields: 29/28
+✅ Extraction successful: 100%
+✅ Found listing match: "890 clark" for property "890 Clark Cir Bentonville, AR 72713"
+   📊 Taxes: $4702, Commission: 3.0%
+🔍 DEBUG - Extracted data fields:
+  paragraph_5: undefined
+  additional_terms: undefined
+  para5_custom_text: undefined
+📊 Net sheet input values:
+  seller_concessions: 5000
+  para32_other_terms: undefined
+📊 Using listing data: Taxes=$4702, Commission=3.0%
+📑 PDF generation disabled for Railway deployment
+📄 CSV net sheet saved: net_sheets_csv\netsheet_890_Clark_Cir_Bentonville_AR_72713.csv
+📄 Generated CSV net sheet: netsheet_890_Clark_Cir_Bentonville_AR_72713.csv
+📤 Uploading netsheet_890_Clark_Cir_Bentonville_AR_72713.csv to Google Drive...
+✅ Uploaded: netsheet_890_Clark_Cir_Bentonville_AR_72713.csv
+   📁 Folder: 0AHKbof5whHFPUk9PVA
+   👤 Owner: unknown
+   🔗 Link: https://drive.google.com/file/d/1dj6wemtwdhFRnIWjLJRz1v-r16hfHJGF/view?usp=drivesdk
+📤 Uploaded CSV to Google Drive
+   📎 CSV Link: https://drive.google.com/file/d/1dj6wemtwdhFRnIWjLJRz1v-r16hfHJGF/view?usp=drivesdk
+📄 Agent info sheet PDF generated: agent_info_sheets\offer_info_890_Clark_Cir_Bentonville_AR_72713.pdf
+📋 Generated agent info sheet: offer_info_890_Clark_Cir_Bentonville_AR_72713.pdf
+📤 Uploading offer_info_890_Clark_Cir_Bentonville_AR_72713.pdf to Google Drive...
+✅ Uploaded: offer_info_890_Clark_Cir_Bentonville_AR_72713.pdf
+   📁 Folder: 1ee_DdnkDgGu2lP9h02FzbbwSoI_J92Cq
+   👤 Owner: unknown
+   🔗 Link: https://drive.google.com/file/d/1Zh0ABJJT5oczF0SQIDDmksHgULpxHRLW/view?usp=drivesdk
+📤 Uploaded agent info sheet to Google Drive
+   📎 Link: https://drive.google.com/file/d/1Zh0ABJJT5oczF0SQIDDmksHgULpxHRLW/view?usp=drivesdk
+📁 Creating sheet in Shared Drive (no quota limits)...
+✅ Created spreadsheet: Net Sheet - 890 Clark Cir Bentonville AR 72713 - 2025-08-29
+   📁 In folder: 0AHKbof5whHFPUk9PVA
+   👤 Owner: unknown (storage counts against their quota)
+✅ Net sheet formatted
+✅ Net sheet populated with data
+ℹ️  Sheet is private (accessible via link)
+📊 Created individual net sheet in Google Drive
+   📎 Link: https://docs.google.com/spreadsheets/d/1TSdCltmi-xy9YhHrtHyAWTijYVsTBAgVWyP1_MN6o6Y/edit
+🔄 Checking for new emails... [2:10:24 PM]
+⏳ Already processing emails, skipping...
+✅ Contract data saved to Google Sheets
+✅ Net sheet saved to column E in vertical format
+
+✅ Complete extraction saved to Google Sheets
+   Contract ID: 1756498224622
+   Spreadsheet: https://docs.google.com/spreadsheets/d/1xeiS8rAqYncRKHGp6oiN8n3-Z9lRwLqrAc0PY_RJuhI
+📊 Saved to tracking spreadsheet
+💰 Net sheet generated successfully
+📤 Processing complete for: "Test Sender" <contractextraction@gmail.com>
+   - Attachments processed: 1
+   - Successful extractions: 1
+============================================================
+============================================================
+
+✅ Marking email as read and adding "Processed Contracts" label...
+=> DONE
+❌ Error processing email: TypeError: this.imap._send is not a function
+    at C:\Users\Owner\Claude Code Projects\SmthosExp\arkansas-contract-agent\email-monitor.ts:731:25
+<= 'IDLE OK IDLE terminated (Success)'
+=> 'A8 UID STORE 13688 +FLAGS.SILENT (\\Seen)'
+<= '* 3 FETCH (UID 13688 MODSEQ (1749949) FLAGS (\\Seen))'
+<= 'A8 OK Success'
+✅ Email marked as read
+=> 'A9 UID FETCH 13689 (X-GM-THRID X-GM-MSGID X-GM-LABELS MODSEQ UID FLAGS INTERNALDATE BODY.PEEK[])'
+<= '* 4 FETCH (X-GM-THRID 1841820848263211486 X-GM-MSGID 1841820848263211486 X-GM-LABELS ("\\\\Important") UID 13689 MODSEQ (1749916) INTERNALDATE "29-Aug-2025 19:53:58 +0000" FLAGS () BODY[] {226369}'
+<= '* 4 FETCH (X-GM-THRID 1841820848263211486 X-GM-MSGID 1841820848263211486 X-GM-LABELS ("\\\\Important") UID 13689 MODSEQ (1749916) INTERNALDATE "29-Aug-2025 19:53:58 +0000" FLAGS () )'
+<= 'A9 OK Success'
+=> 'IDLE IDLE'
+
+============================================================
+📧 Processing email from: "Test Sender" <contractextraction@gmail.com>
+📋 Subject: Test Contract - 890 Clark - 2025-08-29T19:53:55.435Z
+📅 Date: Fri Aug 29 2025 13:53:55 GMT-0600 (Mountain Daylight Time)
+📎 Found PDF: 890 Clark.pdf
+🔍 Starting robust extraction with automatic retries...
+🚀 Starting Robust Extraction Process
+📄 PDF: 1756498226740_890 Clark.pdf
+
+📊 Phase 1: Primary Extraction (GPT-5-mini)
+
+🔄 Attempt 1/3
+🔍 GPT-5 Extractor: Starting extraction for: C:\Users\Owner\Claude Code Projects\SmthosExp\arkansas-contract-agent\processed_contracts\pdfs\1756498226740_890 Clark.pdf
+🖼️ Converting PDF to PNG using ImageMagick...
+<= '+ idling'
+✅ Converted 17 pages to PNG
+🤖 Using GPT-5 Responses API for extraction...
+📄 Processing page 1...
+✅ Page 1: Extracted 5 fields
+  Page 1 returned: [ 'buyers', 'property_address', 'purchase_price', 'loan_type' ]
+⏭️  Skipping page 2 (not needed)
+⏭️  Skipping page 3 (not needed)
+📄 Processing page 4...
+✅ Page 4: Extracted 4 fields
+  Page 4 returned: [
+  'seller_pays_buyer_costs',
+  'earnest_money',
+  'non_refundable',
+  'non_refundable_amount'
+]
+📄 Processing page 5...
+🔄 Checking for new emails... [2:10:54 PM]
+⏳ Already processing emails, skipping...
+✅ Page 5: Extracted 1 fields
+  Page 5 returned: [ 'para10_title_option' ]
+📄 Processing page 6...
+✅ Page 6: Extracted 4 fields
+  Page 6 returned: [
+  'para11_survey_option',
+  'para11_survey_paid_by',
+  'para13_items_included',
+  'para13_items_excluded'
+]
+📄 Processing page 7...
+✅ Page 7: Extracted 2 fields
+  Page 7 returned: [ 'para14_contingency', 'para14_binding_type' ]
+📄 Processing page 8...
+✅ Page 8: Extracted 3 fields
+  Page 8 returned: [
+  'para15_home_warranty',
+  'para15_warranty_paid_by',
+  'para15_warranty_cost'
+]
+⏭️  Skipping page 9 (not needed)
+📄 Processing page 10...
+🔄 Checking for new emails... [2:11:24 PM]
+⏳ Already processing emails, skipping...
+✅ Page 10: Extracted 1 fields
+  Page 10 returned: [ 'para19_termite_option' ]
+⏭️  Skipping page 11 (not needed)
+📄 Processing page 12...
+✅ Page 12: Extracted 1 fields
+  Page 12 returned: [ 'closing_date' ]
+⏭️  Skipping page 13 (not needed)
+📄 Processing page 14...
+✅ Page 14: Extracted 2 fields
+  Page 14 returned: [ 'buyer_agency_fee', 'other_terms' ]
+⏭️  Skipping page 15 (not needed)
+📄 Processing page 16...
+✅ Page 16: Extracted 6 fields
+  Page 16 returned: [
+  'para38_expiration_date',
+  'selling_firm_name',
+  'selling_agent_name',
+  'selling_agent_arec',
+  'selling_agent_email',
+  'selling_agent_phone'
+]
+⏭️  Skipping page 17 (not needed)
+🧹 Cleaning up temp files...
+✅ GPT-5 Extraction complete: 29/28 fields identified (100%)
+   📊 26 fields have values, 3 fields correctly identified as empty
+💭 Total reasoning tokens used: 2104
+
+📋 EXTRACTION VALIDATION REPORT
+=========================================
+
+📄 File: 1756498226740_890 Clark.pdf
+🏠 Extracted Address: 890 Clark Cir Bentonville, AR 72713
+💰 Purchase Price: $450,000
+👥 Buyers: Bob Smith, Sue Smith
+
+⚠️  WARNINGS:
+   ⚠️ Paragraph 3 financing option not identified
+
+✅ Extraction appears valid
+=========================================
+
+✅ Successfully extracted with gpt-5-mini
+  ✅ GPT-5-mini succeeded: 29 fields in 79.0s
+✅ Successful extraction with 29 fields!
+📊 Extraction completed after 1 attempt(s)
+   Method: GPT-5-mini
+   Fields: 29/28
+✅ Extraction successful: 100%
+✅ Found listing match: "890 clark" for property "890 Clark Cir Bentonville, AR 72713"
+   📊 Taxes: $4702, Commission: 3.0%
+🔍 DEBUG - Extracted data fields:
+  paragraph_5: undefined
+  additional_terms: undefined
+  para5_custom_text: undefined
+📊 Net sheet input values:
+  seller_concessions: 5000
+  para32_other_terms: undefined
+📊 Using listing data: Taxes=$4702, Commission=3.0%
+📑 PDF generation disabled for Railway deployment
+📄 CSV net sheet saved: net_sheets_csv\netsheet_890_Clark_Cir_Bentonville_AR_72713.csv
+📄 Generated CSV net sheet: netsheet_890_Clark_Cir_Bentonville_AR_72713.csv
+📤 Uploading netsheet_890_Clark_Cir_Bentonville_AR_72713.csv to Google Drive...
+✅ Uploaded: netsheet_890_Clark_Cir_Bentonville_AR_72713.csv
+   📁 Folder: 0AHKbof5whHFPUk9PVA
+   👤 Owner: unknown
+   🔗 Link: https://drive.google.com/file/d/1eISkwQC9TLW1RN0398eSiEB7bF2hlWqC/view?usp=drivesdk
+📤 Uploaded CSV to Google Drive
+   📎 CSV Link: https://drive.google.com/file/d/1eISkwQC9TLW1RN0398eSiEB7bF2hlWqC/view?usp=drivesdk
+📄 Agent info sheet PDF generated: agent_info_sheets\offer_info_890_Clark_Cir_Bentonville_AR_72713.pdf
+📋 Generated agent info sheet: offer_info_890_Clark_Cir_Bentonville_AR_72713.pdf
+📤 Uploading offer_info_890_Clark_Cir_Bentonville_AR_72713.pdf to Google Drive...
+✅ Uploaded: offer_info_890_Clark_Cir_Bentonville_AR_72713.pdf
+   📁 Folder: 1ee_DdnkDgGu2lP9h02FzbbwSoI_J92Cq
+   👤 Owner: unknown
+   🔗 Link: https://drive.google.com/file/d/1zvjJ2Df3LCLiyW_kq8MKsMxHsljHGQ0e/view?usp=drivesdk
+📤 Uploaded agent info sheet to Google Drive
+   📎 Link: https://drive.google.com/file/d/1zvjJ2Df3LCLiyW_kq8MKsMxHsljHGQ0e/view?usp=drivesdk
+📁 Creating sheet in Shared Drive (no quota limits)...
+✅ Created spreadsheet: Net Sheet - 890 Clark Cir Bentonville AR 72713 - 2025-08-29
+   📁 In folder: 0AHKbof5whHFPUk9PVA
+   👤 Owner: unknown (storage counts against their quota)
+🔄 Checking for new emails... [2:11:54 PM]
+⏳ Already processing emails, skipping...
+✅ Net sheet formatted
+✅ Net sheet populated with data
+ℹ️  Sheet is private (accessible via link)
+📊 Created individual net sheet in Google Drive
+   📎 Link: https://docs.google.com/spreadsheets/d/1FORJ632VupCCHU_qT2xLdMdiHzrXOlEgwfsrG0yKy00/edit
+✅ Contract data saved to Google Sheets
+✅ Net sheet saved to column F in vertical format
+
+✅ Complete extraction saved to Google Sheets
+   Contract ID: 1756498314987
+   Spreadsheet: https://docs.google.com/spreadsheets/d/1xeiS8rAqYncRKHGp6oiN8n3-Z9lRwLqrAc0PY_RJuhI
+📊 Saved to tracking spreadsheet
+💰 Net sheet generated successfully
+📤 Processing complete for: "Test Sender" <contractextraction@gmail.com>
+   - Attachments processed: 1
+   - Successful extractions: 1
+============================================================
+============================================================
+
+✅ Marking email as read and adding "Processed Contracts" label...
+=> DONE
+❌ Error processing email: TypeError: this.imap._send is not a function
+    at C:\Users\Owner\Claude Code Projects\SmthosExp\arkansas-contract-agent\email-monitor.ts:731:25
+<= 'IDLE OK IDLE terminated (Success)'
+=> 'A10 UID STORE 13689 +FLAGS.SILENT (\\Seen)'
+<= '* 4 FETCH (UID 13689 MODSEQ (1749976) FLAGS (\\Seen))'
+<= 'A10 OK Success'
+✅ Email marked as read
+=> 'IDLE IDLE'
+<= '+ idling'
+🔄 Checking for new emails... [2:12:24 PM]
+=> DONE
+<= 'IDLE OK IDLE terminated (Success)'
+=> 'A11 UID SEARCH UNSEEN'
+<= '* SEARCH 13687'
+<= 'A11 OK SEARCH completed (Success)'
+📨 Found 1 unread email(s)
+=> 'A12 UID FETCH 13687 (X-GM-THRID X-GM-MSGID X-GM-LABELS MODSEQ UID FLAGS INTERNALDATE BODY.PEEK[])'
+<= '* 2 FETCH (X-GM-THRID 1841813836250891774 X-GM-MSGID 1841813836250891774 X-GM-LABELS () UID 13687 MODSEQ (1749912) INTERNALDATE "29-Aug-2025 18:02:31 +0000" FLAGS () BODY[] {226358}'
+<= '* 2 FETCH (X-GM-THRID 1841813836250891774 X-GM-MSGID 1841813836250891774 X-GM-LABELS () UID 13687 MODSEQ (1749912) INTERNALDATE "29-Aug-2025 18:02:31 +0000" FLAGS () )'
+<= 'A12 OK Success'
+=> 'IDLE IDLE'
+⏭️  Skipping already processed email: Test Contract - 890 Clark - 2025-08-29T18:02:27.645Z
+<= '+ idling'
+🔄 Checking for new emails... [2:12:54 PM]
+=> DONE
+<= 'IDLE OK IDLE terminated (Success)'
+=> 'A13 UID SEARCH UNSEEN'
+<= '* SEARCH 13687'
+<= 'A13 OK SEARCH completed (Success)'
+📨 Found 1 unread email(s)
+=> 'A14 UID FETCH 13687 (X-GM-THRID X-GM-MSGID X-GM-LABELS MODSEQ UID FLAGS INTERNALDATE BODY.PEEK[])'
+<= '* 2 FETCH (X-GM-THRID 1841813836250891774 X-GM-MSGID 1841813836250891774 X-GM-LABELS () UID 13687 MODSEQ (1749912) INTERNALDATE "29-Aug-2025 18:02:31 +0000" FLAGS () BODY[] {226358}'
+<= '* 2 FETCH (X-GM-THRID 1841813836250891774 X-GM-MSGID 1841813836250891774 X-GM-LABELS () UID 13687 MODSEQ (1749912) INTERNALDATE "29-Aug-2025 18:02:31 +0000" FLAGS () )'
+<= 'A14 OK Success'
+=> 'IDLE IDLE'
+⏭️  Skipping already processed email: Test Contract - 890 Clark - 2025-08-29T18:02:27.645Z
+<= '+ idling'
+🔄 Checking for new emails... [2:13:24 PM]
+=> DONE
+<= 'IDLE OK IDLE terminated (Success)'
+=> 'A15 UID SEARCH UNSEEN'
+<= '* SEARCH 13687'
+<= 'A15 OK SEARCH completed (Success)'
+📨 Found 1 unread email(s)
+=> 'A16 UID FETCH 13687 (X-GM-THRID X-GM-MSGID X-GM-LABELS MODSEQ UID FLAGS INTERNALDATE BODY.PEEK[])'
+<= '* 2 FETCH (X-GM-THRID 1841813836250891774 X-GM-MSGID 1841813836250891774 X-GM-LABELS () UID 13687 MODSEQ (1749912) INTERNALDATE "29-Aug-2025 18:02:31 +0000" FLAGS () BODY[] {226358}'
+<= '* 2 FETCH (X-GM-THRID 1841813836250891774 X-GM-MSGID 1841813836250891774 X-GM-LABELS () UID 13687 MODSEQ (1749912) INTERNALDATE "29-Aug-2025 18:02:31 +0000" FLAGS () )'
+<= 'A16 OK Success'
+=> 'IDLE IDLE'
+⏭️  Skipping already processed email: Test Contract - 890 Clark - 2025-08-29T18:02:27.645Z
+<= '+ idling'

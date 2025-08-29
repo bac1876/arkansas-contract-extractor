@@ -15,7 +15,7 @@ import { ExtractionStatusTracker } from './extraction-status-tracker';
 import GoogleSheetsIntegration from './google-sheets-integration';
 import GoogleDriveIntegration from './google-drive-integration';
 import SellerNetSheetCalculator from './seller-net-sheet-calculator';
-// import PDFGenerator from './pdf-generator'; // Disabled for Railway
+import PDFGenerator from './pdf-generator';
 import AgentInfoSheetGenerator from './agent-info-sheet-generator';
 import CSVExporter from './csv-exporter';
 import { ListingInfoService } from './listing-info-service';
@@ -49,7 +49,7 @@ export class EmailMonitor {
   private sheets?: GoogleSheetsIntegration;
   private drive?: GoogleDriveIntegration;
   private calculator: SellerNetSheetCalculator;
-  // private pdfGenerator: PDFGenerator; // Disabled for Railway
+  private pdfGenerator: PDFGenerator;
   private agentInfoGenerator: AgentInfoSheetGenerator;
   private csvExporter: CSVExporter;
   private listingInfo: ListingInfoService;
@@ -68,7 +68,7 @@ export class EmailMonitor {
     this.fallbackExtractor = new FallbackExtractor();
     this.statusTracker = new ExtractionStatusTracker();
     this.calculator = new SellerNetSheetCalculator();
-    // this.pdfGenerator = new PDFGenerator(); // Disabled for Railway
+    this.pdfGenerator = new PDFGenerator();
     this.agentInfoGenerator = new AgentInfoSheetGenerator();
     this.csvExporter = new CSVExporter();
     this.listingInfo = new ListingInfoService();
@@ -513,18 +513,17 @@ export class EmailMonitor {
                       let pdfPath: string | undefined;
                       let csvPath: string | undefined;
                       
-                      // PDF generation disabled for Railway deployment
-                      // try {
-                      //   pdfPath = await this.pdfGenerator.generateNetSheetPDF(
-                      //     netSheetData,
-                      //     propertyAddress,
-                      //     extractionResult.data
-                      //   );
-                      //   console.log(`📑 Generated PDF net sheet: ${path.basename(pdfPath)}`);
-                      // } catch (pdfError) {
-                      //   console.error('⚠️  Could not generate PDF:', pdfError);
-                      // }
-                      console.log('📑 PDF generation disabled for Railway deployment');
+                      // Generate PDF net sheet
+                      try {
+                        pdfPath = await this.pdfGenerator.generateNetSheetPDF(
+                          netSheetData,
+                          propertyAddress,
+                          extractionResult.data
+                        );
+                        console.log(`📑 Generated PDF net sheet: ${path.basename(pdfPath)}`);
+                      } catch (pdfError) {
+                        console.error('⚠️  Could not generate PDF:', pdfError);
+                      }
 
                       // Generate CSV net sheet with proper naming
                       try {
@@ -668,13 +667,12 @@ export class EmailMonitor {
                         };
                         
                         const netSheetData = this.calculator.calculate(basicNetSheet);
-                        // PDF generation disabled for Railway deployment
-                        // const pdfPath = await this.pdfGenerator.generateNetSheetPDF(
-                        //   netSheetData,
-                        //   partialData.property_address,
-                        //   partialData
-                        // );
-                        const pdfPath = null;
+                        // Generate PDF net sheet
+                        const pdfPath = await this.pdfGenerator.generateNetSheetPDF(
+                          netSheetData,
+                          partialData.property_address,
+                          partialData
+                        );
                         
                         console.log(`📄 Generated basic net sheet despite extraction failure`);
                         
