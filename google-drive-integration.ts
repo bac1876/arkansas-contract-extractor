@@ -7,6 +7,7 @@ import { google } from 'googleapis';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import * as dotenv from 'dotenv';
+import { getGoogleCredentials } from './google-auth-helper';
 
 dotenv.config();
 
@@ -24,9 +25,14 @@ export class GoogleDriveIntegration {
    */
   async initialize() {
     try {
-      // Use service account authentication
+      // Use service account authentication with helper
+      const credentialsPath = getGoogleCredentials();
+      if (!credentialsPath) {
+        throw new Error('No Google credentials available');
+      }
+      
       const auth = new google.auth.GoogleAuth({
-        keyFile: process.env.GOOGLE_SERVICE_ACCOUNT_KEY || 'service-account-key.json',
+        keyFile: credentialsPath,
         scopes: [
           'https://www.googleapis.com/auth/drive',
           'https://www.googleapis.com/auth/spreadsheets'
