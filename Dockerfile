@@ -34,5 +34,8 @@ RUN mkdir -p processed_contracts/pdfs \
     agent_info_sheets \
     gpt5_temp
 
+# Expose port for health checks
+EXPOSE 3000
+
 # Run the email monitor
 CMD ["node", "-r", "ts-node/register", "email-monitor.ts"]

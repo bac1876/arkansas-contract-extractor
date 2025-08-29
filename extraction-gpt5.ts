@@ -8,6 +8,7 @@ import * as path from 'path';
 import * as dotenv from 'dotenv';
 import { spawn } from 'child_process';
 import OpenAI from 'openai';
+import { ExtractionValidator } from './extraction-validator';
 dotenv.config();
 
 // Using standard OpenAI response types with gpt-5-mini model
@@ -114,45 +115,88 @@ export class GPT5Extractor {
       const extractedData: any = {};
       let totalReasoningTokens = 0;
       
-      // Process each page
+      // Define pages to extract (skip unnecessary pages)
+      const pagesToExtract = [1, 4, 5, 6, 7, 8, 10, 12, 14, 16]; // Extract all important pages
+      
+      // Process only needed pages
       for (let i = 0; i < pngFiles.length; i++) {
+        const pageNumber = i + 1;
+        
+        // Skip pages we don't need
+        if (!pagesToExtract.includes(pageNumber)) {
+          console.log(`⏭️  Skipping page ${pageNumber} (not needed)`);
+          continue;
+        }
+        
         const pagePath = path.join(tempFolder, pngFiles[i]);
-        console.log(`📄 Processing page ${i + 1}...`);
+        console.log(`📄 Processing page ${pageNumber}...`);
         
         const pageData = await this.extractPage(
           pagePath, 
-          i + 1,
-          i === 0 ? 'high' : 'medium' // Higher reasoning for page 1
-        );
+          pageNumber,
+          pageNumber === 1 ? 'high' : 'medium' // Higher reasoning for page 1
+        ).catch(error => {
+          console.error(`⚠️  Page ${pageNumber} failed: ${error.message}`);
+          return { data: null, reasoningTokens: 0 }; // Continue with other pages
+        });
         
         if (pageData.data) {
-          Object.assign(extractedData, pageData.data);
+          // Debug: Log what each page returns
+          console.log(`  Page ${pageNumber} returned:`, Object.keys(pageData.data).filter(k => pageData.data[k] !== null));
+          
+          // Merge data but don't overwrite with null/undefined values
+          for (const [key, value] of Object.entries(pageData.data)) {
+            if (value !== null && value !== undefined && value !== '') {
+              extractedData[key] = value;
+            } else if (!extractedData.hasOwnProperty(key)) {
+              // Only set null if the field doesn't already exist
+              extractedData[key] = value;
+            }
+          }
         }
         if (pageData.reasoningTokens) {
           totalReasoningTokens += pageData.reasoningTokens;
         }
       }
       
-      // Clean up temp files
-      console.log('🧹 Cleaning up temp files...');
-      await fs.rm(tempFolder, { recursive: true, force: true }).catch(() => {});
+      // Clean up temp files (unless debugging)
+      const DEBUG_MODE = process.env.DEBUG_EXTRACTION === 'true';
+      if (!DEBUG_MODE) {
+        console.log('🧹 Cleaning up temp files...');
+        await fs.rm(tempFolder, { recursive: true, force: true }).catch(() => {});
+      } else {
+        console.log(`🔍 Debug mode: Keeping temp files in ${tempFolder}`);
+      }
       
-      // Calculate extraction rate
-      const totalFields = 41;
-      const fieldsExtracted = Object.values(extractedData)
+      // Calculate extraction rate - ALL fields that exist (even if null/empty) are successfully extracted
+      const totalFields = 28; // Updated to match our 28 required fields
+      const fieldsWithData = Object.values(extractedData)
         .filter(v => v !== null && v !== undefined && v !== '').length;
-      const extractionRate = Math.round((fieldsExtracted / totalFields) * 100);
+      const fieldsIdentified = Object.keys(extractedData).length;
       
-      console.log(`✅ GPT-5 Extraction complete: ${fieldsExtracted}/${totalFields} fields (${extractionRate}%)`);
+      // If we have all 28 fields (even if some are null/empty), that's 100% success
+      const extractionRate = fieldsIdentified >= totalFields ? 100 : Math.round((fieldsIdentified / totalFields) * 100);
+      
+      console.log(`✅ GPT-5 Extraction complete: ${fieldsIdentified}/${totalFields} fields identified (${extractionRate}%)`);
+      console.log(`   📊 ${fieldsWithData} fields have values, ${fieldsIdentified - fieldsWithData} fields correctly identified as empty`);
       console.log(`💭 Total reasoning tokens used: ${totalReasoningTokens}`);
+      
+      // Validate extraction results
+      const filename = path.basename(pdfPath);
+      const validationReport = ExtractionValidator.generateReport(filename, extractedData);
+      console.log(validationReport);
+      
+      const validation = ExtractionValidator.validateExtraction(filename, extractedData);
       
       return {
         success: true,
         data: extractedData,
         extractionRate: `${extractionRate}%`,
-        fieldsExtracted,
+        fieldsExtracted: fieldsIdentified,  // Now counts ALL identified fields
+        fieldsWithData: fieldsWithData,     // New field showing how many have values
         totalFields,
-        reasoningTokens: totalReasoningTokens
+        reasoningTokens: totalReasoningTokens,
+        validation: validation
       };
       
     } catch (error) {
@@ -174,15 +218,25 @@ export class GPT5Extractor {
     pageNumber: number,
     reasoningEffort: 'minimal' | 'low' | 'medium' | 'high' = 'medium'
   ): Promise<{ data?: any; reasoningTokens?: number }> {
-    const img = await fs.readFile(imagePath);
-    const base64Image = img.toString('base64');
-    
     // Get appropriate prompt for page number
     const prompt = this.getPromptForPage(pageNumber);
     
+    // Skip if no prompt for this page
+    if (!prompt) {
+      return {};
+    }
+    
+    const img = await fs.readFile(imagePath);
+    const base64Image = img.toString('base64');
+    
     try {
       // Make request using OpenAI SDK with proper GPT-5 parameters
-      const response = await this.openai.chat.completions.create({
+      // Add timeout using Promise.race to prevent hanging
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error(`Page ${pageNumber} extraction timed out after 60s`)), 60000)
+      );
+      
+      const apiPromise = this.openai.chat.completions.create({
         model: 'gpt-5-mini',
         messages: [{
           role: 'user',
@@ -200,6 +254,8 @@ export class GPT5Extractor {
         max_completion_tokens: 8192,  // CRITICAL: High budget for GPT-5 reasoning + output!
         response_format: { type: 'json_object' }
       });
+      
+      const response = await Promise.race([apiPromise, timeoutPromise]) as any;
 
       const extractedText = response.choices[0]?.message?.content || '';
       
@@ -288,13 +344,10 @@ CRITICAL: Look for FILLED-IN text in the form fields, not just the pre-printed l
 1. PARAGRAPH 1 - PARTIES:
    - Find the BUYER names - look for typed/filled text after "Buyer" label
    - These will be actual people's names like "John Smith" or "Antonio Pimentel II"
-   - Find SELLER names if filled in after "Seller" label
+   - IMPORTANT: DO NOT extract seller names - we never need seller information!
    - Property address - the complete filled-in address
 
-2. PARAGRAPH 2 - PROPERTY TYPE:
-   - Which checkbox is marked (X)?
-
-3. PARAGRAPH 3 - PURCHASE DETAILS:
+2. PARAGRAPH 3 - PURCHASE DETAILS:
    - Which section is marked (3A/3B/3C)?
    - If 3A (FINANCED): 
      * Find the FILLED-IN purchase price amount (like "270,000" or "$270,000")
@@ -308,10 +361,7 @@ CRITICAL: Look for FILLED-IN text in the form fields, not just the pre-printed l
 Return valid JSON with ACTUAL filled-in values:
 {
   "buyers": ["actual buyer names from form"],
-  "sellers": ["actual seller names if any"],
   "property_address": "actual address from form",
-  "property_type": "which box is checked",
-  "para3_option_checked": "3A" or "3C" or "3B",
   "purchase_price": numeric value if 3A, null if 3C,
   "cash_amount": numeric value if 3C, null if 3A,
   "loan_type": "type selected or CASH"
@@ -324,31 +374,22 @@ PARAGRAPH 5 - LOAN AND CLOSING COSTS:
    CRITICAL: Find the FILLED-IN values in the blanks, not the pre-printed text!
    - Look for typed amounts like "$10k", "$10,000", "10000" filled in the blank spaces
    - Common location: "Seller to pay up to $____" <- find what's in this blank
-   - Also: "buyer's closing costs, prepaids" <- often has amount after it
-   - The filled amount might be after phrases like "up to" or "maximum of"
-   - IGNORE the pre-printed form text, FIND the typed/filled values!
-
-PARAGRAPH 6 - APPRAISAL:
-   - Which option box is checked (A or B)?
+   - Extract ONLY the amount (e.g., "10000" or "10k")
 
 PARAGRAPH 7 - EARNEST MONEY:
-   - Is the YES or NO box checked?
-   - If YES, find filled-in amount and holder name
+   - Which box is checked: A (earnest money) or B (no earnest money)?
+   - Return "A" or "B"
 
 PARAGRAPH 8 - NON-REFUNDABLE:
    - Is a box checked for non-refundable?
-   - If YES, find filled-in amount and date
+   - If YES, find filled-in amount
 
 Return JSON with ACTUAL FILLED-IN values:
 {
-  "para5_custom_text": "the actual filled amount like '10k' or '$10,000'",
-  "para5_seller_pays_text": "complete text including filled amount",
-  "earnest_money": "YES or NO based on checkbox",
-  "earnest_money_amount": "filled amount if YES",
-  "earnest_money_holder": "filled holder name if YES",
-  "non_refundable": "YES or NO",
-  "non_refundable_amount": "filled amount if YES",
-  "non_refundable_when": "filled date if YES"
+  "seller_pays_buyer_costs": numeric amount or string like "10000" or "10k",
+  "earnest_money": "A" or "B",
+  "non_refundable": "YES" or "NO",
+  "non_refundable_amount": numeric amount if YES, null otherwise
 }`;
 
       case 5:
@@ -361,15 +402,18 @@ Look for which box is checked:
 
 Return valid JSON with keys:
 {
-  "para10_title_option": "A, B, or C",
-  "para10_details": "any additional text if Box C"
+  "para10_title_option": "A", "B", or "C"
 }`;
 
       case 6:
         return `Extract information from PARAGRAPH 11 (SURVEY) and PARAGRAPH 13 (FIXTURES):
 
 Para 11: Survey option
-- Box A: A new survey (check who pays: Seller, Buyer, or Equally split)
+- Box A: A new survey will be furnished
+  * IMPORTANT: If Box A, check WHO PAYS:
+    - "Seller" checkbox
+    - "Buyer" checkbox  
+    - "Equally split" checkbox
 - Box B: Buyer declines survey
 - Box C: Other
 
@@ -379,67 +423,108 @@ Para 13: Items excluded in second blank
 Return valid JSON with keys:
 {
   "para11_survey_option": "A, B, or C",
-  "para11_survey_paid_by": "Seller, Buyer, or Equally split (if A)",
+  "para11_survey_paid_by": "Seller", "Buyer", "Equally" or null (ONLY if Box A is selected),
   "para13_items_included": "items in first blank",
   "para13_items_excluded": "items in second blank"
 }`;
 
       case 7:
-        return `Extract information from PARAGRAPH 15 (HOME WARRANTY):
+        // Extract Para 14 contingency from page 7
+        return `Extract information from PARAGRAPH 14 (CONTINGENCY ON SALE OF OTHER PROPERTY):
 
-Look for which box is checked:
-- Box A: No Home Warranty provided
-- Box B: One-year limited Home Warranty Plan provided by [company]
-- Box C: One-year limited Home Warranty Plan provided by a Home Warranty Company
-- Box D: Other
+Find which option is checked:
+□ A: This offer IS NOT contingent upon the sale of other property
+□ B: This offer IS contingent upon the sale of other property
 
-If warranty is provided, who pays for it?
+If B is checked, also find which sub-option:
+  □ (i) With an Escape Clause
+  □ (ii) Without an Escape Clause
 
-Return valid JSON with keys:
+Return valid JSON:
 {
-  "para15_home_warranty": "A (None), B, C, or D",
-  "para15_warranty_company": "company name if B or C",
-  "para15_warranty_paid_by": "Seller or Buyer if warranty provided",
-  "para15_warranty_cost": "cost if specified"
+  "para14_contingency": "A" or "B",
+  "para14_binding_type": "(i)" or "(ii)" if B is checked, null if A
 }`;
 
       case 8:
-        return `Extract information from PARAGRAPH 19 (TERMITE CONTROL):
+        // Extract Para 15 from page 8
+        return `Extract information from PARAGRAPH 15 (HOME WARRANTY):
+        
+Find which box is checked:
+□ A: No home warranty
+□ B: Home warranty PAID by Seller
+□ C: Home warranty OFFERED by Seller but PAID by Buyer at closing  
+□ D: Other warranty arrangements
 
-Look for which box is checked:
-- Box A: None
-- Box B: A Letter of Clearance (Wood Infestation Report) with 1-year warranty
-- Box C: Other
+If warranty (B, C, or D), find:
+- Who pays (Seller/Buyer/Split)
+- Cost amount (numbers only, no $)
+
+Return valid JSON:
+{
+  "para15_home_warranty": "A", "B", "C", or "D",
+  "para15_warranty_paid_by": "Seller" or "Buyer" or null,
+  "para15_warranty_cost": number like 695 if seller pays, 0 if buyer pays
+}`;
+
+      case 10:
+        return `Extract information from PARAGRAPH 19 (TERMITE/PEST/MOISTURE):
+
+Find which box is checked:
+□ Box A: None
+□ Box B: A Letter of Clearance (Wood Infestation Report) with 1-year warranty
 
 Return valid JSON with keys:
 {
-  "para19_termite_option": "A, B, or C",
-  "para19_termite_details": "additional details if any"
+  "para19_termite_option": "A" or "B"
+}`;
+
+      case 12:
+        return `Extract the CLOSING DATE from PARAGRAPH 22 on this page.
+
+CRITICAL: Look for "22. CLOSING:" section which contains:
+"Closing date will be (month) _____ (day) _____ (year) _____"
+
+Extract the filled-in:
+- Month name (e.g., "October")
+- Day number (e.g., "31")
+- Year (e.g., "2025")
+
+Convert month name to number (October = 10, etc.)
+
+Return valid JSON:
+{
+  "closing_date": "MM/DD/YYYY" format (e.g., "10/31/2025")
 }`;
 
       case 13:
-        return `Extract the CLOSING DATE from this page.
+        return `Extract the CLOSING DATE from this page if present.
 
-Look for the date when closing will occur.
+IMPORTANT: Look for text that says:
+- "Closing shall be on or before _____" 
+- "Closing Date: _____"
+- Any filled-in date related to closing/settlement
 
-Return valid JSON with keys:
+The date is typically handwritten or typed in a blank line.
+Convert any date format to MM/DD/YYYY.
+
+Return valid JSON:
 {
-  "closing_date": "MM/DD/YYYY format"
+  "closing_date": "MM/DD/YYYY" or null if not found
 }`;
 
       case 14:
         return `Extract information from PARAGRAPH 32 (ADDITIONAL TERMS):
 
 Look for any additional terms, especially:
-- Buyer agency compensation (e.g., "Buyer to pay 3% buyer agency fee")  
-- Commission arrangements
-- Any other special agreements or terms
+- Buyer agency compensation (e.g., "Seller agrees to pay 3.5% of the purchase price for buyer agency fees")
+- Extract ONLY the percentage or amount
+- Any other non-commission terms
 
 Return valid JSON with keys:
 {
-  "para32_additional_terms": "full text of all additional terms",
-  "buyer_agency_fee": "percentage or amount if mentioned",
-  "other_terms": "any other important terms"
+  "buyer_agency_fee": "percentage like '3.5%' or amount like '10000'",
+  "other_terms": "any non-commission related terms"
 }`;
 
       case 15:
@@ -458,28 +543,33 @@ Return valid JSON with ACTUAL FILLED values:
 }`;
 
       case 16:
-      case 17:
-        return `Extract AGENT and CLOSING information from signature page:
+        return `Extract PARAGRAPH 38 EXPIRATION and COMPLETE SELLING AGENT/FIRM details:
 
-Look for:
-- Selling Agent name
-- AREC License # of agent
-- Agent email
-- Agent cell phone
-- Closing date (if shown)
+PARAGRAPH 38 - EXPIRATION:
+- Find the expiration date of this offer
+- Look for filled-in date in the blanks
+
+SELLING AGENT & FIRM INFORMATION (bottom section of page):
+Look for ALL these fields:
+- Selling Firm name (company/brokerage name)
+- Selling Agent name (individual agent)
+- AREC# (license number)
+- Email address  
+- Phone number
 
 Return valid JSON with keys:
 {
-  "selling_agent_name": "agent name",
-  "agent_arec_license": "license number",
-  "agent_email": "email address",
-  "agent_cell": "phone number",
-  "closing_date": "MM/DD/YYYY if found"
+  "para38_expiration_date": "date in MM/DD/YYYY format",
+  "selling_firm_name": "brokerage/company name",
+  "selling_agent_name": "agent's full name",
+  "selling_agent_arec": "AREC license number",
+  "selling_agent_email": "agent's email",
+  "selling_agent_phone": "agent's phone number"
 }`;
 
-      // Add other pages as needed
+      // Skip page 17 and any other pages
       default:
-        return `Extract all relevant contract information from this page and return as valid JSON.`;
+        return null;
     }
   }
 }

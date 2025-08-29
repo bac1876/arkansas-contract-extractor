@@ -17,12 +17,15 @@ This file provides guidance to Claude Code (claude.ai/code) when working with th
 2. **EARNEST MONEY AMOUNT/HOLDER** - If not in contract, leave null. Don't search for it.
 3. **AGENCY DATA** - Skip pages 2-3 entirely. No agency information needed.
 
-### IMPORTANT PAGE MAPPING (FIXED):
-- **PARAGRAPH 13 IS ON PAGE 6** (NOT page 7!) - This was a major fix
-- Para 13 has TWO blanks: 
-  - `para13_items_included` (what conveys with property)
-  - `para13_items_excluded` (what doesn't convey)
-- Para 14 (Contingencies) is on page 7
+### IMPORTANT PAGE MAPPING:
+- **See CONTRACT_PAGE_MAPPING.md for complete paragraph locations**
+- Key pages:
+  - Page 6: Para 11 (Survey), Para 13 (Items included/excluded)  
+  - Page 8: Para 15 (HOME WARRANTY)
+  - Page 10: Para 19 (TERMITE CONTROL)
+  - Page 12: Para 22 (CLOSING DATE)
+  - Page 14: Para 32 (OTHER - buyer agency fees)
+  - Page 16: Para 38 (Expiration), Selling agent info
 
 ### Current Performance:
 - ✅ 90% technical extraction (37/41 fields) = 100% of what user needs
@@ -64,3 +67,4 @@ node -r ts-node/register convert-contract2-to-images.ts
 
 ## Rules for this project
 - for this project no coding without discussion
+- STOP just doing placeholder things - it NEVER works out and then we are more messed up

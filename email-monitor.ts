@@ -848,9 +848,19 @@ if (require.main === module) {
     process.exit(1);
   }
 
-  // Start a simple health check server for Railway
+  // Start health check server FIRST for Railway (before any async operations)
   const app = express();
   const PORT = process.env.PORT || 3000;
+  
+  // Multiple health check endpoints for Railway compatibility
+  app.get('/health', (req, res) => {
+    res.status(200).json({ 
+      status: 'healthy',
+      service: 'email-monitor',
+      uptime: process.uptime(),
+      timestamp: new Date().toISOString()
+    });
+  });
   
   app.get('/api/health', (req, res) => {
     res.status(200).json({ 
@@ -861,13 +871,19 @@ if (require.main === module) {
   });
   
   app.get('/', (req, res) => {
-    res.status(200).send('Email Monitor is running');
+    res.status(200).send('Arkansas Contract Email Monitor v3.5 - Running');
   });
   
-  app.listen(PORT, '0.0.0.0', () => {
+  // Start server immediately and synchronously
+  const server = app.listen(PORT, '0.0.0.0', () => {
     console.log(`🏥 Health check server running on port ${PORT}`);
+    console.log(`📍 Health endpoints: /health, /api/health, /`);
   });
+  
+  // Log that health server is ready
+  console.log('✅ Health check server started successfully');
 
+  // Now connect to email (async operation)
   monitor.connect({
     user: email,
     password: password,

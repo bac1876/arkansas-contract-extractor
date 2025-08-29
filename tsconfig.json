@@ -1,11 +1,11 @@
 {
   "compilerOptions": {
-    "target": "ES2022",
+    "target": "ES2020",
     "module": "commonjs",
-    "lib": ["ES2022"],
+    "lib": ["ES2020"],
     "outDir": "./dist",
-    "rootDir": ".",
-    "strict": false,
+    "rootDir": "./",
+    "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
@@ -13,10 +13,13 @@
     "declaration": true,
     "declarationMap": true,
     "sourceMap": true,
-    "moduleResolution": "node",
-    "typeRoots": ["./node_modules/@types", "./src/types"],
-    "noImplicitAny": false
+    "noImplicitAny": false,
+    "strictNullChecks": false
   },
-  "include": ["src/**/*", "*.ts"],
-  "exclude": ["node_modules", "dist"]
+  "include": ["**/*.ts"],
+  "exclude": ["node_modules", "dist"],
+  "ts-node": {
+    "esm": false,
+    "transpileOnly": true
+  }
 }

@@ -68,6 +68,49 @@ export class GoogleDriveIntegration {
   }
   
   /**
+   * Ensure Net Sheets folder exists in shared drive
+   */
+  private async ensureNetSheetsFolderInSharedDrive(): Promise<string> {
+    try {
+      const folderName = 'Net Sheets';
+      
+      // Search for existing folder in shared drive
+      const query = `name='${folderName}' and mimeType='application/vnd.google-apps.folder' and trashed=false and '${this.sharedDriveId}' in parents`;
+      
+      const search = await this.drive.files.list({
+        q: query,
+        fields: 'files(id, name)',
+        supportsAllDrives: true,
+        includeItemsFromAllDrives: true,
+        driveId: this.sharedDriveId,
+        corpora: 'drive'
+      });
+      
+      if (search.data.files?.length > 0) {
+        return search.data.files[0].id!;
+      }
+      
+      // Create the folder in shared drive
+      const folder = await this.drive.files.create({
+        requestBody: {
+          name: folderName,
+          mimeType: 'application/vnd.google-apps.folder',
+          parents: [this.sharedDriveId]
+        },
+        fields: 'id',
+        supportsAllDrives: true
+      });
+      
+      console.log(`📁 Created Net Sheets folder in shared drive`);
+      return folder.data.id!;
+      
+    } catch (error) {
+      console.error('Failed to ensure Net Sheets folder:', error);
+      throw error;
+    }
+  }
+  
+  /**
    * Setup folder structure in Google Drive
    */
   private async setupFolderStructure() {
@@ -531,8 +574,18 @@ export class GoogleDriveIntegration {
   async uploadFile(filePath: string, fileName: string, mimeType: string, folderId?: string): Promise<{ fileId: string; webViewLink: string }> {
     try {
       const fs = require('fs');
-      const targetFolderId = folderId || this.sharedFolderId || this.netSheetsFolderId;
-      const useSharedDrive = targetFolderId === this.sharedDriveId;
+      
+      // For shared drive, we need to ensure we have a proper folder
+      let targetFolderId = folderId;
+      
+      if (!targetFolderId && this.sharedDriveId) {
+        // Create or find Net Sheets folder in shared drive
+        targetFolderId = await this.ensureNetSheetsFolderInSharedDrive();
+      } else if (!targetFolderId) {
+        targetFolderId = this.sharedFolderId || this.netSheetsFolderId;
+      }
+      
+      const useSharedDrive = !!this.sharedDriveId;
       
       console.log(`📤 Uploading ${fileName} to Google Drive...`);
       

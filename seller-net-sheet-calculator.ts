@@ -6,12 +6,16 @@
 export interface SellerNetSheetInput {
   // From contract extraction
   purchase_price: number;
-  seller_concessions?: string; // From para5_custom_text
+  cash_amount?: number; // For cash transactions (3C)
+  seller_concessions?: string | number; // From para5_custom_text or seller_pays_buyer_costs
   closing_date?: string;
   home_warranty?: string; // YES/NO
   warranty_amount?: number;
   title_option?: string; // A or B
   para32_other_terms?: string; // Contains buyer agency fee info
+  buyer_agency_fee?: string; // Extracted buyer agency fee (e.g., "3.0%" or "10000")
+  para11_survey_option?: string; // A, B, or C
+  para11_survey_paid_by?: string; // Seller, Buyer, or Equally
   
   // Additional inputs (may need to be provided)
   annual_taxes?: number; // Annual property tax amount
@@ -31,6 +35,8 @@ export interface SellerNetSheetOutput {
   pest_transfer: number;
   tax_stamps: number;
   home_warranty: number;
+  survey_cost: number;
+  survey_note?: string; // Note about estimate
   total_costs: number;
   cash_to_seller: number;
   
@@ -98,8 +104,13 @@ export class SellerNetSheetCalculator {
     return option === 'A' ? rate.lenderPolicy : rate.ownerPolicy;
   }
   
-  private extractSellerConcessions(para5Text?: string): number {
+  private extractSellerConcessions(para5Text?: string | number): number {
     if (!para5Text) return 0;
+    
+    // If it's already a number, return it directly
+    if (typeof para5Text === 'number') {
+      return para5Text;
+    }
     
     // If it's just a number string like "5000", parse it directly
     if (/^\d+(\.\d+)?$/.test(para5Text.trim())) {
@@ -128,24 +139,31 @@ export class SellerNetSheetCalculator {
   }
   
   private extractBuyerAgencyFees(para32Text?: string, purchasePrice?: number): number {
-    if (!para32Text || !purchasePrice) return 0;
+    if (!para32Text || !purchasePrice) {
+      return 0;
+    }
     
     // Check if it mentions buyer agency fees
     const lowerText = para32Text.toLowerCase();
-    if (lowerText.includes('buyer agency') || lowerText.includes('buyer\'s agency') || 
-        lowerText.includes('buyer agent') || lowerText.includes('buyer\'s agent')) {
+    const hasBuyerAgency = lowerText.includes('buyer agency') || lowerText.includes('buyer\'s agency') || 
+        lowerText.includes('buyer agent') || lowerText.includes('buyer\'s agent');
+    
+    if (hasBuyerAgency) {
+      // Look for percentage - handle both "3%" and "3 %"
+      const percentMatch = para32Text.match(/(\d+(?:\.\d+)?)\s*%/i);
       
-      // Look for percentage
-      const percentMatch = para32Text.match(/(\d+(?:\.\d+)?)\s*(?:%|percent)/i);
       if (percentMatch) {
         const percent = parseFloat(percentMatch[1]) / 100;
-        return Math.round(purchasePrice * percent);
+        const amount = Math.round(purchasePrice * percent);
+        return amount;
       }
       
       // Look for dollar amount
       const dollarMatch = para32Text.match(/\$([0-9,]+(?:\.\d{2})?)/);
+      
       if (dollarMatch) {
-        return parseFloat(dollarMatch[1].replace(/,/g, ''));
+        const amount = parseFloat(dollarMatch[1].replace(/,/g, ''));
+        return amount;
       }
     }
     
@@ -179,7 +197,8 @@ export class SellerNetSheetCalculator {
   
   calculate(input: SellerNetSheetInput): SellerNetSheetOutput {
     // Extract values from contract data
-    const salesPrice = input.purchase_price || 0;
+    // Use purchase_price for financed deals (3A) or cash_amount for cash deals (3C)
+    const salesPrice = input.purchase_price || input.cash_amount || 0;
     const sellerConcessions = this.extractSellerConcessions(input.seller_concessions);
     
     // Calculate prorated taxes
@@ -192,8 +211,31 @@ export class SellerNetSheetCalculator {
     const commissionPercent = input.seller_commission_percent || this.DEFAULT_SELLER_COMMISSION;
     const commissionSeller = Math.round(salesPrice * commissionPercent);
     
-    // Extract buyer agency fees from para32
-    const buyerAgencyFees = this.extractBuyerAgencyFees(input.para32_other_terms, salesPrice);
+    // Calculate buyer agency fees
+    let buyerAgencyFees = 0;
+    
+    // First, check if buyer_agency_fee was directly extracted
+    if (input.buyer_agency_fee) {
+      const feeString = input.buyer_agency_fee.toString();
+      
+      // Check if it's a percentage
+      if (feeString.includes('%')) {
+        const percent = parseFloat(feeString.replace('%', '')) / 100;
+        buyerAgencyFees = Math.round(salesPrice * percent);
+      } 
+      // Check if it's a dollar amount
+      else {
+        const amount = parseFloat(feeString.replace(/[$,]/g, ''));
+        if (!isNaN(amount)) {
+          buyerAgencyFees = Math.round(amount);
+        }
+      }
+    }
+    
+    // If no direct buyer_agency_fee, try to extract from para32_other_terms
+    if (buyerAgencyFees === 0) {
+      buyerAgencyFees = this.extractBuyerAgencyFees(input.para32_other_terms, salesPrice);
+    }
     
     // Standard fees
     const closingFee = this.CLOSING_FEE;
@@ -207,8 +249,28 @@ export class SellerNetSheetCalculator {
     
     // Home warranty
     let homeWarranty = 0;
-    if (input.home_warranty === 'YES') {
+    // Check if home warranty is provided (options B or C) and seller pays
+    if ((input.para15_home_warranty === 'B' || input.para15_home_warranty === 'C') && 
+        input.para15_warranty_paid_by === 'Seller') {
+      homeWarranty = input.para15_warranty_cost || input.warranty_amount || this.DEFAULT_WARRANTY;
+    }
+    // Legacy support for old format
+    else if (input.home_warranty === 'YES') {
       homeWarranty = input.warranty_amount || this.DEFAULT_WARRANTY;
+    }
+    
+    // Survey cost calculation
+    let surveyCost = 0;
+    let surveyNote: string | undefined;
+    if (input.para11_survey_option === 'A' && input.para11_survey_paid_by) {
+      if (input.para11_survey_paid_by === 'Seller') {
+        surveyCost = 1000; // Estimate
+        surveyNote = '* Survey cost is an estimate';
+      } else if (input.para11_survey_paid_by === 'Equally') {
+        surveyCost = 500; // Half of estimate
+        surveyNote = '* Survey cost is an estimate (50% split)';
+      }
+      // If Buyer pays, surveyCost remains 0
     }
     
     // Calculate totals
@@ -223,7 +285,8 @@ export class SellerNetSheetCalculator {
       titleRecordingFees +
       pestTransfer +
       taxStamps +
-      homeWarranty;
+      homeWarranty +
+      surveyCost;
     
     const cashToSeller = salesPrice - totalCosts;
     
@@ -240,6 +303,8 @@ export class SellerNetSheetCalculator {
       pest_transfer: pestTransfer,
       tax_stamps: taxStamps,
       home_warranty: homeWarranty,
+      survey_cost: surveyCost,
+      survey_note: surveyNote,
       total_costs: Math.round(totalCosts * 100) / 100,
       cash_to_seller: Math.round(cashToSeller * 100) / 100,
       

@@ -81,7 +81,8 @@ export class PDFGenerator {
     });
     
     const buyerNames = contractData?.buyers || 'N/A';
-    const closingDate = contractData?.closing_date || 'TBD';
+    // Try to get closing date from either location
+    const closingDate = contractData?.closing_date || netSheetData.closing_date || 'TBD';
     const hasTaxWarning = netSheetData.taxWarning === true;
     
     return `
@@ -117,17 +118,17 @@ export class PDFGenerator {
     
     .header h1 {
       color: #2c3e50;
-      font-size: 32px;
-      margin-bottom: 10px;
-      font-weight: 300;
-      letter-spacing: 2px;
+      font-size: 24px;
+      margin-bottom: 5px;
+      font-weight: 500;
+      letter-spacing: 1px;
     }
     
     .header .subtitle {
       color: #7f8c8d;
-      font-size: 14px;
+      font-size: 12px;
       text-transform: uppercase;
-      letter-spacing: 1px;
+      letter-spacing: 0.5px;
     }
     
     .property-info {
@@ -254,28 +255,7 @@ export class PDFGenerator {
       color: #495057;
     }
     
-    .net-seller {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: white;
-      padding: 25px;
-      border-radius: 10px;
-      text-align: center;
-      margin-top: 30px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-    }
-    
-    .net-seller .label {
-      font-size: 18px;
-      margin-bottom: 10px;
-      opacity: 0.9;
-      letter-spacing: 1px;
-    }
-    
-    .net-seller .amount {
-      font-size: 42px;
-      font-weight: 300;
-      letter-spacing: 2px;
-    }
+    /* Removed net-seller styles - no longer needed */
     
     .disclaimer {
       margin-top: 40px;
@@ -358,7 +338,6 @@ export class PDFGenerator {
     <!-- Property Information -->
     <div class="property-info">
       <h2>${propertyAddress}</h2>
-      <div class="date">Prepared on ${today}</div>
     </div>
     
     <!-- Transaction Details -->
@@ -401,7 +380,7 @@ export class PDFGenerator {
           </tr>
           <tr>
             <td class="item-name">Commission - Seller</td>
-            <td class="item-calculation">3% of sales price</td>
+            <td class="item-calculation"></td>
             <td class="item-amount">${formatCurrency(netSheetData.commission_seller)}</td>
           </tr>
           <tr>
@@ -430,8 +409,8 @@ export class PDFGenerator {
             <td class="item-amount">${formatCurrency(netSheetData.title_recording_fees)}</td>
           </tr>
           <tr>
-            <td class="item-name">Pest Transfer</td>
-            <td class="item-calculation"></td>
+            <td class="item-name">Pest Transfer*</td>
+            <td class="item-calculation">*Estimate</td>
             <td class="item-amount">${formatCurrency(netSheetData.pest_transfer)}</td>
           </tr>
           <tr>
@@ -444,6 +423,12 @@ export class PDFGenerator {
             <td class="item-calculation"></td>
             <td class="item-amount">${formatCurrency(netSheetData.home_warranty)}</td>
           </tr>
+          ${netSheetData.survey_cost > 0 ? `
+          <tr>
+            <td class="item-name">Survey${netSheetData.survey_note ? ' *' : ''}</td>
+            <td class="item-calculation">${netSheetData.survey_note || ''}</td>
+            <td class="item-amount">${formatCurrency(netSheetData.survey_cost)}</td>
+          </tr>` : ''}
         </table>
         
         <div class="total-section">
@@ -455,22 +440,32 @@ export class PDFGenerator {
       </div>
     </div>
     
-    <!-- Net to Seller -->
-    <div class="net-seller">
-      <div class="label">ESTIMATED NET TO SELLER</div>
-      <div class="amount">${formatCurrency(netSheetData.cash_to_seller)}</div>
+    <!-- Net to Seller Summary -->
+    <div class="section">
+      <div class="section-title">NET PROCEEDS</div>
+      <div class="section-content">
+        <table class="cost-table">
+          <tr style="font-size: 16px; font-weight: bold;">
+            <td class="item-name">Sales Price</td>
+            <td></td>
+            <td class="item-amount">${formatCurrency(netSheetData.sales_price)}</td>
+          </tr>
+          <tr style="font-size: 16px; font-weight: bold;">
+            <td class="item-name">Less: Total Costs</td>
+            <td></td>
+            <td class="item-amount">(${formatCurrency(netSheetData.total_costs)})</td>
+          </tr>
+          <tr style="font-size: 18px; font-weight: bold; background: #f0f0f0;">
+            <td class="item-name">Estimated Net to Seller</td>
+            <td></td>
+            <td class="item-amount">${formatCurrency(netSheetData.cash_to_seller)}</td>
+          </tr>
+        </table>
+      </div>
     </div>
     
-    <!-- Disclaimer -->
-    <div class="disclaimer">
-      <h3>Important Notice</h3>
-      <p>
-        This is an estimate only and is provided for informational purposes. Actual costs may vary at closing. 
-        This estimate is based on current information and assumptions that may change. Please consult with your 
-        real estate professional and closing attorney for exact figures. Tax calculations are based on annual 
-        taxes of $3,650 (configurable). Commission rates are negotiable and may vary.
-      </p>
-    </div>
+    <!-- Notes Section -->
+    ${this.generateNotesSection(contractData)}
     
     <!-- Footer -->
     <div class="footer">
@@ -481,6 +476,47 @@ export class PDFGenerator {
   </div>
 </body>
 </html>`;
+  }
+
+  /**
+   * Generate the Notes section with contract-specific information
+   */
+  private generateNotesSection(contractData: any): string {
+    const notes: string[] = [];
+    
+    // Check for earnest money
+    if (contractData?.earnest_money && contractData.earnest_money > 0) {
+      notes.push(`<strong>Earnest Money:</strong> The buyer is offering earnest money`);
+    }
+    
+    // Check for non-refundable deposit
+    if (contractData?.non_refundable === 'YES' && contractData?.non_refundable_amount > 0) {
+      const amount = `$${(contractData.non_refundable_amount || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+      notes.push(`<strong>Non-Refundable Deposit:</strong> Buyer is offering non-refundable deposit in the amount of ${amount}`);
+    }
+    
+    // Check for contingency
+    if (contractData?.para14_contingency === 'B') {
+      notes.push(`<strong>Contingency:</strong> Buyer has a contingency to sell a home`);
+    }
+    
+    // Check for included fixtures
+    if (contractData?.para13_items_included && contractData.para13_items_included.trim() !== '') {
+      notes.push(`<strong>Fixtures:</strong> The buyer is requesting the following items stay with the house: ${contractData.para13_items_included}`);
+    }
+    
+    // Only return the section if there are notes
+    if (notes.length === 0) {
+      return '';
+    }
+    
+    return `
+    <div style="margin-top: 30px; padding: 20px; background: #f8f9fa; border-radius: 10px;">
+      <h3 style="color: #2c3e50; font-size: 18px; margin-bottom: 15px; font-weight: 600;">NOTES</h3>
+      <div style="color: #555; font-size: 14px; line-height: 1.8;">
+        ${notes.join('<br>')}
+      </div>
+    </div>`;
   }
 }
 

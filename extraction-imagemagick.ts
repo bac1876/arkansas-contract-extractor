@@ -204,67 +204,82 @@ export class ImageMagickExtractor {
       // Extract from each page using GPT-4 Vision API
       const extractedData: any = {};
       
-      // Page 1 - Parties, Property, Purchase
-      if (pngFiles.length >= 1) {
-        console.log('📄 Extracting Page 1 - Parties & Property...');
-        const page1Path = path.join(tempFolder, pngFiles[0]);
-        const page1Data = await this.extractPage1(page1Path);
-        Object.assign(extractedData, page1Data);
-      }
+      // Define pages to extract (skip unnecessary pages)
+      const pagesToExtract = [1, 4, 5, 6, 7, 8, 12, 14, 16];
       
-      // Page 3 - Agency (MISSING FROM ORIGINAL!)
-      if (pngFiles.length >= 3) {
-        console.log('📄 Extracting Page 3 - Agency...');
-        const page3Path = path.join(tempFolder, pngFiles[2]);
-        const page3Data = await this.extractPage3(page3Path);
-        Object.assign(extractedData, page3Data);
-      }
-      
-      // Page 4 - Financial Terms
-      if (pngFiles.length >= 4) {
-        console.log('📄 Extracting Page 4 - Financial Terms...');
-        const page4Path = path.join(tempFolder, pngFiles[3]);
-        const page4Data = await this.extractPage4(page4Path);
-        Object.assign(extractedData, page4Data);
-      }
-      
-      // Page 5 - Title
-      if (pngFiles.length >= 5) {
-        console.log('📄 Extracting Page 5 - Title...');
-        const page5Path = path.join(tempFolder, pngFiles[4]);
-        const page5Data = await this.extractPage5(page5Path);
-        Object.assign(extractedData, page5Data);
-      }
-      
-      // Page 6 - Survey AND Para 13
-      if (pngFiles.length >= 6) {
-        console.log('📄 Extracting Page 6 - Survey & Para 13...');
-        const page6Path = path.join(tempFolder, pngFiles[5]);
-        const page6Data = await this.extractPage6(page6Path);
-        Object.assign(extractedData, page6Data);
-      }
-      
-      // Page 7 - Contingencies
-      if (pngFiles.length >= 7) {
-        console.log('📄 Extracting Page 7 - Contingencies...');
-        const page7Path = path.join(tempFolder, pngFiles[6]);
-        const page7Data = await this.extractPage7(page7Path);
-        Object.assign(extractedData, page7Data);
-      }
-      
-      // Page 8 - Warranty & Inspection
-      if (pngFiles.length >= 8) {
-        console.log('📄 Extracting Page 8 - Warranty & Inspection...');
-        const page8Path = path.join(tempFolder, pngFiles[7]);
-        const page8Data = await this.extractPage8(page8Path);
-        Object.assign(extractedData, page8Data);
-      }
-      
-      // Pages 10-16 - Remaining terms (COMPREHENSIVE)
-      if (pngFiles.length >= 10) {
-        console.log('📄 Extracting Pages 10-16 - All Remaining Terms...');
-        const otherData = await this.extractPages10to16(tempFolder, pngFiles);
-        Object.assign(extractedData, otherData);
+      for (let i = 0; i < pngFiles.length; i++) {
+        const pageNumber = i + 1;
+        
+        // Skip pages we don't need
+        if (!pagesToExtract.includes(pageNumber)) {
+          console.log(`⏭️  Skipping page ${pageNumber} (not needed)`);
+          continue;
+        }
+        
+        const pagePath = path.join(tempFolder, pngFiles[i]);
+        
+        // Process needed pages
+        if (pageNumber === 1) {
+          console.log('📄 Extracting Page 1 - Parties & Property...');
+          const page1Data = await this.extractPage1(pagePath);
+          Object.assign(extractedData, page1Data);
+        }
+        
+        // Page 4 - Financial Terms
+        else if (pageNumber === 4) {
+          console.log('📄 Extracting Page 4 - Financial Terms...');
+          const page4Data = await this.extractPage4(pagePath);
+          Object.assign(extractedData, page4Data);
+        }
+        
+        // Page 5 - Title
+        else if (pageNumber === 5) {
+          console.log('📄 Extracting Page 5 - Title...');
+          const page5Data = await this.extractPage5(pagePath);
+          Object.assign(extractedData, page5Data);
+        }
+        
+        // Page 6 - Survey AND Para 13
+        else if (pageNumber === 6) {
+          console.log('📄 Extracting Page 6 - Survey & Para 13...');
+          const page6Data = await this.extractPage6(pagePath);
+          Object.assign(extractedData, page6Data);
+        }
+        
+        // Page 7 - Contingencies
+        else if (pageNumber === 7) {
+          console.log('📄 Extracting Page 7 - Contingencies...');
+          const page7Data = await this.extractPage7(pagePath);
+          Object.assign(extractedData, page7Data);
+        }
+        
+        // Page 8 - Home Warranty & Dates
+        else if (pageNumber === 8) {
+          console.log('📄 Extracting Page 8 - Home Warranty & Dates...');
+          const page8Data = await this.extractPage8(pagePath);
+          Object.assign(extractedData, page8Data);
+        }
+        
+        // Page 12 - Para 22 Closing Date
+        else if (pageNumber === 12) {
+          console.log('📄 Extracting Page 12 - Para 22 Closing Date...');
+          const page12Data = await this.extractPage12(pagePath);
+          Object.assign(extractedData, page12Data);
+        }
+        
+        // Page 14 - Para 32 Additional Terms
+        else if (pageNumber === 14) {
+          console.log('📄 Extracting Page 14 - Para 32 Additional Terms...');
+          const page14Data = await this.extractPage14(pagePath);
+          Object.assign(extractedData, page14Data);
+        }
+        
+        // Page 16 - Para 38 & Agent Info
+        else if (pageNumber === 16) {
+          console.log('📄 Extracting Page 16 - Para 38 & Agent Info...');
+          const page16Data = await this.extractPage16(pagePath);
+          Object.assign(extractedData, page16Data);
+        }
       }
       
       // Clean up temp files
@@ -353,7 +368,6 @@ export class ImageMagickExtractor {
 Return JSON:
 {
   "buyers": ["name1", "name2"],
-  "sellers": ["names"] or [],
   "property_address": "full address",
   "property_type": "exact type selected",
   "purchase_type": "FINANCED" or "CASH" or "LOAN_ASSUMPTION",
@@ -632,29 +646,155 @@ Return JSON:
         content: [
           {
             type: "text",
-            text: `Extract:
-PARAGRAPH 15 - HOME WARRANTY:
-- Is warranty provided? (YES/NO checkbox)
-- Look for warranty amount (e.g., "$500" or specific dollar amount)
-- Who pays? (Buyer/Seller/Split)
-- Any other warranty details
+            text: `Extract HOME WARRANTY and CLOSING/POSSESSION information:
 
-PARAGRAPH 16 - INSPECTION option (A, B, C, or D)
+HOME WARRANTY:
+- Is warranty provided? (Check box A: None, B/C: Warranty provided, D: Other)
+- CRITICAL: Find the WARRANTY COST if provided (e.g., "$500", "$750", "500")
+- Who pays for it? (Seller or Buyer)
+
+CLOSING AND POSSESSION:
+- Find the closing date
+- Find the possession date and time
 
 Return JSON:
 {
   "home_warranty": "YES" or "NO",
-  "warranty_amount": number or null,
-  "warranty_details": "any warranty details",
-  "warranty_paid_by": "who pays (Buyer/Seller/Split)" or null,
-  "inspection_option": "A" or "B" or "C" or "D",
-  "inspection_details": "details about inspection terms"
+  "home_warranty_cost": numeric value if warranty provided (e.g., 500, 750),
+  "home_warranty_paid_by": "Seller" or "Buyer" if warranty provided,
+  "closing_date": "date in MM/DD/YYYY format",
+  "possession_date": "date and time"
 }`
           },
           { type: "image_url", image_url: { url: `data:image/png;base64,${img.toString('base64')}`, detail: "high" } }
         ]
       }],
       max_tokens: 300,
+      temperature: 0.1
+    });
+
+    const content = response.choices[0].message.content || '{}';
+    const result = content.replace(/```json\n?/g, '').replace(/```/g, '').trim();
+    try {
+      return JSON.parse(result);
+    } catch {
+      return {};
+    }
+  }
+
+  private async extractPage12(imagePath: string): Promise<Partial<ContractExtractionResult>> {
+    const img = await fs.readFile(imagePath);
+    
+    const response = await this.openai.chat.completions.create({
+      model: "gpt-4o",
+      messages: [{
+        role: "user",
+        content: [
+          {
+            type: "text",
+            text: `Extract PARAGRAPH 22 - CLOSING DATE:
+
+Find the closing date specified in paragraph 22.
+This is typically near the top of the page.
+
+Return JSON:
+{
+  "para22_closing_date": "date in MM/DD/YYYY format"
+}`
+          },
+          { type: "image_url", image_url: { url: `data:image/png;base64,${img.toString('base64')}`, detail: "high" } }
+        ]
+      }],
+      max_tokens: 200,
+      temperature: 0.1
+    });
+
+    const content = response.choices[0].message.content || '{}';
+    const result = content.replace(/```json\n?/g, '').replace(/```/g, '').trim();
+    try {
+      return JSON.parse(result);
+    } catch {
+      return {};
+    }
+  }
+
+  private async extractPage14(imagePath: string): Promise<Partial<ContractExtractionResult>> {
+    const img = await fs.readFile(imagePath);
+    
+    const response = await this.openai.chat.completions.create({
+      model: "gpt-4o",
+      messages: [{
+        role: "user",
+        content: [
+          {
+            type: "text",
+            text: `Extract PARAGRAPH 32 - ADDITIONAL TERMS:
+
+Look for any additional terms, especially:
+- Buyer agency compensation (e.g., "Buyer to pay 3% buyer agency fee")
+- Commission arrangements
+- Any other special agreements or terms
+
+IMPORTANT: This often contains buyer agency fees that affect the seller net sheet!
+
+Return JSON:
+{
+  "para32_additional_terms": "full text of additional terms if any",
+  "buyer_agency_fee": "percentage or amount if mentioned (e.g., '3%' or '$5000')"
+}`
+          },
+          { type: "image_url", image_url: { url: `data:image/png;base64,${img.toString('base64')}`, detail: "high" } }
+        ]
+      }],
+      max_tokens: 400,
+      temperature: 0.1
+    });
+
+    const content = response.choices[0].message.content || '{}';
+    const result = content.replace(/```json\n?/g, '').replace(/```/g, '').trim();
+    try {
+      return JSON.parse(result);
+    } catch {
+      return {};
+    }
+  }
+
+  private async extractPage16(imagePath: string): Promise<Partial<ContractExtractionResult>> {
+    const img = await fs.readFile(imagePath);
+    
+    const response = await this.openai.chat.completions.create({
+      model: "gpt-4o",
+      messages: [{
+        role: "user",
+        content: [
+          {
+            type: "text",
+            text: `Extract PARAGRAPH 38 EXPIRATION and SELLING AGENT details:
+
+PARAGRAPH 38 - EXPIRATION:
+- Find the expiration date and time of this offer
+- Look for filled-in date and time in the blanks
+
+SELLING AGENT INFORMATION (bottom of page):
+- Agent name
+- AREC# (license number)
+- Email address
+- Phone number
+
+Return JSON:
+{
+  "para38_expiration_date": "date in MM/DD/YYYY format",
+  "para38_expiration_time": "time (e.g., '5:00 PM')",
+  "selling_agent_name": "agent's full name",
+  "selling_agent_arec": "AREC license number",
+  "selling_agent_email": "agent's email",
+  "selling_agent_phone": "agent's phone number"
+}`
+          },
+          { type: "image_url", image_url: { url: `data:image/png;base64,${img.toString('base64')}`, detail: "high" } }
+        ]
+      }],
+      max_tokens: 400,
       temperature: 0.1
     });
 
