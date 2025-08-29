@@ -1,20 +1,26 @@
 /**
  * Email Monitor Service for Arkansas Contract Extraction
- * Monitors contractextraction@gmail.com for incoming contracts
+ * Monitors offers@searchnwa.com for incoming contracts
  */
 
 const Imap = require('imap');
 const { simpleParser } = require('mailparser');
 import * as fs from 'fs/promises';
 import * as path from 'path';
+import { RobustExtractor } from './extraction-robust';
 import { HybridExtractor } from './extraction-hybrid';
+import { FallbackExtractor } from './extraction-fallback';
+import { ExtractionStatusTracker } from './extraction-status-tracker';
 import GoogleSheetsIntegration from './google-sheets-integration';
 import GoogleDriveIntegration from './google-drive-integration';
 import SellerNetSheetCalculator from './seller-net-sheet-calculator';
 import PDFGenerator from './pdf-generator';
+import AgentInfoSheetGenerator from './agent-info-sheet-generator';
 import CSVExporter from './csv-exporter';
 import { ListingInfoService } from './listing-info-service';
 import * as dotenv from 'dotenv';
+import * as express from 'express';
+import * as http from 'http';
 
 dotenv.config();
 
@@ -37,24 +43,34 @@ interface ProcessedEmail {
 
 export class EmailMonitor {
   private imap: any;
+  private robustExtractor: RobustExtractor;
   private extractor: HybridExtractor;
+  private fallbackExtractor: FallbackExtractor;
+  private statusTracker: ExtractionStatusTracker;
   private sheets?: GoogleSheetsIntegration;
   private drive?: GoogleDriveIntegration;
   private calculator: SellerNetSheetCalculator;
   private pdfGenerator: PDFGenerator;
+  private agentInfoGenerator: AgentInfoSheetGenerator;
   private csvExporter: CSVExporter;
   private listingInfo: ListingInfoService;
   private processedFolder: string = 'processed_contracts';
   private isProcessing: boolean = false;
   private processedEmailsFile: string = 'processed_emails.json';
   private processedEmails: Set<string> = new Set();
+  private checkInterval: NodeJS.Timer | null = null;
+  private lastCheckTime: Date = new Date();
 
   constructor() {
-    // Use Version 3.0 HybridExtractor with GPT-5-mini primary and GPT-4o fallback
-    // Achieves 100% extraction success rate
+    // Use RobustExtractor with multiple retries and fallback logic
+    // Ensures extraction always attempts multiple times before giving up
+    this.robustExtractor = new RobustExtractor();
     this.extractor = new HybridExtractor();
+    this.fallbackExtractor = new FallbackExtractor();
+    this.statusTracker = new ExtractionStatusTracker();
     this.calculator = new SellerNetSheetCalculator();
     this.pdfGenerator = new PDFGenerator();
+    this.agentInfoGenerator = new AgentInfoSheetGenerator();
     this.csvExporter = new CSVExporter();
     this.listingInfo = new ListingInfoService();
     this.setupFolders();
@@ -80,6 +96,50 @@ export class EmailMonitor {
     this.processedEmails.add(messageId);
     const data = { processedEmails: Array.from(this.processedEmails) };
     await fs.writeFile(this.processedEmailsFile, JSON.stringify(data, null, 2));
+  }
+
+  private async trackFailedExtraction(messageId: string, emailUid: number, subject: string, filename: string, error: string) {
+    const failedFile = 'failed_extractions.json';
+    let failures: any[] = [];
+    
+    try {
+      const existing = await fs.readFile(failedFile, 'utf-8');
+      failures = JSON.parse(existing);
+    } catch {
+      // File doesn't exist yet
+    }
+    
+    // Check if this failure already exists
+    const existingIndex = failures.findIndex(f => f.messageId === messageId);
+    
+    if (existingIndex >= 0) {
+      // Update retry count
+      failures[existingIndex].retryCount = (failures[existingIndex].retryCount || 0) + 1;
+      failures[existingIndex].lastAttempt = new Date().toISOString();
+      
+      // After 3 retries, mark as permanently failed
+      if (failures[existingIndex].retryCount >= 3) {
+        console.error(`❌ PERMANENT FAILURE after 3 retries: ${filename}`);
+        // Mark as read to stop retrying
+        this.imap.addFlags(emailUid, '\\Seen', (err: Error) => {
+          if (!err) console.log('📧 Marked failed email as read after 3 attempts');
+        });
+        await this.saveProcessedEmail(messageId);
+      }
+    } else {
+      // New failure
+      failures.push({
+        messageId,
+        subject,
+        filename,
+        error,
+        firstAttempt: new Date().toISOString(),
+        lastAttempt: new Date().toISOString(),
+        retryCount: 1
+      });
+    }
+    
+    await fs.writeFile(failedFile, JSON.stringify(failures, null, 2));
   }
 
   async initGoogleSheets() {
@@ -142,19 +202,30 @@ export class EmailMonitor {
       this.imap.once('ready', () => {
         console.log('✅ Connected to email server');
         this.startMonitoring();
+        this.startHealthMonitoring();
         resolve(true);
       });
 
       this.imap.once('error', (err: Error) => {
         console.error('❌ IMAP Error:', err);
+        // Try to reconnect after error
+        setTimeout(() => {
+          console.log('🔄 Attempting to reconnect after error...');
+          this.reconnect();
+        }, 5000);
         reject(err);
       });
 
       this.imap.once('end', () => {
         console.log('📧 Email connection ended');
+        // Try to reconnect after connection ends
+        setTimeout(() => {
+          console.log('🔄 Attempting to reconnect after disconnect...');
+          this.reconnect();
+        }, 5000);
       });
 
-      console.log('📧 Connecting to contractextraction@gmail.com...');
+      console.log(`📧 Connecting to ${config.user}...`);
       this.imap.connect();
     });
   }
@@ -169,15 +240,41 @@ export class EmailMonitor {
 
       console.log(`📬 Monitoring inbox (${box.messages.total} messages)`);
       
-      // Check for recent messages
+      // Check for recent messages immediately
       this.checkRecentEmails();
 
-      // Listen for new emails
+      // Set up polling interval - check every 30 seconds
+      console.log('⏰ Setting up 30-second polling interval...');
+      this.checkInterval = setInterval(() => {
+        console.log(`🔄 Checking for new emails... [${new Date().toLocaleTimeString()}]`);
+        this.checkRecentEmails();
+      }, 30000); // Check every 30 seconds
+
+      // Also listen for new emails (belt and suspenders approach)
       this.imap.on('mail', (numNewMsgs: number) => {
         console.log(`📨 ${numNewMsgs} new email(s) received!`);
         this.checkRecentEmails();
       });
+
+      // Keep connection alive with periodic NOOP
+      setInterval(() => {
+        if (this.imap && this.imap._state === 'authenticated') {
+          this.imap._send('NOOP'); // Keep-alive
+        }
+      }, 60000); // Every 60 seconds
     });
+  }
+  
+  private startHealthMonitoring() {
+    // Display health status every 5 minutes
+    setInterval(async () => {
+      await this.statusTracker.displayStatus();
+    }, 5 * 60 * 1000);
+    
+    // Display initial status after 10 seconds
+    setTimeout(async () => {
+      await this.statusTracker.displayStatus();
+    }, 10000);
   }
 
   private checkRecentEmails() {
@@ -188,13 +285,13 @@ export class EmailMonitor {
 
     this.isProcessing = true;
 
-    // Search for emails from the last 2 hours for more focused monitoring
+    // Search for emails from the last 24 hours to ensure we don't miss any
     const recentTime = new Date();
-    recentTime.setHours(recentTime.getHours() - 2);
+    recentTime.setHours(recentTime.getHours() - 24);
     const dateString = recentTime.toISOString().split('T')[0];
     
-    // Search for recent emails (since 2 hours ago)
-    this.imap.search([['SINCE', dateString]], async (err: Error, uids: number[]) => {
+    // Search for UNSEEN (unread) emails only - not historical
+    this.imap.search([['UNSEEN']], async (err: Error, uids: number[]) => {
       if (err) {
         console.error('❌ Search error:', err);
         this.isProcessing = false;
@@ -207,7 +304,7 @@ export class EmailMonitor {
         return;
       }
 
-      console.log(`📨 Found ${uids.length} recent email(s) from the last 24 hours`);
+      console.log(`📨 Found ${uids.length} unread email(s)`);
 
       // Process each unread email
       for (const uid of uids) {
@@ -220,19 +317,23 @@ export class EmailMonitor {
 
   private async processEmail(uid: number): Promise<void> {
     return new Promise((resolve) => {
-      const fetch = this.imap.fetch(uid, {
-        bodies: '',
-        markSeen: false  // Don't mark as seen, we're processing all recent emails
-      });
+      try {
+        const emailUid = uid; // Store uid for use in mark as read
+        const fetch = this.imap.fetch(uid, {
+          bodies: '',
+          markSeen: false  // Don't mark as seen, we're processing all recent emails
+        });
 
-      fetch.on('message', (msg: any) => {
-        msg.on('body', (stream: any) => {
-          simpleParser(stream, async (err: Error, parsed: any) => {
-            if (err) {
-              console.error('❌ Parse error:', err);
-              resolve();
-              return;
-            }
+        fetch.on('message', (msg: any) => {
+          msg.on('body', (stream: any) => {
+            simpleParser(stream, async (err: Error, parsed: any) => {
+              if (err) {
+                console.error('❌ Parse error:', err);
+                resolve();
+                return;
+              }
+              
+              try {  // Add inner try-catch for processing
 
             // Check if we've already processed this email
             const messageId = parsed.messageId || `${parsed.date}_${parsed.subject}`;
@@ -247,15 +348,17 @@ export class EmailMonitor {
             console.log(`📋 Subject: ${parsed.subject}`);
             console.log(`📅 Date: ${parsed.date}`);
 
+            // Initialize results outside the if block so it's available for error handling
+            const results: ProcessedEmail = {
+              from: parsed.from?.text || 'Unknown',
+              subject: parsed.subject || 'No Subject',
+              date: parsed.date || new Date(),
+              attachments: [],
+              extractionResults: []
+            };
+
             // Process attachments
             if (parsed.attachments && parsed.attachments.length > 0) {
-              const results: ProcessedEmail = {
-                from: parsed.from?.text || 'Unknown',
-                subject: parsed.subject || 'No Subject',
-                date: parsed.date || new Date(),
-                attachments: [],
-                extractionResults: []
-              };
 
               for (const attachment of parsed.attachments) {
                 if (attachment.contentType === 'application/pdf') {
@@ -272,19 +375,63 @@ export class EmailMonitor {
                   await fs.writeFile(pdfPath, attachment.content);
                   results.attachments.push(attachment.filename);
 
-                  // Extract data using Version 3.0 hybrid approach
-                  console.log('🔍 Extracting contract data with GPT-5-mini...');
-                  const extractionResult = await this.extractor.extractFromPDF(pdfPath, {
-                    model: 'gpt-5-mini',  // Use GPT-5-mini as primary for 100% success
-                    fallbackToGPT4o: true,  // Allow fallback for reliability
-                    verbose: false
-                  });
+                  // Extract data using Robust Extractor with multiple retries
+                  console.log('🔍 Starting robust extraction with automatic retries...');
+                  let extractionResult: any;
                   
-                  if (extractionResult.success) {
-                    console.log(`✅ Extraction successful: ${extractionResult.extractionRate}`);
+                  try {
+                    // Use the robust extractor which handles all retry logic internally
+                    const robustResult = await this.robustExtractor.extractFromPDF(pdfPath);
+                    
+                    // Convert robust result to expected format
+                    extractionResult = {
+                      success: robustResult.success || robustResult.isPartial,
+                      partial: robustResult.isPartial,
+                      data: robustResult.data,
+                      error: robustResult.error,
+                      extractionRate: robustResult.extractionRate,
+                      fieldsExtracted: robustResult.fieldsExtracted,
+                      totalFields: robustResult.totalFields,
+                      attempts: robustResult.attempts,
+                      finalMethod: robustResult.finalMethod
+                    };
+                    
+                    // Log extraction summary
+                    if (robustResult.attempts.length > 0) {
+                      console.log(`📊 Extraction completed after ${robustResult.attempts.length} attempt(s)`);
+                      console.log(`   Method: ${robustResult.finalMethod || 'Unknown'}`);
+                      console.log(`   Fields: ${robustResult.fieldsExtracted}/${robustResult.totalFields}`);
+                    }
+                    
+                  } catch (extractionError) {
+                    console.error('❌ Robust extraction system failed:', extractionError);
+                    
+                    // This should rarely happen as robust extractor handles most errors internally
+                    extractionResult = {
+                      success: false,
+                      error: extractionError instanceof Error ? extractionError.message : 'Catastrophic extraction failure'
+                    };
+                  }
+                  
+                  if (extractionResult.success || extractionResult.partial) {
+                    const status = extractionResult.success ? '✅ Extraction successful' : '⚠️ Partial extraction (fallback)';
+                    console.log(`${status}: ${extractionResult.extractionRate || 'N/A'}`);
                     results.extractionResults.push({
                       filename: attachment.filename,
                       ...extractionResult
+                    });
+                    
+                    // Log to status tracker
+                    await this.statusTracker.logExtraction({
+                      timestamp: new Date().toISOString(),
+                      email_id: messageId || 'unknown',
+                      subject: parsed.subject || 'No Subject',
+                      attachment: attachment.filename,
+                      status: extractionResult.success ? 'SUCCESS' : 'PARTIAL',
+                      extraction_rate: extractionResult.extractionRate,
+                      fallback_used: extractionResult.partial || false,
+                      fields_extracted: extractionResult.data ? Object.keys(extractionResult.data).filter(k => extractionResult.data[k] != null).length : 0,
+                      total_fields: 41
                     });
 
                     // Save results
@@ -315,18 +462,25 @@ export class EmailMonitor {
                       console.log('  para5_custom_text:', data?.para5_custom_text);
                       
                       const netSheetInput = {
-                        purchase_price: data?.purchase_price || data?.cash_amount || 0,
-                        seller_concessions: data?.para5_custom_text || 
+                        purchase_price: data?.purchase_price || 0,
+                        cash_amount: data?.cash_amount || 0,
+                        seller_concessions: data?.seller_pays_buyer_costs || 
+                                          data?.para5_custom_text || 
                                           data?.seller_concessions ||
                                           data?.paragraph_5?.seller_specific_payment_text ||
                                           data?.paragraph_5?.seller_specific_payment_amount?.toString(),
                         closing_date: data?.closing_date,
-                        home_warranty: data?.home_warranty || data?.home_warranty?.selected_option,
-                        warranty_amount: data?.warranty_amount,
-                        title_option: data?.title_option,
-                        para32_other_terms: data?.para32_other_terms || 
-                                          data?.additional_terms ||
-                                          data?.para32_additional_terms,
+                        para15_home_warranty: data?.para15_home_warranty,
+                        para15_warranty_paid_by: data?.para15_warranty_paid_by,
+                        para15_warranty_cost: data?.para15_warranty_cost,
+                        home_warranty: data?.para15_home_warranty || data?.home_warranty || data?.home_warranty?.selected_option,
+                        warranty_amount: data?.para15_warranty_cost || data?.warranty_amount,
+                        title_option: data?.para10_title_option || data?.title_option,
+                        para32_other_terms: data?.para32_additional_terms || data?.para32_other_terms || 
+                                          data?.additional_terms,
+                        para11_survey_option: data?.para11_survey_option,
+                        para11_survey_paid_by: data?.para11_survey_paid_by,
+                        buyer_agency_fee: data?.buyer_agency_fee,  // Add buyer agency fee
                         annual_taxes: propertyData.annualTaxes,
                         seller_commission_percent: propertyData.commissionPercent
                       };
@@ -400,6 +554,54 @@ export class EmailMonitor {
                         }
                       }
 
+                      // Generate Agent Information Sheet
+                      try {
+                        const agentInfoData = {
+                          property_address: propertyAddress,
+                          purchase_price: data?.purchase_price || data?.cash_amount || 0,
+                          buyers: data?.buyers || data?.buyer_names,
+                          closing_date: data?.closing_date,
+                          contract_expiration_date: data?.para38_expiration_date,
+                          contract_expiration_time: data?.para38_expiration_time,
+                          listing_agent_commission: propertyData.commissionPercent ? propertyData.commissionPercent * 100 : undefined,
+                          selling_agent_commission: 3, // Default 3% - could be extracted from contract if specified
+                          selling_firm_name: data?.selling_firm_name,
+                          selling_agent_name: data?.selling_agent_name,
+                          selling_agent_phone: data?.selling_agent_phone,
+                          selling_agent_email: data?.selling_agent_email,
+                          selling_agent_arec: data?.selling_agent_arec,
+                          selling_agent_mls: data?.selling_agent_mls,
+                          para15_other_details: data?.para15_other_details,
+                          // Additional contract details for notes
+                          earnest_money: data?.earnest_money,
+                          non_refundable: data?.non_refundable,
+                          non_refundable_amount: data?.non_refundable_amount,
+                          para14_contingency: data?.para14_contingency,
+                          para13_items_included: data?.para13_items_included,
+                          para13_items_excluded: data?.para13_items_excluded
+                        };
+                        
+                        const agentInfoPath = await this.agentInfoGenerator.generateAgentInfoSheet(agentInfoData);
+                        console.log(`📋 Generated agent info sheet: ${path.basename(agentInfoPath)}`);
+                        
+                        // Upload agent info sheet to Google Drive
+                        if (this.drive && agentInfoPath) {
+                          try {
+                            const agentInfoUpload = await this.drive.uploadFile(
+                              agentInfoPath,  // Pass file path directly, not buffer
+                              path.basename(agentInfoPath),
+                              'application/pdf'
+                            );
+                            console.log('📤 Uploaded agent info sheet to Google Drive');
+                            console.log(`   📎 Link: ${agentInfoUpload.webViewLink || agentInfoUpload.shareableLink}`);
+                          } catch (uploadError) {
+                            console.error('⚠️  Could not upload agent info sheet:', uploadError);
+                          }
+                        }
+                      } catch (agentInfoError) {
+                        console.error('⚠️  Could not generate agent info sheet:', agentInfoError);
+                      }
+                      
                       // Try to create Google Sheet (will likely fail due to quota)
                       if (this.drive) {
                         try {
@@ -424,7 +626,7 @@ export class EmailMonitor {
                             `Email: ${parsed.from?.text}`
                           );
                           console.log('📊 Saved to tracking spreadsheet');
-                        } catch (sheetsError) {
+                        } catch (sheetsError: any) {
                           console.log('⚠️  Could not save to tracking sheet:', sheetsError.message);
                         }
                       }
@@ -435,6 +637,62 @@ export class EmailMonitor {
                     }
                   } else {
                     console.error(`❌ Extraction failed: ${extractionResult.error}`);
+                    
+                    // Log failed extraction
+                    const retryCount = await this.getRetryCount(messageId || '');
+                    await this.statusTracker.logExtraction({
+                      timestamp: new Date().toISOString(),
+                      email_id: messageId || 'unknown',
+                      subject: parsed.subject || 'No Subject',
+                      attachment: attachment.filename,
+                      status: retryCount >= 3 ? 'FAILED' : 'PENDING_RETRY',
+                      error: extractionResult.error || 'Unknown error',
+                      retry_count: retryCount,
+                      fields_extracted: 0,
+                      total_fields: 41
+                    });
+                    
+                    // Still try to generate a basic net sheet with minimal data
+                    console.log('⚠️  Attempting to generate net sheet with available data...');
+                    
+                    // Use whatever data we have, even if partial
+                    const partialData = extractionResult.data || {};
+                    if (partialData.property_address && partialData.purchase_price) {
+                      try {
+                        const basicNetSheet = {
+                          purchase_price: partialData.purchase_price || 0,
+                          closing_date: partialData.closing_date,
+                          annual_taxes: 3650, // Default
+                          seller_commission_percent: 0.03 // Default
+                        };
+                        
+                        const netSheetData = this.calculator.calculate(basicNetSheet);
+                        const pdfPath = await this.pdfGenerator.generateNetSheetPDF(
+                          netSheetData,
+                          partialData.property_address,
+                          partialData
+                        );
+                        
+                        console.log(`📄 Generated basic net sheet despite extraction failure`);
+                        
+                        // Upload to Google Drive if available
+                        if (this.drive && pdfPath) {
+                          try {
+                            const upload = await this.drive.uploadFile(
+                              pdfPath,  // Pass file path directly, not buffer
+                              path.basename(pdfPath),
+                              'application/pdf'
+                            );
+                            console.log(`📤 Uploaded basic net sheet to Google Drive`);
+                            console.log(`   📎 Link: ${upload.webViewLink}`);
+                          } catch (uploadErr) {
+                            console.error('⚠️  Could not upload to Drive:', uploadErr);
+                          }
+                        }
+                      } catch (netSheetErr) {
+                        console.error('❌ Could not generate net sheet with partial data:', netSheetErr);
+                      }
+                    }
                   }
                 }
               }
@@ -448,20 +706,61 @@ export class EmailMonitor {
 
             console.log('='.repeat(60) + '\n');
             
-            // Mark this email as processed if it had attachments
-            if (messageId && (parsed.attachments?.length > 0)) {
+            // Only mark as processed if extraction was successful
+            const hasSuccessfulExtraction = results.extractionResults.some(r => r.success);
+            
+            if (messageId && hasSuccessfulExtraction) {
               await this.saveProcessedEmail(messageId);
+              
+              // Mark email as read AND add "Processed Contracts" label
+              console.log(`✅ Marking email as read and adding "Processed Contracts" label...`);
+              
+              // First mark as read
+              this.imap.addFlags(emailUid, '\\Seen', (err: Error) => {
+                if (err) {
+                  console.error('⚠️  Could not mark email as read:', err);
+                } else {
+                  console.log('✅ Email marked as read');
+                }
+              });
+              
+              // Then add the label using Gmail's X-GM-LABELS extension
+              this.imap._send(`UID STORE ${emailUid} +X-GM-LABELS ("Processed Contracts")`, (err: Error) => {
+                if (err) {
+                  console.error('⚠️  Could not add label:', err);
+                } else {
+                  console.log('✅ Added "Processed Contracts" label');
+                }
+              });
+            } else if (messageId && !hasSuccessfulExtraction && parsed.attachments?.length > 0) {
+              // Track failed extraction but don't mark as processed
+              console.error('❌ EXTRACTION FAILED - Email will be retried on next check');
+              await this.trackFailedExtraction(messageId, emailUid, parsed.subject || 'No Subject', 
+                                               parsed.attachments[0]?.filename || 'Unknown',
+                                               'Extraction failed - will retry');
+              
+              // Don't mark as read so it will be retried
+              console.log('⚠️  Keeping email unread for retry...');
             }
             
+              } catch (processingError) {
+                console.error('❌ Error processing email:', processingError);
+                // Continue processing other emails even if this one fails
+              }
+            
             resolve();
+            });
           });
         });
-      });
 
       fetch.once('error', (err: Error) => {
         console.error('❌ Fetch error:', err);
         resolve();
       });
+      } catch (outerError) {
+        console.error('❌ Fatal error in processEmail:', outerError);
+        resolve(); // Always resolve to prevent hanging
+      }
     });
   }
 
@@ -473,7 +772,58 @@ export class EmailMonitor {
     console.log('='.repeat(60));
   }
 
+  private async reconnect() {
+    try {
+      // Clean up existing connection
+      if (this.checkInterval) {
+        clearInterval(this.checkInterval);
+        this.checkInterval = null;
+      }
+      
+      // Get credentials from environment
+      const email = process.env.EMAIL_USER || 'offers@searchnwa.com';
+      const password = process.env.EMAIL_PASSWORD;
+      
+      if (!password) {
+        console.error('❌ Cannot reconnect - no password available');
+        return;
+      }
+      
+      console.log('🔌 Reconnecting to email server...');
+      await this.connect({
+        user: email,
+        password: password,
+        host: 'imap.gmail.com',
+        port: 993,
+        tls: true
+      });
+      console.log('✅ Reconnected successfully');
+    } catch (error) {
+      console.error('❌ Reconnection failed:', error);
+      // Try again in 30 seconds
+      setTimeout(() => {
+        console.log('🔄 Retrying reconnection...');
+        this.reconnect();
+      }, 30000);
+    }
+  }
+
+  private async getRetryCount(emailId: string): Promise<number> {
+    try {
+      const failedFile = 'failed_extractions.json';
+      const data = JSON.parse(await fs.readFile(failedFile, 'utf-8').catch(() => '{"failures":[]}'));
+      const failure = data.failures.find((f: any) => f.email_id === emailId);
+      return failure ? failure.retry_count : 0;
+    } catch {
+      return 0;
+    }
+  }
+  
   disconnect() {
+    if (this.checkInterval) {
+      clearInterval(this.checkInterval);
+      this.checkInterval = null;
+    }
     if (this.imap) {
       this.imap.end();
     }
@@ -485,8 +835,8 @@ if (require.main === module) {
   const monitor = new EmailMonitor();
   
   // Get credentials from environment or command line
-  const email = process.env.GMAIL_USER || 'contractextraction@gmail.com';
-  const password = process.env.GMAIL_PASSWORD || process.argv[2];
+  const email = process.env.EMAIL_USER || 'offers@searchnwa.com';
+  const password = process.env.EMAIL_PASSWORD || process.argv[2];
 
   if (!password) {
     console.error('❌ Please provide Gmail app password:');
@@ -498,6 +848,27 @@ if (require.main === module) {
     process.exit(1);
   }
 
+  // Start a simple health check server for Railway
+  const app = express();
+  const PORT = process.env.PORT || 3000;
+  
+  app.get('/api/health', (req, res) => {
+    res.status(200).json({ 
+      status: 'healthy',
+      service: 'email-monitor',
+      uptime: process.uptime()
+    });
+  });
+  
+  app.get('/', (req, res) => {
+    res.status(200).send('Email Monitor is running');
+  });
+  
+  const server = http.createServer(app);
+  server.listen(PORT, () => {
+    console.log(`🏥 Health check server running on port ${PORT}`);
+  });
+
   monitor.connect({
     user: email,
     password: password,
@@ -506,7 +877,7 @@ if (require.main === module) {
     tls: true
   }).then(() => {
     console.log('✅ Email monitor is running...');
-    console.log('📧 Send contracts to: contractextraction@gmail.com');
+    console.log(`📧 Send contracts to: ${email}`);
     console.log('Press Ctrl+C to stop');
   }).catch(err => {
     console.error('❌ Failed to start:', err.message);
@@ -516,6 +887,7 @@ if (require.main === module) {
   process.on('SIGINT', () => {
     console.log('\n👋 Shutting down email monitor...');
     monitor.disconnect();
+    server.close();
     process.exit(0);
   });
 }
