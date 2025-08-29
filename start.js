@@ -68,7 +68,34 @@ const server = app.listen(PORT, '0.0.0.0', () => {
   
   // Start the email monitor
   try {
-    require('./email-monitor.ts');
+    const { EmailMonitor } = require('./email-monitor.ts');
+    const monitor = new EmailMonitor();
+    
+    const email = process.env.EMAIL_USER || 'offers@searchnwa.com';
+    const password = process.env.EMAIL_PASSWORD;
+    
+    console.log('📧 Connecting to email:', email);
+    
+    monitor.connect({
+      user: email,
+      password: password,
+      host: 'imap.gmail.com',
+      port: 993,
+      tls: true
+    }).then(() => {
+      console.log('✅ Email monitor is running successfully!');
+      console.log(`📧 Send contracts to: ${email}`);
+    }).catch(err => {
+      console.error('❌ Failed to connect email monitor:', err.message);
+      console.log('⚠️ Health check server still running despite error');
+    });
+    
+    // Handle graceful shutdown
+    process.on('SIGINT', () => {
+      console.log('\n👋 Shutting down email monitor...');
+      monitor.disconnect();
+    });
+    
     console.log('✅ Email monitor loaded successfully');
   } catch (error) {
     console.error('❌ Failed to load email monitor:', error.message);
