@@ -3,7 +3,7 @@
  * Creates a PDF with key contract information for the listing agent
  */
 
-import puppeteer from 'puppeteer';
+// import puppeteer from 'puppeteer'; // Disabled for Railway
 import * as fs from 'fs/promises';
 import * as path from 'path';
 
@@ -69,34 +69,15 @@ export class AgentInfoSheetGenerator {
     // Generate HTML content
     const htmlContent = this.generateHTML(data);
     
-    // Launch puppeteer and generate PDF
-    const browser = await puppeteer.launch({ 
-      headless: true,
-      args: ['--no-sandbox', '--disable-setuid-sandbox']
-    });
-    
+    // PDF generation disabled for Railway - save as HTML instead
     try {
-      const page = await browser.newPage();
-      await page.setContent(htmlContent, { waitUntil: 'networkidle0' });
-      
-      // Generate PDF
-      await page.pdf({
-        path: filePath,
-        format: 'letter',
-        printBackground: true,
-        margin: {
-          top: '0.75in',
-          right: '0.75in',
-          bottom: '0.75in',
-          left: '0.75in'
-        }
-      });
-      
-      console.log(`📄 Agent info sheet saved: ${filePath}`);
-      return filePath;
-      
-    } finally {
-      await browser.close();
+      const htmlPath = filePath.replace('.pdf', '.html');
+      await fs.writeFile(htmlPath, htmlContent);
+      console.log(`📄 Agent info sheet saved as HTML: ${htmlPath}`);
+      return htmlPath;
+    } catch (error) {
+      console.error('Failed to save agent info sheet:', error);
+      throw error;
     }
   }
   

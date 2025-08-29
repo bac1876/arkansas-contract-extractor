@@ -5,6 +5,9 @@
  * Starts health check server immediately, then loads the main application
  */
 
+// Load environment variables FIRST
+require('dotenv').config();
+
 console.log('🚀 Starting Railway deployment...');
 
 // Start health check server IMMEDIATELY
