@@ -42,6 +42,15 @@ const server = app.listen(PORT, '0.0.0.0', () => {
   // Load TypeScript support
   require('ts-node/register');
   
+  // Debug: Show what environment variables ARE available
+  console.log('📋 Available environment variables:');
+  const envKeys = Object.keys(process.env).filter(key => 
+    !key.startsWith('npm_') && 
+    !key.startsWith('NODE_') && 
+    !key.includes('PATH')
+  );
+  console.log(envKeys.join(', '));
+  
   // Check for required environment variables
   const requiredVars = ['EMAIL_PASSWORD', 'OPENAI_API_KEY'];
   const missingVars = requiredVars.filter(v => !process.env[v]);
@@ -50,6 +59,7 @@ const server = app.listen(PORT, '0.0.0.0', () => {
     console.error('❌ Missing required environment variables:', missingVars.join(', '));
     console.log('⚠️ Email monitor cannot start without these variables');
     console.log('⚠️ Health check server still running for Railway');
+    console.log('💡 Make sure these are set in Railway Variables tab');
     return; // Don't try to start email monitor
   }
   
