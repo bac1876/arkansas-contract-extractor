@@ -10,6 +10,7 @@ dist/
 # Google service account key
 service-account-key.json
 arkansas-contract-agent-*.json
+RAILWAY_ENV_ACTUAL.txt
 
 # Temp directories
 uploads/
