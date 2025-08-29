@@ -14,8 +14,8 @@ WORKDIR /app
 COPY package.json ./
 COPY tsconfig.json ./
 
-# Install dependencies (ignore optional deps that might fail)
-RUN npm install --production --no-optional || npm install --production
+# Install dependencies (all of them, including dev for ts-node)
+RUN npm install
 
 # Install TypeScript and ts-node for runtime
 RUN npm install typescript ts-node
