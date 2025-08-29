@@ -3,6 +3,30 @@
  * Monitors offers@searchnwa.com for incoming contracts
  */
 
+// START HEALTH CHECK SERVER IMMEDIATELY FOR RAILWAY
+const express = require('express');
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+// Health check endpoints - must be available immediately
+app.get('/health', (req, res) => {
+  res.status(200).json({ status: 'healthy', service: 'email-monitor' });
+});
+
+app.get('/api/health', (req, res) => {
+  res.status(200).json({ status: 'healthy', service: 'email-monitor' });
+});
+
+app.get('/', (req, res) => {
+  res.status(200).send('Arkansas Contract Email Monitor v3.5');
+});
+
+// Start server immediately
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`🏥 Health check server running on port ${PORT}`);
+});
+
+// Now load other dependencies
 const Imap = require('imap');
 const { simpleParser } = require('mailparser');
 import * as fs from 'fs/promises';
@@ -19,8 +43,6 @@ import AgentInfoSheetGenerator from './agent-info-sheet-generator';
 import CSVExporter from './csv-exporter';
 import { ListingInfoService } from './listing-info-service';
 import * as dotenv from 'dotenv';
-const express = require('express');
-const http = require('http');
 
 dotenv.config();
 
@@ -848,42 +870,10 @@ if (require.main === module) {
     process.exit(1);
   }
 
-  // Start health check server FIRST for Railway (before any async operations)
-  const app = express();
-  const PORT = process.env.PORT || 3000;
-  
-  // Multiple health check endpoints for Railway compatibility
-  app.get('/health', (req, res) => {
-    res.status(200).json({ 
-      status: 'healthy',
-      service: 'email-monitor',
-      uptime: process.uptime(),
-      timestamp: new Date().toISOString()
-    });
-  });
-  
-  app.get('/api/health', (req, res) => {
-    res.status(200).json({ 
-      status: 'healthy',
-      service: 'email-monitor',
-      uptime: process.uptime()
-    });
-  });
-  
-  app.get('/', (req, res) => {
-    res.status(200).send('Arkansas Contract Email Monitor v3.5 - Running');
-  });
-  
-  // Start server immediately and synchronously
-  const server = app.listen(PORT, '0.0.0.0', () => {
-    console.log(`🏥 Health check server running on port ${PORT}`);
-    console.log(`📍 Health endpoints: /health, /api/health, /`);
-  });
-  
-  // Log that health server is ready
-  console.log('✅ Health check server started successfully');
+  // Health check server already started at the top of the file
+  console.log('✅ Connecting to email server...');
 
-  // Now connect to email (async operation)
+  // Connect to email (async operation)
   monitor.connect({
     user: email,
     password: password,
