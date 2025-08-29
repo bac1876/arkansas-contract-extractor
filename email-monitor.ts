@@ -146,10 +146,10 @@ export class EmailMonitor {
     if (spreadsheetId) {
       try {
         this.sheets = new GoogleSheetsIntegration(spreadsheetId);
-        // Note: Actual initialization happens when we have service account
-        console.log('📊 Google Sheets integration configured');
+        await this.sheets.initialize();
+        console.log('📊 Google Sheets integration configured and initialized');
       } catch (error) {
-        console.log('⚠️  Google Sheets integration not available');
+        console.log('⚠️  Google Sheets integration not available:', error.message);
       }
     }
   }
