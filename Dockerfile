@@ -1,49 +1,44 @@
-# Use Node.js 20 LTS version (required for some packages)
+# Use Node.js 20 LTS version
 FROM node:20-alpine
 
-# Install ImageMagick and required dependencies for canvas
+# Install ImageMagick for PDF processing
 RUN apk add --no-cache \
     imagemagick \
-    ghostscript \
-    python3 \
-    make \
-    g++ \
-    cairo-dev \
-    jpeg-dev \
-    pango-dev \
-    giflib-dev \
-    pixman-dev \
-    pkgconf
+    ghostscript
 
 # Set working directory
 WORKDIR /app
 
 # Copy package files
 COPY package*.json ./
-
-# Install dependencies
-RUN npm ci --only=production
-
-# Copy TypeScript config and source files
 COPY tsconfig.json ./
-COPY *.ts ./
-COPY public ./public/
-COPY .env.example ./
 
-# Install TypeScript and ts-node globally for runtime
+# Install all dependencies (including dev for ts-node)
+RUN npm ci
+
+# Install TypeScript and ts-node globally
 RUN npm install -g typescript ts-node
 
-# Build the application
-RUN npm run build
+# Copy all source files
+COPY . .
 
-# Create required directories
-RUN mkdir -p uploads temp_extraction
+# Create necessary directories
+RUN mkdir -p processed_contracts/pdfs && \
+    mkdir -p processed_contracts/images && \
+    mkdir -p processed_contracts/results && \
+    mkdir -p processed_contracts/seller_net_sheets && \
+    mkdir -p temp_images && \
+    mkdir -p net_sheets_pdf && \
+    mkdir -p net_sheets_csv && \
+    mkdir -p agent_info_sheets && \
+    mkdir -p gpt5_temp
 
-# Expose port
-EXPOSE 3006
+# Build TypeScript (optional, since we're using ts-node)
+RUN npm run build || true
 
-# Set environment variable for production
-ENV NODE_ENV=production
+# Health check endpoint
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+  CMD node -e "console.log('OK')" || exit 1
 
-# Start the server
-CMD ["npm", "start"]
+# Run the email monitor
+CMD ["npm", "run", "monitor"]

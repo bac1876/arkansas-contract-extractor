@@ -7,6 +7,10 @@ dist/
 .env.local
 .env.production
 
+# Google service account key
+service-account-key.json
+arkansas-contract-agent-*.json
+
 # Temp directories
 uploads/
 temp_extraction/
@@ -15,6 +19,15 @@ pdf2pic_temp_*/
 temp_images/
 temp_test/
 test_temp_dir/
+gpt5_temp*/
+manual_review/
+
+# Processing directories
+processed_contracts/
+net_sheets_pdf/
+net_sheets_csv/
+agent_info_sheets/
+seller_net_sheets/
 
 # Output files (but keep important config files)
 *.json
@@ -26,9 +39,10 @@ test_temp_dir/
 !railway.json
 !Dockerfile
 
-# Keep test PDFs for demo
+# Keep only sample PDFs
 *.pdf
 !test_contract2.pdf
+!sample_contract.pdf
 
 # Image files from conversions
 *.png
@@ -47,6 +61,7 @@ Thumbs.db
 
 # Backup files
 backups/
+archive_*/
 *.backup
 
 # Local instructions
@@ -55,3 +70,18 @@ CLAUDE.local.md
 # Executables
 *.exe
 *.zip
+
+# Test and debug files
+test_results/
+extraction_results/
+debug_*/
+test_output*
+test_page*
+
+# Status tracking
+processed_emails.json
+extraction_status.json
+system_health.json
+monitor-status.json
+manual_review_queue.json
+failed_extractions.json
