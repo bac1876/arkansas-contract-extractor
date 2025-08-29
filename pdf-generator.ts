@@ -3,7 +3,7 @@
  * Creates professional, branded PDF documents for sellers
  */
 
-// import puppeteer from 'puppeteer'; // Disabled for Railway deployment
+import { chromium } from 'playwright';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 
@@ -35,19 +35,42 @@ export class PDFGenerator {
     // Generate HTML content
     const htmlContent = this.generateHTML(netSheetData, propertyAddress, contractData);
     
-    // For Railway deployment, just save HTML for now (puppeteer not available)
-    // In production, you could use a PDF service API or different library
+    // Generate PDF using Playwright
     try {
-      // Save as HTML file instead of PDF for now
-      const htmlPath = filePath.replace('.pdf', '.html');
-      await fs.writeFile(htmlPath, htmlContent);
+      // Launch browser with Railway-compatible options
+      const browser = await chromium.launch({
+        headless: true,
+        args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage']
+      });
       
-      console.log(`📄 Net sheet saved as HTML (PDF generation disabled): ${htmlPath}`);
-      return htmlPath;
+      const page = await browser.newPage();
+      await page.setContent(htmlContent, { waitUntil: 'networkidle' });
+      
+      // Generate PDF with professional settings
+      await page.pdf({
+        path: filePath,
+        format: 'Letter',
+        printBackground: true,
+        margin: {
+          top: '0.5in',
+          right: '0.5in',
+          bottom: '0.5in',
+          left: '0.5in'
+        }
+      });
+      
+      await browser.close();
+      
+      console.log(`📄 Net sheet PDF generated: ${filePath}`);
+      return filePath;
       
     } catch (error) {
-      console.error('Failed to save net sheet:', error);
-      throw error;
+      console.error('Failed to generate PDF:', error);
+      // Fallback to HTML if PDF generation fails
+      const htmlPath = filePath.replace('.pdf', '.html');
+      await fs.writeFile(htmlPath, htmlContent);
+      console.log(`📄 Net sheet saved as HTML (PDF failed): ${htmlPath}`);
+      return htmlPath;
     }
   }
   

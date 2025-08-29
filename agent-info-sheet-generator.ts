@@ -3,7 +3,7 @@
  * Creates a PDF with key contract information for the listing agent
  */
 
-// import puppeteer from 'puppeteer'; // Disabled for Railway
+import { chromium } from 'playwright';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 
@@ -69,15 +69,41 @@ export class AgentInfoSheetGenerator {
     // Generate HTML content
     const htmlContent = this.generateHTML(data);
     
-    // PDF generation disabled for Railway - save as HTML instead
+    // Generate PDF using Playwright
     try {
+      // Launch browser with Railway-compatible options
+      const browser = await chromium.launch({
+        headless: true,
+        args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage']
+      });
+      
+      const page = await browser.newPage();
+      await page.setContent(htmlContent, { waitUntil: 'networkidle' });
+      
+      // Generate PDF with professional settings
+      await page.pdf({
+        path: filePath,
+        format: 'Letter',
+        printBackground: true,
+        margin: {
+          top: '0.5in',
+          right: '0.5in',
+          bottom: '0.5in',
+          left: '0.5in'
+        }
+      });
+      
+      await browser.close();
+      
+      console.log(`📄 Agent info sheet PDF generated: ${filePath}`);
+      return filePath;
+    } catch (error) {
+      console.error('Failed to generate PDF:', error);
+      // Fallback to HTML if PDF generation fails
       const htmlPath = filePath.replace('.pdf', '.html');
       await fs.writeFile(htmlPath, htmlContent);
-      console.log(`📄 Agent info sheet saved as HTML: ${htmlPath}`);
+      console.log(`📄 Agent info sheet saved as HTML (PDF failed): ${htmlPath}`);
       return htmlPath;
-    } catch (error) {
-      console.error('Failed to save agent info sheet:', error);
-      throw error;
     }
   }
   

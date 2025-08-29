@@ -68,3 +68,4 @@ node -r ts-node/register convert-contract2-to-images.ts
 ## Rules for this project
 - for this project no coding without discussion
 - STOP just doing placeholder things - it NEVER works out and then we are more messed up
+- please note and please stop offering local solutions it just makes things harder to deceipher too many choices
