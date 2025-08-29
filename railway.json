@@ -5,7 +5,6 @@
     "dockerfilePath": "Dockerfile"
   },
   "deploy": {
-    "startCommand": "npm run monitor",
     "restartPolicyType": "ALWAYS",
     "restartPolicyMaxRetries": 10
   }
