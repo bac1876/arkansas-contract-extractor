@@ -406,6 +406,8 @@ export class EmailMonitor {
                   );
                   
                   await fs.writeFile(pdfPath, attachment.content);
+                  console.log(`💾 PDF saved to: ${pdfPath}`);
+                  console.log(`   Size: ${attachment.content.length} bytes`);
                   results.attachments.push(attachment.filename);
 
                   // Extract data using Robust Extractor with multiple retries
@@ -415,6 +417,14 @@ export class EmailMonitor {
                   try {
                     // Use the robust extractor which handles all retry logic internally
                     const robustResult = await this.robustExtractor.extractFromPDF(pdfPath);
+                    
+                    console.log('📄 Extraction completed:');
+                    console.log(`   Success: ${robustResult.success}`);
+                    console.log(`   Method: ${robustResult.method}`);
+                    console.log(`   Extraction Rate: ${robustResult.extractionRate}%`);
+                    console.log(`   Fields Extracted: ${robustResult.fieldsExtracted}/${robustResult.totalFields}`);
+                    console.log(`   Property Address: ${robustResult.data?.property_address || 'EMPTY'}`);
+                    console.log(`   Purchase Price: ${robustResult.data?.purchase_price || 'EMPTY'}`);
                     
                     // Convert robust result to expected format
                     extractionResult = {
