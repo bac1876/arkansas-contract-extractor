@@ -34,6 +34,24 @@ app.get('/', (req, res) => {
   res.status(200).send('Arkansas Contract Email Monitor v3.5');
 });
 
+// Test Google Drive upload endpoint
+app.get('/test-drive', async (req, res) => {
+  console.log('🧪 Test Drive endpoint hit!');
+  try {
+    require('ts-node/register');
+    const testScript = require('./test-railway-drive-upload.ts');
+    res.status(200).json({ 
+      status: 'test initiated',
+      message: 'Check Railway logs for results' 
+    });
+  } catch (error) {
+    res.status(500).json({ 
+      status: 'error',
+      message: error.message 
+    });
+  }
+});
+
 // Start listening immediately
 const server = app.listen(PORT, '0.0.0.0', () => {
   console.log(`✅ Health check server running on port ${PORT}`);
