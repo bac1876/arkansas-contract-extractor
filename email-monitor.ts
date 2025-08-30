@@ -430,7 +430,7 @@ export class EmailMonitor {
                     extractionResult = {
                       success: robustResult.success || robustResult.isPartial,
                       partial: robustResult.isPartial,
-                      data: robustResult.data,
+                      data: robustResult.data || {},  // Ensure data is never undefined
                       error: robustResult.error,
                       extractionRate: robustResult.extractionRate,
                       fieldsExtracted: robustResult.fieldsExtracted,
@@ -448,11 +448,17 @@ export class EmailMonitor {
                     
                   } catch (extractionError) {
                     console.error('❌ Robust extraction system failed:', extractionError);
+                    if (extractionError instanceof Error) {
+                      console.error('   Error message:', extractionError.message);
+                      console.error('   Stack trace:', extractionError.stack);
+                    }
                     
                     // This should rarely happen as robust extractor handles most errors internally
                     extractionResult = {
                       success: false,
-                      error: extractionError instanceof Error ? extractionError.message : 'Catastrophic extraction failure'
+                      error: extractionError instanceof Error ? extractionError.message : 'Catastrophic extraction failure',
+                      fieldsExtracted: 0,
+                      totalFields: 41
                     };
                   }
                   
@@ -486,6 +492,18 @@ export class EmailMonitor {
                     await fs.writeFile(resultPath, JSON.stringify(extractionResult, null, 2));
 
                     // Generate seller net sheet
+                    if (!extractionResult.success && extractionResult.fieldsExtracted === 0) {
+                      console.log('⚠️  Skipping net sheet generation - no data extracted');
+                      results.extractionResults.push({
+                        attachment: attachment.filename,
+                        success: false,
+                        error: 'No data extracted - cannot generate net sheet',
+                        fieldsExtracted: 0,
+                        totalFields: 41
+                      });
+                      continue; // Skip to next attachment
+                    }
+                    
                     try {
                       // Get property address for lookup
                       const propertyAddress = extractionResult.data?.property_address || '';
