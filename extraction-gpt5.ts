@@ -89,13 +89,33 @@ export class GPT5Extractor {
         outputPattern
       ];
       
+      console.log(`🎨 Running ImageMagick command: ${magickExecutable} ${args.slice(0, 3).join(' ')}...`);
+      
       await new Promise<void>((resolve, reject) => {
         const proc = spawn(magickExecutable, args);
-        proc.on('close', (code) => {
-          if (code === 0) resolve();
-          else reject(new Error(`ImageMagick failed with code ${code}`));
+        
+        let stderr = '';
+        proc.stderr?.on('data', (data) => {
+          stderr += data.toString();
         });
-        proc.on('error', reject);
+        
+        proc.on('close', (code) => {
+          if (code === 0) {
+            console.log('✅ ImageMagick conversion successful');
+            resolve();
+          } else {
+            console.error(`❌ ImageMagick failed with code ${code}`);
+            if (stderr) console.error(`   Error output: ${stderr}`);
+            reject(new Error(`ImageMagick failed with code ${code}: ${stderr}`));
+          }
+        });
+        
+        proc.on('error', (error) => {
+          console.error(`❌ Failed to spawn ImageMagick: ${error.message}`);
+          console.error(`   Command: ${magickExecutable}`);
+          console.error(`   This usually means ImageMagick is not installed or not in PATH`);
+          reject(error);
+        });
       });
       
       // Get list of PNG files
