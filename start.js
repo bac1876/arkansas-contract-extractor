@@ -88,6 +88,24 @@ app.get('/test-simple', async (req, res) => {
   }
 });
 
+// ImageMagick test endpoint
+app.get('/test-imagemagick', async (req, res) => {
+  console.log('🧪 ImageMagick Test endpoint hit!');
+  try {
+    require('ts-node/register');
+    require('./test-imagemagick.ts');
+    res.status(200).json({ 
+      status: 'imagemagick test initiated',
+      message: 'Check Railway logs for results' 
+    });
+  } catch (error) {
+    res.status(500).json({ 
+      status: 'error',
+      message: error.message 
+    });
+  }
+});
+
 // Start listening immediately
 const server = app.listen(PORT, '0.0.0.0', () => {
   console.log(`✅ Health check server running on port ${PORT}`);
