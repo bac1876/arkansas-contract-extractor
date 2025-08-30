@@ -347,6 +347,7 @@ export class EmailMonitor {
         const emailUid = uid; // Store uid for use in mark as read
         const fetch = this.imap.fetch(uid, {
           bodies: '',
+          struct: true,  // IMPORTANT: Need struct to get attachments
           markSeen: false  // Don't mark as seen, we're processing all recent emails
         });
 
@@ -384,9 +385,15 @@ export class EmailMonitor {
             };
 
             // Process attachments
+            console.log(`📋 Checking attachments: ${parsed.attachments?.length || 0} found`);
             if (parsed.attachments && parsed.attachments.length > 0) {
+              console.log('🔍 Attachment details:');
+              parsed.attachments.forEach((att, idx) => {
+                console.log(`  [${idx}] Type: ${att.contentType}, Name: ${att.filename}, Size: ${att.size || 'unknown'}`);
+              });
 
               for (const attachment of parsed.attachments) {
+                console.log(`🔎 Checking attachment: ${attachment.filename} (${attachment.contentType})`);
                 if (attachment.contentType === 'application/pdf') {
                   console.log(`📎 Found PDF: ${attachment.filename}`);
                   
@@ -729,7 +736,11 @@ export class EmailMonitor {
               await this.sendProcessingReport(results);
               
             } else {
-              console.log('📭 No PDF attachments found');
+              console.log('📭 No attachments found in email');
+              console.log(`  From: ${parsed.from?.text || 'unknown'}`);
+              console.log(`  Subject: ${parsed.subject || 'unknown'}`);
+              console.log(`  Has text body: ${!!parsed.text}`);
+              console.log(`  Has HTML body: ${!!parsed.html}`);
             }
 
             console.log('='.repeat(60) + '\n');
