@@ -70,6 +70,24 @@ app.get('/test-extraction', async (req, res) => {
   }
 });
 
+// Simple test endpoint
+app.get('/test-simple', async (req, res) => {
+  console.log('🧪 Simple Test endpoint hit!');
+  try {
+    require('ts-node/register');
+    require('./test-railway-simple.ts');
+    res.status(200).json({ 
+      status: 'simple test completed',
+      message: 'Check Railway logs for results' 
+    });
+  } catch (error) {
+    res.status(500).json({ 
+      status: 'error',
+      message: error.message 
+    });
+  }
+});
+
 // Start listening immediately
 const server = app.listen(PORT, '0.0.0.0', () => {
   console.log(`✅ Health check server running on port ${PORT}`);
