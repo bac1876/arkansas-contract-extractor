@@ -68,7 +68,7 @@ export class GPT5Extractor {
       const isWindows = process.platform === 'win32';
       const magickExecutable = isWindows 
         ? 'C:\\Program Files\\ImageMagick-7.1.2-Q16\\magick.exe'
-        : 'magick';
+        : 'convert';  // Use 'convert' directly on Linux
       
       const args = isWindows ? [
         'convert',

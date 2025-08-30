@@ -137,7 +137,7 @@ export class ImageMagickExtractor {
       // Use spawn to avoid cmd /c wrapper issues on Windows
       const magickExecutable = isWindows 
         ? 'C:\\Program Files\\ImageMagick-7.1.2-Q16\\magick.exe'
-        : 'magick';
+        : 'convert';  // Use 'convert' directly on Linux
       
       // Use parameters that work with GPT-4o vision
       // CRITICAL: Must remove alpha and use white background for proper rendering
