@@ -81,12 +81,11 @@ export class GPT5Extractor {
       console.log(`   Size: ${pdfStats.size} bytes`);
       console.log(`   Path: ${pdfPath}`);
       
-      // Read first few bytes to check PDF header
-      const pdfBuffer = await fs.readFile(pdfPath);
-      const pdfHeader = pdfBuffer.slice(0, 5).toString('ascii');
-      console.log(`   Header: ${pdfHeader} (should be %PDF-)`);  
+      // Use the pdfBuffer we already read to check header again
+      const pdfHeader2 = pdfBuffer.slice(0, 5).toString('ascii');
+      console.log(`   Header verification: ${pdfHeader2} (should be %PDF-)`);  
       
-      if (!pdfHeader.startsWith('%PDF')) {
+      if (!pdfHeader2.startsWith('%PDF')) {
         console.error('❌ Invalid PDF file - header does not match PDF format');
         console.log(`   First 100 bytes: ${pdfBuffer.slice(0, 100).toString('hex')}`);
         throw new Error('Invalid PDF file format');
