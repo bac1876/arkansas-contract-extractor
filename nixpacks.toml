@@ -1,0 +1,10 @@
+# nixpacks.toml
+# Configuration to install ImageMagick on Railway
+
+[phases.setup]
+# Install ImageMagick and its development libraries using Apt
+# This ensures the 'convert' command is available for PDF to PNG conversion
+aptPkgs = ["imagemagick", "libmagickwand-dev"]
+
+# Note: libmagickwand-dev is crucial for proper ImageMagick functionality
+# It includes the libraries needed for image format support
