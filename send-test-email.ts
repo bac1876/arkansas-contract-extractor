@@ -36,8 +36,8 @@ async function sendTestEmail() {
   // Prepare email
   const mailOptions = {
     from: 'contractextraction@gmail.com',
-    to: 'contractextraction@gmail.com',
-    subject: `New Contract - 3418 Justice Dr - ${new Date().toLocaleString()}`,
+    to: 'offers@searchnwa.com',
+    subject: `TEST-IMAGEMAGICK-FIX - 3418 Justice Dr - ${new Date().toISOString()}`,
     text: 'This is a test email with a contract PDF attached for processing.',
     html: `
       <div style="font-family: Arial, sans-serif;">
@@ -59,7 +59,7 @@ async function sendTestEmail() {
   };
   
   try {
-    console.log('📤 Sending email to contractextraction@gmail.com...');
+    console.log('📤 Sending email to offers@searchnwa.com...');
     const info = await transporter.sendMail(mailOptions);
     console.log('✅ Email sent successfully!');
     console.log('   Message ID:', info.messageId);

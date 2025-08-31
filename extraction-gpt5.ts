@@ -52,9 +52,21 @@ export class GPT5Extractor {
     try {
       pdfPath = path.resolve(pdfPath);
       console.log(`🔍 GPT-5 Extractor: Starting extraction for: ${pdfPath}`);
+      console.log(`   Platform: ${process.platform}`);
+      console.log(`   Node version: ${process.version}`);
       
-      // Verify file exists
+      // Verify file exists and is valid PDF
       await fs.access(pdfPath);
+      const pdfBuffer = await fs.readFile(pdfPath);
+      const pdfHeader = pdfBuffer.slice(0, 5).toString('ascii');
+      console.log(`   PDF size: ${pdfBuffer.length} bytes`);
+      console.log(`   PDF header: ${pdfHeader}`);
+      
+      if (!pdfHeader.startsWith('%PDF')) {
+        console.error(`❌ Invalid PDF - header is: ${pdfHeader}`);
+        console.log(`   First 100 bytes (hex): ${pdfBuffer.slice(0, 100).toString('hex')}`);
+        throw new Error('Invalid PDF file format - file may be corrupted');
+      }
       
       // Create temp folder for PNG conversion
       const timestamp = Date.now().toString();
@@ -62,6 +74,23 @@ export class GPT5Extractor {
       await fs.mkdir(tempFolder, { recursive: true });
       
       console.log('🖼️ Converting PDF to PNG using ImageMagick...');
+      
+      // Check if PDF exists and is valid
+      const pdfStats = await fs.stat(pdfPath);
+      console.log(`📊 PDF file stats:`);
+      console.log(`   Size: ${pdfStats.size} bytes`);
+      console.log(`   Path: ${pdfPath}`);
+      
+      // Read first few bytes to check PDF header
+      const pdfBuffer = await fs.readFile(pdfPath);
+      const pdfHeader = pdfBuffer.slice(0, 5).toString('ascii');
+      console.log(`   Header: ${pdfHeader} (should be %PDF-)`);  
+      
+      if (!pdfHeader.startsWith('%PDF')) {
+        console.error('❌ Invalid PDF file - header does not match PDF format');
+        console.log(`   First 100 bytes: ${pdfBuffer.slice(0, 100).toString('hex')}`);
+        throw new Error('Invalid PDF file format');
+      }
       
       // Convert PDF to PNG pages (same as GPT-4o version)
       const outputPattern = path.join(tempFolder, 'page-%d.png');
@@ -89,7 +118,9 @@ export class GPT5Extractor {
         outputPattern
       ];
       
-      console.log(`🎨 Running ImageMagick command: ${magickExecutable} ${args.slice(0, 3).join(' ')}...`);
+      console.log(`🎨 Running ImageMagick command: ${magickExecutable} ${args.join(' ')}`);
+      console.log(`   Platform: ${process.platform}`);
+      console.log(`   Working dir: ${process.cwd()}`);
       
       await new Promise<void>((resolve, reject) => {
         const proc = spawn(magickExecutable, args);
@@ -105,7 +136,18 @@ export class GPT5Extractor {
             resolve();
           } else {
             console.error(`❌ ImageMagick failed with code ${code}`);
-            if (stderr) console.error(`   Error output: ${stderr}`);
+            if (stderr) {
+              console.error(`   Error output: ${stderr}`);
+              // Check for specific ImageMagick errors
+              if (stderr.includes('no decode delegate')) {
+                console.error('   ⚠️  ImageMagick cannot decode PDF - Ghostscript may be missing');
+                console.error('   Try: apt-get install ghostscript');
+              }
+              if (stderr.includes('not authorized')) {
+                console.error('   ⚠️  ImageMagick policy prevents PDF conversion');
+                console.error('   May need to modify /etc/ImageMagick-*/policy.xml');
+              }
+            }
             reject(new Error(`ImageMagick failed with code ${code}: ${stderr}`));
           }
         });
@@ -129,6 +171,19 @@ export class GPT5Extractor {
         });
       
       console.log(`✅ Converted ${pngFiles.length} pages to PNG`);
+      
+      // Verify PNG files were created properly
+      if (pngFiles.length === 0) {
+        console.error('❌ No PNG files created - ImageMagick conversion failed silently');
+        const allFiles = await fs.readdir(tempFolder);
+        console.log(`   Files in temp folder: ${allFiles.join(', ')}`);
+        throw new Error('No PNG files created from PDF conversion');
+      }
+      
+      // Check size of first PNG
+      const firstPngPath = path.join(tempFolder, pngFiles[0]);
+      const firstPngStats = await fs.stat(firstPngPath);
+      console.log(`   First PNG size: ${firstPngStats.size} bytes`);
       console.log('🤖 Using GPT-5 Responses API for extraction...');
       
       // Extract from each page using GPT-5

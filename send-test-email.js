@@ -13,7 +13,7 @@ async function sendTestEmail() {
     }
   });
 
-  const pdfPath = path.join(__dirname, 'Test Contracts', '890 Clark.pdf');
+  const pdfPath = path.join(__dirname, 'Test Contracts', 'test_contract.pdf');
   
   if (!fs.existsSync(pdfPath)) {
     console.error('❌ PDF not found at:', pdfPath);

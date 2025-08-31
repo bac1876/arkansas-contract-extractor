@@ -55,8 +55,21 @@ RUN npx playwright install-deps chromium
 # Copy all source files
 COPY . .
 
-# Verify ImageMagick installation
+# Verify ImageMagick installation and fix PDF policy
 RUN which convert && convert -version
+
+# CRITICAL: Fix ImageMagick policy to allow PDF processing
+# Railway/Docker often has restrictive policies that block PDF conversion
+RUN sed -i '/disable ghostscript format types/,+6d' /etc/ImageMagick-6/policy.xml || true
+RUN sed -i '/<policy domain="coder" rights="none" pattern="PDF" \/>/d' /etc/ImageMagick-6/policy.xml || true
+RUN sed -i '/<policy domain="coder" rights="none" pattern="PS" \/>/d' /etc/ImageMagick-6/policy.xml || true
+RUN sed -i '/<policy domain="coder" rights="none" pattern="EPS" \/>/d' /etc/ImageMagick-6/policy.xml || true
+RUN sed -i '/<policy domain="coder" rights="none" pattern="XPS" \/>/d' /etc/ImageMagick-6/policy.xml || true
+
+# Verify PDF conversion works
+RUN echo '%PDF-1.4' > /tmp/test.pdf && \
+    convert /tmp/test.pdf /tmp/test.png 2>&1 || \
+    echo 'Warning: PDF conversion test failed, but continuing...'
 
 # Create necessary directories
 RUN mkdir -p processed_contracts/pdfs \
