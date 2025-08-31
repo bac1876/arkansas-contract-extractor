@@ -2,9 +2,16 @@
 FROM node:20
 
 # Install dependencies for Playwright and ImageMagick
+# CRITICAL: Install ImageMagick with all delegate libraries for format support
 RUN apt-get update && apt-get install -y \
     imagemagick \
+    libmagickwand-dev \
     ghostscript \
+    # Delegate libraries for common image formats (CRITICAL for PDF support)
+    libjpeg-dev \
+    libpng-dev \
+    libtiff-dev \
+    libwebp-dev \
     # Dependencies for Playwright/Chromium
     libnss3 \
     libnspr4 \
@@ -47,6 +54,9 @@ RUN npx playwright install-deps chromium
 
 # Copy all source files
 COPY . .
+
+# Verify ImageMagick installation
+RUN which convert && convert -version
 
 # Create necessary directories
 RUN mkdir -p processed_contracts/pdfs \
