@@ -121,15 +121,15 @@ export class PDFGenerator {
     .property-info {
       background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
       color: white;
-      padding: 10px;
-      border-radius: 10px;
-      margin-bottom: 15px;
-      box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+      padding: 8px;
+      border-radius: 8px;
+      margin-bottom: 10px;
+      box-shadow: 0 5px 10px rgba(0,0,0,0.1);
     }
     
     .property-info h2 {
-      font-size: 14px;
-      margin-bottom: 5px;
+      font-size: 12px;
+      margin-bottom: 3px;
       font-weight: 400;
     }
     
@@ -224,10 +224,10 @@ export class PDFGenerator {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 10px 0;
+      padding: 8px 0;
       border-top: 2px solid #dee2e6;
-      margin-top: 10px;
-      font-size: 16px;
+      margin-top: 8px;
+      font-size: 13px;
       font-weight: 600;
       color: #495057;
     }
@@ -300,12 +300,12 @@ export class PDFGenerator {
     <!-- Transaction Details -->
     <div class="info-grid">
       <div class="info-item">
-        <span class="info-label">Closing Date:</span>
-        <span class="info-value">${closingDate}</span>
-      </div>
-      <div class="info-item">
         <span class="info-label">Sales Price:</span>
         <span class="info-value">${formatCurrency(netSheetData.sales_price)}</span>
+      </div>
+      <div class="info-item">
+        <span class="info-label">Closing Date:</span>
+        <span class="info-value">${closingDate}</span>
       </div>
     </div>
     
@@ -392,17 +392,17 @@ export class PDFGenerator {
     <div class="section">
       <div class="section-content">
         <table class="cost-table">
-          <tr style="font-size: 16px; font-weight: bold;">
+          <tr style="font-size: 13px; font-weight: bold;">
             <td class="item-name">Sales Price</td>
             <td></td>
             <td class="item-amount">${formatCurrency(netSheetData.sales_price)}</td>
           </tr>
-          <tr style="font-size: 16px; font-weight: bold;">
+          <tr style="font-size: 13px; font-weight: bold;">
             <td class="item-name">Less: Total Costs</td>
             <td></td>
             <td class="item-amount">(${formatCurrency(netSheetData.total_costs)})</td>
           </tr>
-          <tr style="font-size: 18px; font-weight: bold; background: #f0f0f0;">
+          <tr style="font-size: 15px; font-weight: bold; background: #f0f0f0;">
             <td class="item-name">Estimated Net to Seller</td>
             <td></td>
             <td class="item-amount">${formatCurrency(netSheetData.cash_to_seller)}</td>
@@ -452,9 +452,9 @@ export class PDFGenerator {
     }
     
     return `
-    <div style="margin-top: 30px; padding: 20px; background: #f8f9fa; border-radius: 10px;">
-      <h3 style="color: #2c3e50; font-size: 18px; margin-bottom: 15px; font-weight: 600;">NOTES</h3>
-      <div style="color: #555; font-size: 14px; line-height: 1.8;">
+    <div style="margin-top: 10px; padding: 10px; background: #f8f9fa; border-radius: 8px;">
+      <h3 style="color: #2c3e50; font-size: 13px; margin-bottom: 8px; font-weight: 600;">NOTES</h3>
+      <div style="color: #555; font-size: 11px; line-height: 1.5;">
         ${notes.join('<br>')}
       </div>
     </div>`;
