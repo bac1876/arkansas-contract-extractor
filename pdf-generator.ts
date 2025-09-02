@@ -117,27 +117,6 @@ export class PDFGenerator {
       padding: 20px;
     }
     
-    .header {
-      text-align: center;
-      border-bottom: 3px solid #2c3e50;
-      padding-bottom: 20px;
-      margin-bottom: 30px;
-    }
-    
-    .header h1 {
-      color: #2c3e50;
-      font-size: 24px;
-      margin-bottom: 5px;
-      font-weight: 500;
-      letter-spacing: 1px;
-    }
-    
-    .header .subtitle {
-      color: #7f8c8d;
-      font-size: 12px;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
     
     .property-info {
       background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -285,20 +264,6 @@ export class PDFGenerator {
       line-height: 1.5;
     }
     
-    .footer {
-      margin-top: 25px;
-      text-align: center;
-      color: #888;
-      font-size: 11px;
-      padding-top: 15px;
-      border-top: 1px solid #e0e0e0;
-    }
-    
-    .footer .company {
-      font-weight: 600;
-      color: #2c3e50;
-      margin-bottom: 5px;
-    }
     
     .tax-warning {
       background-color: #ffebee !important;
@@ -337,11 +302,6 @@ export class PDFGenerator {
 </head>
 <body>
   <div class="container">
-    <!-- Header -->
-    <div class="header">
-      <h1>ESTIMATED PROCEEDS STATEMENT</h1>
-    </div>
-    
     <!-- Property Information -->
     <div class="property-info">
       <h2>${propertyAddress}</h2>
@@ -466,12 +426,6 @@ export class PDFGenerator {
     <!-- Notes Section -->
     ${this.generateNotesSection(contractData)}
     
-    <!-- Footer -->
-    <div class="footer">
-      <div class="company">Arkansas Contract Agent</div>
-      <div>Generated on ${new Date().toLocaleString()}</div>
-      <div>This document is confidential and intended solely for the named recipient</div>
-    </div>
   </div>
 </body>
 </html>`;
