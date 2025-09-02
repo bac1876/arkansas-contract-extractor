@@ -1,0 +1,448 @@
+2025-09-02T19:46:50.568482908Z [inf]  ?? Checking for new emails... [7:46:41 PM]
+2025-09-02T19:46:50.568489386Z [inf]  ?? Paused polling while processing...
+2025-09-02T19:46:50.568493863Z [inf]  => DONE
+2025-09-02T19:46:50.568498155Z [inf]  <= 'IDLE OK IDLE terminated (Success)'
+2025-09-02T19:46:50.568503962Z [inf]  => 'A9 UID SEARCH UNSEEN'
+2025-09-02T19:46:50.568508424Z [inf]  <= '* SEARCH'
+2025-09-02T19:46:50.568512594Z [inf]  <= 'A9 OK SEARCH completed (Success)'
+2025-09-02T19:46:50.568518798Z [inf]  ?? No recent emails
+2025-09-02T19:46:50.568522601Z [inf]  ?? Restarting 30-second polling interval...
+2025-09-02T19:46:50.568528379Z [inf]  => 'IDLE IDLE'
+2025-09-02T19:46:50.568533083Z [inf]  <= '+ idling'
+2025-09-02T19:47:20.566677603Z [inf]  ?? Checking for new emails... [7:47:11 PM]
+2025-09-02T19:47:20.566683649Z [inf]  ?? Paused polling while processing...
+2025-09-02T19:47:20.566688383Z [inf]  => DONE
+2025-09-02T19:47:20.566693066Z [inf]  <= '* 61 EXISTS'
+2025-09-02T19:47:20.566697251Z [inf]  ?? 1 new email(s) received!
+2025-09-02T19:47:20.566701479Z [inf]  ? Already processing emails, will check when done...
+2025-09-02T19:47:20.566705744Z [inf]  <= 'IDLE OK IDLE terminated (Success)'
+2025-09-02T19:47:20.566709887Z [inf]  => 'A10 UID SEARCH UNSEEN'
+2025-09-02T19:47:20.566713988Z [inf]  <= '* SEARCH 13755'
+2025-09-02T19:47:20.566717980Z [inf]  <= 'A10 OK SEARCH completed (Success)'
+2025-09-02T19:47:20.566721888Z [inf]  ?? Found 1 unread email(s)
+2025-09-02T19:47:20.566726008Z [inf]  => 'A11 UID FETCH 13755 (X-GM-THRID X-GM-MSGID X-GM-LABELS MODSEQ UID FLAGS INTERNALDATE BODYSTRUCTURE BODY.PEEK[])'
+2025-09-02T19:47:20.566730389Z [inf]  <= '* 61 FETCH (X-GM-THRID 1842176368769633933 X-GM-MSGID 1842182785959030762 X-GM-LABELS ("\\\\Important") UID 13755 MODSEQ (1761644) INTERNALDATE "02-Sep-2025 19:46:49 +0000" FLAGS () BODYSTRUCTURE ((("TEXT" "PLAIN" ("CHARSET" "UTF-8") NIL NIL "QUOTED-PRINTABLE" 611 13 NIL NIL NIL)("TEXT" "HTML" ("CHARSET" "UTF-8") NIL NIL "QUOTED-PRINTABLE" 2083 42 NIL NIL NIL) "ALTERNATIVE" ("BOUNDARY" "000000000000a55894063dd6bf43") NIL NIL)("APPLICATION" "PDF" ("NAME" "890 Clark.pdf") "<f_mf2uxxit0>" NIL "BASE64" 219544 NIL ("ATTACHMENT" ("FILENAME" "890 Clark.pdf")) NIL) "MIXED" ("BOUNDARY" "000000000000a55895063dd6bf45") NIL NIL) BODY[] {228804}'
+2025-09-02T19:47:20.566735575Z [inf]  <= '* 61 FETCH (X-GM-THRID 1842176368769633933 X-GM-MSGID 1842182785959030762 X-GM-LABELS ("\\\\Important") UID 13755 MODSEQ (1761644) INTERNALDATE "02-Sep-2025 19:46:49 +0000" FLAGS () BODYSTRUCTURE ((("TEXT" "PLAIN" ("CHARSET" "UTF-8") NIL NIL "QUOTED-PRINTABLE" 611 13 NIL NIL NIL)("TEXT" "HTML" ("CHARSET" "UTF-8") NIL NIL "QUOTED-PRINTABLE" 2083 42 NIL NIL NIL) "ALTERNATIVE" ("BOUNDARY" "000000000000a55894063dd6bf43") NIL NIL)("APPLICATION" "PDF" ("NAME" "890 Clark.pdf") "<f_mf2uxxit0>" NIL "BASE64" 219544 NIL ("ATTACHMENT" ("FILENAME" "890 Clark.pdf")) NIL) "MIXED" ("BOUNDARY" "000000000000a55895063dd6bf45") NIL NIL) )'
+2025-09-02T19:47:20.567116366Z [inf]  <= 'A11 OK Success'
+2025-09-02T19:47:20.567122676Z [inf]  => 'IDLE IDLE'
+2025-09-02T19:47:20.567127318Z [inf]  
+2025-09-02T19:47:20.567131344Z [inf]  ============================================================
+2025-09-02T19:47:20.567135773Z [inf]  ?? Processing email from: "Brian Curtis" <brian@searchnwa.com>
+2025-09-02T19:47:20.567140213Z [inf]  ?? Subject: Fwd:
+2025-09-02T19:47:20.567144016Z [inf]  ?? Date: Tue Sep 02 2025 19:46:10 GMT+0000 (Coordinated Universal Time)
+2025-09-02T19:47:20.567147516Z [inf]  ?? Checking attachments: 1 found
+2025-09-02T19:47:20.567151272Z [inf]  ?? Attachment details:
+2025-09-02T19:47:20.567154982Z [inf]    [0] Type: application/pdf, Name: 890 Clark.pdf, Size: 160436
+2025-09-02T19:47:20.567158892Z [inf]  ?? Checking attachment: 890 Clark.pdf (application/pdf)
+2025-09-02T19:47:20.567163744Z [inf]  ?? Found PDF: 890 Clark.pdf
+2025-09-02T19:47:20.567167756Z [inf]  ?? PDF saved to: processed_contracts/pdfs/1756842432192_890 Clark.pdf
+2025-09-02T19:47:20.567171777Z [inf]     Size: 160436 bytes
+2025-09-02T19:47:20.567175674Z [inf]  ?? Starting robust extraction with automatic retries...
+2025-09-02T19:47:20.567180180Z [inf]  ?? Starting Robust Extraction Process
+2025-09-02T19:47:20.567184229Z [inf]  ?? PDF: 1756842432192_890 Clark.pdf
+2025-09-02T19:47:20.567188392Z [inf]  
+2025-09-02T19:47:20.567192143Z [inf]  ?? Phase 1: Primary Extraction (GPT-5-mini)
+2025-09-02T19:47:20.567195665Z [inf]  
+2025-09-02T19:47:20.567199211Z [inf]  ?? Attempt 1/3
+2025-09-02T19:47:20.567204320Z [inf]  ?? GPT-5 Extractor: Starting extraction for: /app/processed_contracts/pdfs/1756842432192_890 Clark.pdf
+2025-09-02T19:47:20.567209098Z [inf]     Platform: linux
+2025-09-02T19:47:20.567212945Z [inf]     Node version: v20.19.4
+2025-09-02T19:47:20.567216780Z [inf]  <= '+ idling'
+2025-09-02T19:47:20.567220701Z [inf]     PDF size: 160436 bytes
+2025-09-02T19:47:20.567224946Z [inf]     PDF header: %PDF-
+2025-09-02T19:47:20.567229151Z [inf]  ??? Converting PDF to PNG using ImageMagick...
+2025-09-02T19:47:20.567232813Z [inf]  ?? PDF file stats:
+2025-09-02T19:47:20.567237926Z [inf]     Size: 160436 bytes
+2025-09-02T19:47:20.567241833Z [inf]     Path: /app/processed_contracts/pdfs/1756842432192_890 Clark.pdf
+2025-09-02T19:47:20.567246565Z [inf]     Header verification: %PDF- (should be %PDF-)
+2025-09-02T19:47:20.567251209Z [inf]  ?? Running ImageMagick command: convert -density 150 /app/processed_contracts/pdfs/1756842432192_890 Clark.pdf -alpha remove -background white -resize 1224x1584 -depth 8 /app/gpt5_temp_1756842432254/page-%d.png
+2025-09-02T19:47:20.567254855Z [inf]     Platform: linux
+2025-09-02T19:47:20.567258523Z [inf]     Working dir: /app
+2025-09-02T19:47:20.567262146Z [inf]  ? ImageMagick conversion successful
+2025-09-02T19:47:20.567266156Z [inf]  ? Converted 17 pages to PNG
+2025-09-02T19:47:20.567270016Z [inf]     First PNG size: 562601 bytes
+2025-09-02T19:47:20.567273729Z [inf]  ?? Using GPT-5 Responses API for extraction...
+2025-09-02T19:47:20.567278791Z [inf]  ?? Processing page 1...
+2025-09-02T19:47:26.104748105Z [inf]  ? Page 1: Extracted 5 fields
+2025-09-02T19:47:26.104757791Z [inf]    Page 1 returned: [ 'buyers', 'property_address', 'purchase_price', 'loan_type' ]
+2025-09-02T19:47:26.104763992Z [inf]  ??  Skipping page 2 (not needed)
+2025-09-02T19:47:26.104772158Z [inf]  ??  Skipping page 3 (not needed)
+2025-09-02T19:47:26.104778211Z [inf]  ?? Processing page 4...
+2025-09-02T19:47:46.078313091Z [inf]  ? Page 4: Extracted 4 fields
+2025-09-02T19:47:46.078323054Z [inf]    Page 4 returned: [
+2025-09-02T19:47:46.078329458Z [inf]    'seller_pays_buyer_costs',
+2025-09-02T19:47:46.078335786Z [inf]    'earnest_money',
+2025-09-02T19:47:46.078341116Z [inf]    'non_refundable',
+2025-09-02T19:47:46.078346708Z [inf]    'non_refundable_amount'
+2025-09-02T19:47:46.078353562Z [inf]  ]
+2025-09-02T19:47:46.078359579Z [inf]  ?? Processing page 5...
+2025-09-02T19:47:46.078365510Z [inf]  ? Page 5: Extracted 1 fields
+2025-09-02T19:47:46.078371064Z [inf]    Page 5 returned: [ 'para10_title_option' ]
+2025-09-02T19:47:46.078376568Z [inf]  ?? Processing page 6...
+2025-09-02T19:47:53.840005559Z [inf]  ? Page 6: Extracted 4 fields
+2025-09-02T19:47:53.840025745Z [inf]    Page 6 returned: [
+2025-09-02T19:47:53.840032745Z [inf]    'para11_survey_option',
+2025-09-02T19:47:53.840068213Z [inf]    'para11_survey_paid_by',
+2025-09-02T19:47:53.840073506Z [inf]    'para13_items_included',
+2025-09-02T19:47:53.840078516Z [inf]    'para13_items_excluded'
+2025-09-02T19:47:53.840083268Z [inf]  ]
+2025-09-02T19:47:53.840089937Z [inf]  ?? Processing page 7...
+2025-09-02T19:47:58.235511882Z [inf]  ? Page 7: Extracted 2 fields
+2025-09-02T19:47:58.235518349Z [inf]    Page 7 returned: [ 'para14_contingency', 'para14_binding_type' ]
+2025-09-02T19:47:58.235523679Z [inf]  ?? Processing page 8...
+2025-09-02T19:48:04.711479045Z [inf]  ? Page 8: Extracted 3 fields
+2025-09-02T19:48:04.711483078Z [inf]    Page 8 returned: [
+2025-09-02T19:48:04.711486899Z [inf]    'para15_home_warranty',
+2025-09-02T19:48:04.711492338Z [inf]    'para15_warranty_paid_by',
+2025-09-02T19:48:04.711496362Z [inf]    'para15_warranty_cost'
+2025-09-02T19:48:04.711504488Z [inf]  ]
+2025-09-02T19:48:04.711512488Z [inf]  ??  Skipping page 9 (not needed)
+2025-09-02T19:48:04.711516214Z [inf]  ?? Processing page 10...
+2025-09-02T19:48:09.655950133Z [inf]  ? Page 10: Extracted 1 fields
+2025-09-02T19:48:09.655956074Z [inf]    Page 10 returned: [ 'para19_termite_option' ]
+2025-09-02T19:48:09.655961132Z [inf]  ??  Skipping page 11 (not needed)
+2025-09-02T19:48:09.655965024Z [inf]  ?? Processing page 12...
+2025-09-02T19:48:14.774726738Z [inf]  ? Page 12: Extracted 1 fields
+2025-09-02T19:48:14.774731004Z [inf]    Page 12 returned: [ 'closing_date' ]
+2025-09-02T19:48:14.774735021Z [inf]  ??  Skipping page 13 (not needed)
+2025-09-02T19:48:14.774739433Z [inf]  ?? Processing page 14...
+2025-09-02T19:48:21.086660076Z [inf]  ? Page 14: Extracted 2 fields
+2025-09-02T19:48:21.086666309Z [inf]    Page 14 returned: [ 'buyer_agency_fee', 'other_terms' ]
+2025-09-02T19:48:21.086670700Z [inf]  ??  Skipping page 15 (not needed)
+2025-09-02T19:48:21.086674748Z [inf]  ?? Processing page 16...
+2025-09-02T19:48:26.776204911Z [inf]  ? Page 16: Extracted 6 fields
+2025-09-02T19:48:26.776209027Z [inf]    Page 16 returned: [
+2025-09-02T19:48:26.776212830Z [inf]    'para38_expiration_date',
+2025-09-02T19:48:26.776216575Z [inf]    'selling_firm_name',
+2025-09-02T19:48:26.776220803Z [inf]    'selling_agent_name',
+2025-09-02T19:48:26.776224443Z [inf]    'selling_agent_arec',
+2025-09-02T19:48:26.776228504Z [inf]    'selling_agent_email',
+2025-09-02T19:48:26.776233968Z [inf]    'selling_agent_phone'
+2025-09-02T19:48:26.776237858Z [inf]  ]
+2025-09-02T19:48:26.776241812Z [inf]  ??  Skipping page 17 (not needed)
+2025-09-02T19:48:26.776262385Z [inf]  ?? Cleaning up temp files...
+2025-09-02T19:48:26.776267488Z [inf]  ? GPT-5 Extraction complete: 29/28 fields identified (100%)
+2025-09-02T19:48:26.776272133Z [inf]     ?? 26 fields have values, 3 fields correctly identified as empty
+2025-09-02T19:48:26.776275946Z [inf]  ?? Total reasoning tokens used: 2113
+2025-09-02T19:48:26.776279647Z [inf]  
+2025-09-02T19:48:26.776284613Z [inf]  ?? EXTRACTION VALIDATION REPORT
+2025-09-02T19:48:26.776288766Z [inf]  =========================================
+2025-09-02T19:48:26.776293072Z [inf]  
+2025-09-02T19:48:26.776297119Z [inf]  ?? File: 1756842432192_890 Clark.pdf
+2025-09-02T19:48:26.776301051Z [inf]  ?? Extracted Address: 890 Clark Cir Bentonville, AR 72713
+2025-09-02T19:48:26.776304902Z [inf]  ?? Purchase Price: $450,000
+2025-09-02T19:48:26.776308580Z [inf]  ?? Buyers: Bob Smith, Sue Smith
+2025-09-02T19:48:26.776313314Z [inf]  
+2025-09-02T19:48:26.776318287Z [inf]  ??  WARNINGS:
+2025-09-02T19:48:26.776322826Z [inf]     ?? Paragraph 3 financing option not identified
+2025-09-02T19:48:26.776327346Z [inf]  
+2025-09-02T19:48:26.776331331Z [inf]  ? Extraction appears valid
+2025-09-02T19:48:26.776336075Z [inf]  =========================================
+2025-09-02T19:48:26.776340079Z [inf]  
+2025-09-02T19:48:26.776343958Z [inf]  ? Successfully extracted with gpt-5-mini
+2025-09-02T19:48:26.776348331Z [inf]    ? GPT-5-mini succeeded: 29 fields in 74.6s
+2025-09-02T19:48:26.776352243Z [inf]  ? Successful extraction with 29 fields!
+2025-09-02T19:48:26.776356619Z [inf]  ?? Extraction completed:
+2025-09-02T19:48:26.776360490Z [inf]     Success: true
+2025-09-02T19:48:26.776364237Z [inf]     Method: undefined
+2025-09-02T19:48:26.776368555Z [inf]     Extraction Rate: 100%%
+2025-09-02T19:48:26.776373842Z [inf]     Fields Extracted: 29/28
+2025-09-02T19:48:26.776378303Z [inf]     Property Address: 890 Clark Cir Bentonville, AR 72713
+2025-09-02T19:48:26.776382383Z [inf]     Purchase Price: 450000
+2025-09-02T19:48:26.776386174Z [inf]  ?? Extraction completed after 1 attempt(s)
+2025-09-02T19:48:26.776390854Z [inf]     Method: GPT-5-mini
+2025-09-02T19:48:26.776395785Z [inf]     Fields: 29/28
+2025-09-02T19:48:26.776399632Z [inf]  ? Extraction successful: 100%
+2025-09-02T19:48:26.776403284Z [inf]  ??  No listing data found for: "890 Clark Cir Bentonville, AR 72713" - using defaults
+2025-09-02T19:48:26.776407853Z [inf]     Normalized to: "890 clark"
+2025-09-02T19:48:26.776411871Z [inf]     Available listings: 
+2025-09-02T19:48:26.776415956Z [inf]  ??  ATTENTION: No tax data for "890 Clark Cir Bentonville, AR 72713" - NEEDS MANUAL VERIFICATION
+2025-09-02T19:48:26.776421093Z [inf]  ?? DEBUG - Extracted data fields:
+2025-09-02T19:48:26.776425243Z [inf]    paragraph_5: undefined
+2025-09-02T19:48:26.776429338Z [inf]    additional_terms: undefined
+2025-09-02T19:48:26.776432897Z [inf]    para5_custom_text: undefined
+2025-09-02T19:48:26.776438703Z [inf]  ?? Net sheet input values:
+2025-09-02T19:48:26.776442485Z [inf]    seller_concessions: 5000
+2025-09-02T19:48:26.776445949Z [inf]    para32_other_terms: undefined
+2025-09-02T19:48:26.776449578Z [inf]  ?? Using default data: Taxes=$3650, Commission=3.0%
+2025-09-02T19:48:26.776452968Z [inf]  ? TAX WARNING: Using default tax value - NEEDS MANUAL VERIFICATION
+2025-09-02T19:48:27.627450073Z [inf]  ?? Net sheet PDF generated: net_sheets_pdf/netsheet_890_Clark_Cir_Bentonville_AR_72713.pdf
+2025-09-02T19:48:27.627456215Z [inf]  ?? Generated net sheet: netsheet_890_Clark_Cir_Bentonville_AR_72713.pdf
+2025-09-02T19:48:27.627483650Z [inf]  ?? CSV net sheet saved: net_sheets_csv/netsheet_890_Clark_Cir_Bentonville_AR_72713.csv
+2025-09-02T19:48:27.627490843Z [inf]  ?? Generated CSV net sheet: netsheet_890_Clark_Cir_Bentonville_AR_72713.csv
+2025-09-02T19:48:27.627497178Z [inf]  ?? Uploading netsheet_890_Clark_Cir_Bentonville_AR_72713.pdf to Google Drive...
+2025-09-02T19:48:29.409547755Z [inf]  ? Uploaded: netsheet_890_Clark_Cir_Bentonville_AR_72713.pdf
+2025-09-02T19:48:29.409555899Z [inf]     ?? Folder: 0AHKbof5whHFPUk9PVA
+2025-09-02T19:48:29.409560989Z [inf]     ?? Owner: unknown
+2025-09-02T19:48:29.409565405Z [inf]     ?? Link: https://drive.google.com/file/d/1NfPdkjD7bjukPOELw5y-Y5xhYS3NPSDD/view?usp=drivesdk
+2025-09-02T19:48:29.409569506Z [inf]  ?? Uploading netsheet_890_Clark_Cir_Bentonville_AR_72713.csv to Google Drive...
+2025-09-02T19:48:30.779976606Z [inf]  ? Uploaded: netsheet_890_Clark_Cir_Bentonville_AR_72713.csv
+2025-09-02T19:48:30.779990047Z [inf]     ?? Folder: 0AHKbof5whHFPUk9PVA
+2025-09-02T19:48:30.779995029Z [inf]     ?? Owner: unknown
+2025-09-02T19:48:30.779999443Z [inf]     ?? Link: https://drive.google.com/file/d/1Nkcf_pdtSrdhdUPBmPUTj18LJquIwzZp/view?usp=drivesdk
+2025-09-02T19:48:30.780005097Z [inf]  ?? Uploaded PDF to Google Drive
+2025-09-02T19:48:30.780009958Z [inf]     ?? PDF Link: https://drive.google.com/file/d/1NfPdkjD7bjukPOELw5y-Y5xhYS3NPSDD/view?usp=drivesdk
+2025-09-02T19:48:30.780015215Z [inf]  ?? Uploaded CSV to Google Drive
+2025-09-02T19:48:30.780019454Z [inf]     ?? CSV Link: https://drive.google.com/file/d/1Nkcf_pdtSrdhdUPBmPUTj18LJquIwzZp/view?usp=drivesdk
+2025-09-02T19:48:31.419545621Z [inf]  ?? Agent info sheet PDF generated: agent_info_sheets/offer_info_890_Clark_Cir_Bentonville_AR_72713.pdf
+2025-09-02T19:48:31.419552982Z [err]  ??  Could not generate agent info sheet: TypeError: Cannot read properties of undefined (reading 'toUpperCase')
+2025-09-02T19:48:31.419557450Z [err]      at /app/email-monitor.ts:669:91
+2025-09-02T19:48:31.419561302Z [inf]  ?? Creating sheet in Shared Drive (no quota limits)...
+2025-09-02T19:48:35.873110587Z [inf]  ? Created spreadsheet: Net Sheet - 890 Clark Cir Bentonville AR 72713 - 2025-09-02
+2025-09-02T19:48:35.873114704Z [inf]     ?? In folder: 0AHKbof5whHFPUk9PVA
+2025-09-02T19:48:35.873118362Z [inf]     ?? Owner: unknown (storage counts against their quota)
+2025-09-02T19:48:37.248037239Z [inf]  ? Net sheet formatted
+2025-09-02T19:48:37.387080119Z [inf]  ??  Tax warning formatting applied
+2025-09-02T19:48:37.387087095Z [inf]  ? Net sheet populated with data
+2025-09-02T19:48:37.681359852Z [inf]  ??  Sheet is private (accessible via link)
+2025-09-02T19:48:37.681364336Z [inf]  ?? Created individual net sheet in Google Drive
+2025-09-02T19:48:37.681369147Z [inf]     ?? Link: https://docs.google.com/spreadsheets/d/1v_0xXsFEAb3-xI0KJvGK8suBGilJ0RgxZBREXPNOClo/edit
+2025-09-02T19:48:38.563908650Z [inf]  ? Contract data saved to Google Sheets
+2025-09-02T19:48:39.232617907Z [err]        reason: 'badRequest'
+2025-09-02T19:48:39.232695645Z [err]  Failed to append net sheet data: GaxiosError: Unable to parse range: NetSheets![1:[35
+2025-09-02T19:48:39.232699970Z [err]      at Gaxios._request (/app/node_modules/googleapis-common/node_modules/gaxios/src/gaxios.ts:169:15)
+2025-09-02T19:48:39.232704078Z [err]      at processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-09-02T19:48:39.232708049Z [err]      at async JWT.requestAsync (/app/node_modules/googleapis-common/node_modules/google-auth-library/build/src/auth/oauth2client.js:382:18)
+2025-09-02T19:48:39.232713174Z [err]      at async GoogleSheetsIntegration.appendNetSheetData (/app/google-sheets-integration.ts:241:7)
+2025-09-02T19:48:39.232717259Z [err]      at async GoogleSheetsIntegration.saveCompleteExtraction (/app/google-sheets-integration.ts:339:7)
+2025-09-02T19:48:39.232721642Z [err]      at async /app/email-monitor.ts:717:27 {
+2025-09-02T19:48:39.232726733Z [err]    response: {
+2025-09-02T19:48:39.232731025Z [err]      config: {
+2025-09-02T19:48:39.232735206Z [err]        url: 'https://sheets.googleapis.com/v4/spreadsheets/1xeiS8rAqYncRKHGp6oiN8n3-Z9lRwLqrAc0PY_RJuhI/values/NetSheets%21%5B1%3A%5B35?valueInputOption=USER_ENTERED',
+2025-09-02T19:48:39.232739779Z [err]        method: 'PUT',
+2025-09-02T19:48:39.232743928Z [err]        userAgentDirectives: [Array],
+2025-09-02T19:48:39.232748381Z [err]        paramsSerializer: [Function (anonymous)],
+2025-09-02T19:48:39.232752407Z [err]        data: [Object],
+2025-09-02T19:48:39.232756660Z [err]        headers: [Object],
+2025-09-02T19:48:39.232760735Z [err]        params: [Object],
+2025-09-02T19:48:39.232764929Z [err]        validateStatus: [Function (anonymous)],
+2025-09-02T19:48:39.232769724Z [err]        retry: true,
+2025-09-02T19:48:39.232775040Z [err]        body: '{"values":[["2025-09-02T19:48:38.560Z"],[""],["$450,000.00"],[""],["$5,000.00"],[""],["$3,040.00"],[""],["$13,500.00"],[""],["$15,750.00"],[""],["$400.00"],[""],["$300.00"],[""],["$1,125.00"],[""],["$100.00"],[""],["$450.00"],[""],["$742.50"],[""],["$695.00"],[""],["$42,102.50"],[""],[""],["$407,897.50"],[""],["890 Clark Cir Bentonville, AR 72713"],["9/2/2025"],[304],["$10.00"]]}',
+2025-09-02T19:48:39.232801859Z [err]        responseType: 'json',
+2025-09-02T19:48:39.232805886Z [err]        retryConfig: [Object]
+2025-09-02T19:48:39.232810035Z [err]      },
+2025-09-02T19:48:39.232814999Z [err]      data: { error: [Object] },
+2025-09-02T19:48:39.232819241Z [err]      headers: {
+2025-09-02T19:48:39.232823337Z [err]        'alt-svc': 'h3=":443"; ma=2592000,h3-29=":443"; ma=2592000',
+2025-09-02T19:48:39.232829985Z [err]        'content-encoding': 'gzip',
+2025-09-02T19:48:39.232834210Z [err]        'content-type': 'application/json; charset=UTF-8',
+2025-09-02T19:48:39.232839304Z [err]        date: 'Tue, 02 Sep 2025 19:48:39 GMT',
+2025-09-02T19:48:39.232843518Z [err]        server: 'ESF',
+2025-09-02T19:48:39.232847749Z [err]        'transfer-encoding': 'chunked',
+2025-09-02T19:48:39.232852507Z [err]        vary: 'Origin, X-Origin, Referer',
+2025-09-02T19:48:39.232856336Z [err]        'x-content-type-options': 'nosniff',
+2025-09-02T19:48:39.232860716Z [err]        'x-frame-options': 'SAMEORIGIN',
+2025-09-02T19:48:39.232865103Z [err]        'x-l2-request-path': 'l2-managed-6',
+2025-09-02T19:48:39.232869253Z [err]        'x-xss-protection': '0'
+2025-09-02T19:48:39.232874125Z [err]      },
+2025-09-02T19:48:39.232880166Z [err]      status: 400,
+2025-09-02T19:48:39.232884814Z [err]      }
+2025-09-02T19:48:39.232886664Z [err]      statusText: 'Bad Request',
+2025-09-02T19:48:39.232893441Z [err]      request: {
+2025-09-02T19:48:39.232896947Z [err]    ]
+2025-09-02T19:48:39.232901560Z [err]        responseURL: 'https://sheets.googleapis.com/v4/spreadsheets/1xeiS8rAqYncRKHGp6oiN8n3-Z9lRwLqrAc0PY_RJuhI/values/NetSheets%21%5B1%3A%5B35?valueInputOption=USER_ENTERED'
+2025-09-02T19:48:39.232906734Z [err]  }
+2025-09-02T19:48:39.232909937Z [err]      }
+2025-09-02T19:48:39.232917917Z [err]    },
+2025-09-02T19:48:39.232918247Z [err]  Failed to save complete extraction: GaxiosError: Unable to parse range: NetSheets![1:[35
+2025-09-02T19:48:39.232927660Z [err]      at Gaxios._request (/app/node_modules/googleapis-common/node_modules/gaxios/src/gaxios.ts:169:15)
+2025-09-02T19:48:39.232928384Z [inf]  ?? Net sheet generated successfully
+2025-09-02T19:48:39.232928773Z [err]    config: {
+2025-09-02T19:48:39.232936942Z [err]      url: 'https://sheets.googleapis.com/v4/spreadsheets/1xeiS8rAqYncRKHGp6oiN8n3-Z9lRwLqrAc0PY_RJuhI/values/NetSheets%21%5B1%3A%5B35?valueInputOption=USER_ENTERED',
+2025-09-02T19:48:39.232938807Z [err]      at processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-09-02T19:48:39.232940896Z [inf]  ?? Processing complete for: "Brian Curtis" <brian@searchnwa.com>
+2025-09-02T19:48:39.232945163Z [err]      method: 'PUT',
+2025-09-02T19:48:39.232951458Z [err]      at async JWT.requestAsync (/app/node_modules/googleapis-common/node_modules/google-auth-library/build/src/auth/oauth2client.js:382:18)
+2025-09-02T19:48:39.232953040Z [inf]     - Attachments processed: 1
+2025-09-02T19:48:39.232954245Z [err]      userAgentDirectives: [ [Object] ],
+2025-09-02T19:48:39.232963305Z [inf]     - Successful extractions: 1
+2025-09-02T19:48:39.232964867Z [err]      paramsSerializer: [Function (anonymous)],
+2025-09-02T19:48:39.232969890Z [err]      at async GoogleSheetsIntegration.appendNetSheetData (/app/google-sheets-integration.ts:241:7)
+2025-09-02T19:48:39.232971233Z [inf]  ============================================================
+2025-09-02T19:48:39.232972176Z [err]      data: { values: [Array] },
+2025-09-02T19:48:39.232978877Z [inf]  ============================================================
+2025-09-02T19:48:39.232981005Z [err]      headers: {
+2025-09-02T19:48:39.232983904Z [err]      at async GoogleSheetsIntegration.saveCompleteExtraction (/app/google-sheets-integration.ts:339:7)
+2025-09-02T19:48:39.232986323Z [inf]  
+2025-09-02T19:48:39.232991183Z [err]        'x-goog-api-client': 'gdcl/6.0.4 gl-node/20.19.4',
+2025-09-02T19:48:39.232994899Z [inf]  ? Marking email as read and adding "Processed Contracts" label...
+2025-09-02T19:48:39.232998512Z [err]      at async /app/email-monitor.ts:717:27 {
+2025-09-02T19:48:39.233000574Z [err]        'Accept-Encoding': 'gzip',
+2025-09-02T19:48:39.233004353Z [inf]  => DONE
+2025-09-02T19:48:39.233008802Z [err]        'User-Agent': 'google-api-nodejs-client/6.0.4 (gzip)',
+2025-09-02T19:48:39.233011348Z [err]    response: {
+2025-09-02T19:48:39.233016032Z [inf]  ? Processing complete, checking for new emails...
+2025-09-02T19:48:39.233018906Z [err]        Authorization: 'Bearer ya29.c.c0ASRK0GZTuVB4FC5UYKqCLM84J-aDCuhga4DORotViXdpIwhghv1sza62mHj26L5AvJK5Cb-e0DiRfLLmCD-vNnxzXjcRjUD8xKWuegJIL_BnbSW7X6LlodZHn7lYH0nqCGx4z9z6tAE3z4NeJR5B11qjGC497SIoaVwPaTLLlY9omSobNKar-r1AibidtDEFT7meh0GqMmNRVyQ_Y-DQ9IAkZa9wC3USfNuXCowaF1K_qtRos1MfgsEAqFKGj6Z38XwVDeYqitTzlKb-gKbL4y-fv8Dyr94BJQ6Nc034QCg2-v4sMRSYJPQKnWPatRUpVuWnFIttMm0vbdMxqVoQO_ddmYm2g-Ljp60KG1oIW16CQx_W2YVHezIT384K-ab5kcOn1hSy9he2lpsn_i1Q_m8J_jFhsZ02nZ9oBj2cphkx1estm7lxdjpU-JqXiMB-mViuS376FnxtxrkdoSWFpSrdRsoarF4aRYbaemIddO6ve_ZxvoQlobfva24qMxqUSn99-5zX1JX7xl_1nwjJpzZUdtrl621b5737O2IsV764ZQUvJsaRclJidnvx0jqIfntoXX7kOZsoo4dMBYx2jRfxlu1fn3887_-vkO6cobZoJ_JvVRS9VspBpm-r825BxoJl99ebcF9yMVnsq0_9ozitp2F3qbm4jc2de4e-1pdIMc1QnaWsVgUwl-55FIy6QbFX1Q3paWOaueSvYa02Jsyg42FccjaZ6ZBsUkMwaS2kt3qRr1qqk5FxV2SOBgZl5Ok_y17zvc5JweoB5aykFgjskM_RZlpYfvba_xUv4pXqyhYJffdOvMgJQfr8J9z3hgs5JVgo_Os42cpxMxpfwJJO3Qpx9Fk7pz2fflaV5997aclbuFl848cJqMQ-sFJ2JRn2hkcRmtqjw8lyqIfk1qX1W_wV6Bo_UjqcbVQrUwxp2mhl4Iq7FYWJVou5xzwcJYZ4IYs1iV8QWJkwjXdkF2f385e5Qwr3xxxS52g4lVJR3_dnJ-eUdBw',
+2025-09-02T19:48:39.233024477Z [err]      config: {
+2025-09-02T19:48:39.233024638Z [inf]  ?? Restarting 30-second polling interval...
+2025-09-02T19:48:39.233027908Z [err]        'Content-Type': 'application/json',
+2025-09-02T19:48:39.233034910Z [err]        Accept: 'application/json'
+2025-09-02T19:48:39.233036270Z [err]        url: 'https://sheets.googleapis.com/v4/spreadsheets/1xeiS8rAqYncRKHGp6oiN8n3-Z9lRwLqrAc0PY_RJuhI/values/NetSheets%21%5B1%3A%5B35?valueInputOption=USER_ENTERED',
+2025-09-02T19:48:39.233040594Z [err]      },
+2025-09-02T19:48:39.233047442Z [err]      params: { valueInputOption: 'USER_ENTERED' },
+2025-09-02T19:48:39.233048839Z [err]        method: 'PUT',
+2025-09-02T19:48:39.233053259Z [err]      validateStatus: [Function (anonymous)],
+2025-09-02T19:48:39.233059091Z [err]        userAgentDirectives: [Array],
+2025-09-02T19:48:39.233061216Z [err]      retry: true,
+2025-09-02T19:48:39.233071175Z [err]      body: '{"values":[["2025-09-02T19:48:38.560Z"],[""],["$450,000.00"],[""],["$5,000.00"],[""],["$3,040.00"],[""],["$13,500.00"],[""],["$15,750.00"],[""],["$400.00"],[""],["$300.00"],[""],["$1,125.00"],[""],["$100.00"],[""],["$450.00"],[""],["$742.50"],[""],["$695.00"],[""],["$42,102.50"],[""],[""],["$407,897.50"],[""],["890 Clark Cir Bentonville, AR 72713"],["9/2/2025"],[304],["$10.00"]]}',
+2025-09-02T19:48:39.233072708Z [err]        paramsSerializer: [Function (anonymous)],
+2025-09-02T19:48:39.233080307Z [err]      responseType: 'json',
+2025-09-02T19:48:39.233084279Z [err]        data: [Object],
+2025-09-02T19:48:39.233088458Z [err]      retryConfig: {
+2025-09-02T19:48:39.233096049Z [err]        headers: [Object],
+2025-09-02T19:48:39.233097775Z [err]        currentRetryAttempt: 0,
+2025-09-02T19:48:39.233105786Z [err]        retry: 3,
+2025-09-02T19:48:39.233107242Z [err]        params: [Object],
+2025-09-02T19:48:39.233111834Z [err]        httpMethodsToRetry: [Array],
+2025-09-02T19:48:39.233119326Z [err]        noResponseRetries: 2,
+2025-09-02T19:48:39.233122988Z [err]        validateStatus: [Function (anonymous)],
+2025-09-02T19:48:39.233127312Z [err]        statusCodesToRetry: [Array]
+2025-09-02T19:48:39.233133774Z [err]      }
+2025-09-02T19:48:39.233136472Z [err]        retry: true,
+2025-09-02T19:48:39.233141482Z [err]    },
+2025-09-02T19:48:39.233147115Z [err]        body: '{"values":[["2025-09-02T19:48:38.560Z"],[""],["$450,000.00"],[""],["$5,000.00"],[""],["$3,040.00"],[""],["$13,500.00"],[""],["$15,750.00"],[""],["$400.00"],[""],["$300.00"],[""],["$1,125.00"],[""],["$100.00"],[""],["$450.00"],[""],["$742.50"],[""],["$695.00"],[""],["$42,102.50"],[""],[""],["$407,897.50"],[""],["890 Clark Cir Bentonville, AR 72713"],["9/2/2025"],[304],["$10.00"]]}',
+2025-09-02T19:48:39.233152270Z [err]    code: 400,
+2025-09-02T19:48:39.233158610Z [err]        responseType: 'json',
+2025-09-02T19:48:39.233162592Z [err]    errors: [
+2025-09-02T19:48:39.233167311Z [err]        retryConfig: [Object]
+2025-09-02T19:48:39.233173031Z [err]      {
+2025-09-02T19:48:39.233177211Z [err]      },
+2025-09-02T19:48:39.233184502Z [err]      data: { error: [Object] },
+2025-09-02T19:48:39.233187517Z [err]        message: 'Unable to parse range: NetSheets![1:[35',
+2025-09-02T19:48:39.233192622Z [err]      headers: {
+2025-09-02T19:48:39.233199706Z [err]        'alt-svc': 'h3=":443"; ma=2592000,h3-29=":443"; ma=2592000',
+2025-09-02T19:48:39.233204429Z [err]        domain: 'global',
+2025-09-02T19:48:39.233208414Z [err]        'content-encoding': 'gzip',
+2025-09-02T19:48:39.233212646Z [err]        'content-type': 'application/json; charset=UTF-8',
+2025-09-02T19:48:39.233217187Z [err]        date: 'Tue, 02 Sep 2025 19:48:39 GMT',
+2025-09-02T19:48:39.233223059Z [err]        server: 'ESF',
+2025-09-02T19:48:39.233230195Z [err]        'transfer-encoding': 'chunked',
+2025-09-02T19:48:39.233237276Z [err]        vary: 'Origin, X-Origin, Referer',
+2025-09-02T19:48:39.233244422Z [err]        'x-content-type-options': 'nosniff',
+2025-09-02T19:48:39.233250407Z [err]        'x-frame-options': 'SAMEORIGIN',
+2025-09-02T19:48:39.233256004Z [err]        'x-l2-request-path': 'l2-managed-6',
+2025-09-02T19:48:39.233261952Z [err]        'x-xss-protection': '0'
+2025-09-02T19:48:39.233268589Z [err]      },
+2025-09-02T19:48:39.233278244Z [err]      status: 400,
+2025-09-02T19:48:39.233283398Z [err]      statusText: 'Bad Request',
+2025-09-02T19:48:39.233288128Z [err]      request: {
+2025-09-02T19:48:39.233292789Z [err]        responseURL: 'https://sheets.googleapis.com/v4/spreadsheets/1xeiS8rAqYncRKHGp6oiN8n3-Z9lRwLqrAc0PY_RJuhI/values/NetSheets%21%5B1%3A%5B35?valueInputOption=USER_ENTERED'
+2025-09-02T19:48:39.233297679Z [err]      }
+2025-09-02T19:48:39.233302699Z [err]    },
+2025-09-02T19:48:39.233308235Z [err]    config: {
+2025-09-02T19:48:39.233312302Z [err]      url: 'https://sheets.googleapis.com/v4/spreadsheets/1xeiS8rAqYncRKHGp6oiN8n3-Z9lRwLqrAc0PY_RJuhI/values/NetSheets%21%5B1%3A%5B35?valueInputOption=USER_ENTERED',
+2025-09-02T19:48:39.233318724Z [err]      method: 'PUT',
+2025-09-02T19:48:39.233323645Z [err]      userAgentDirectives: [ [Object] ],
+2025-09-02T19:48:39.233329066Z [err]      paramsSerializer: [Function (anonymous)],
+2025-09-02T19:48:39.233334471Z [err]      data: { values: [Array] },
+2025-09-02T19:48:39.233339880Z [err]      headers: {
+2025-09-02T19:48:39.233344480Z [err]        'x-goog-api-client': 'gdcl/6.0.4 gl-node/20.19.4',
+2025-09-02T19:48:39.233348931Z [err]        'Accept-Encoding': 'gzip',
+2025-09-02T19:48:39.233353584Z [err]        'User-Agent': 'google-api-nodejs-client/6.0.4 (gzip)',
+2025-09-02T19:48:39.233358747Z [err]        Authorization: 'Bearer ya29.c.c0ASRK0GZTuVB4FC5UYKqCLM84J-aDCuhga4DORotViXdpIwhghv1sza62mHj26L5AvJK5Cb-e0DiRfLLmCD-vNnxzXjcRjUD8xKWuegJIL_BnbSW7X6LlodZHn7lYH0nqCGx4z9z6tAE3z4NeJR5B11qjGC497SIoaVwPaTLLlY9omSobNKar-r1AibidtDEFT7meh0GqMmNRVyQ_Y-DQ9IAkZa9wC3USfNuXCowaF1K_qtRos1MfgsEAqFKGj6Z38XwVDeYqitTzlKb-gKbL4y-fv8Dyr94BJQ6Nc034QCg2-v4sMRSYJPQKnWPatRUpVuWnFIttMm0vbdMxqVoQO_ddmYm2g-Ljp60KG1oIW16CQx_W2YVHezIT384K-ab5kcOn1hSy9he2lpsn_i1Q_m8J_jFhsZ02nZ9oBj2cphkx1estm7lxdjpU-JqXiMB-mViuS376FnxtxrkdoSWFpSrdRsoarF4aRYbaemIddO6ve_ZxvoQlobfva24qMxqUSn99-5zX1JX7xl_1nwjJpzZUdtrl621b5737O2IsV764ZQUvJsaRclJidnvx0jqIfntoXX7kOZsoo4dMBYx2jRfxlu1fn3887_-vkO6cobZoJ_JvVRS9VspBpm-r825BxoJl99ebcF9yMVnsq0_9ozitp2F3qbm4jc2de4e-1pdIMc1QnaWsVgUwl-55FIy6QbFX1Q3paWOaueSvYa02Jsyg42FccjaZ6ZBsUkMwaS2kt3qRr1qqk5FxV2SOBgZl5Ok_y17zvc5JweoB5aykFgjskM_RZlpYfvba_xUv4pXqyhYJffdOvMgJQfr8J9z3hgs5JVgo_Os42cpxMxpfwJJO3Qpx9Fk7pz2fflaV5997aclbuFl848cJqMQ-sFJ2JRn2hkcRmtqjw8lyqIfk1qX1W_wV6Bo_UjqcbVQrUwxp2mhl4Iq7FYWJVou5xzwcJYZ4IYs1iV8QWJkwjXdkF2f385e5Qwr3xxxS52g4lVJR3_dnJ-eUdBw',
+2025-09-02T19:48:39.233363412Z [err]        'Content-Type': 'application/json',
+2025-09-02T19:48:39.233368056Z [err]        Accept: 'application/json'
+2025-09-02T19:48:39.233372459Z [err]      },
+2025-09-02T19:48:39.233378062Z [err]      params: { valueInputOption: 'USER_ENTERED' },
+2025-09-02T19:48:39.233383037Z [err]      validateStatus: [Function (anonymous)],
+2025-09-02T19:48:39.233387800Z [err]      retry: true,
+2025-09-02T19:48:39.233392753Z [err]      body: '{"values":[["2025-09-02T19:48:38.560Z"],[""],["$450,000.00"],[""],["$5,000.00"],[""],["$3,040.00"],[""],["$13,500.00"],[""],["$15,750.00"],[""],["$400.00"],[""],["$300.00"],[""],["$1,125.00"],[""],["$100.00"],[""],["$450.00"],[""],["$742.50"],[""],["$695.00"],[""],["$42,102.50"],[""],[""],["$407,897.50"],[""],["890 Clark Cir Bentonville, AR 72713"],["9/2/2025"],[304],["$10.00"]]}',
+2025-09-02T19:48:39.233397021Z [err]      responseType: 'json',
+2025-09-02T19:48:39.233401392Z [err]      retryConfig: {
+2025-09-02T19:48:39.233405638Z [err]        currentRetryAttempt: 0,
+2025-09-02T19:48:39.233411183Z [err]        retry: 3,
+2025-09-02T19:48:39.233416330Z [err]        httpMethodsToRetry: [Array],
+2025-09-02T19:48:39.233420503Z [err]        noResponseRetries: 2,
+2025-09-02T19:48:39.233425876Z [err]        statusCodesToRetry: [Array]
+2025-09-02T19:48:39.233432527Z [err]      }
+2025-09-02T19:48:39.233440240Z [err]    },
+2025-09-02T19:48:39.233447050Z [err]    code: 400,
+2025-09-02T19:48:39.233454646Z [err]    errors: [
+2025-09-02T19:48:39.233464877Z [err]      {
+2025-09-02T19:48:39.233471772Z [err]        message: 'Unable to parse range: NetSheets![1:[35',
+2025-09-02T19:48:39.233476480Z [err]        domain: 'global',
+2025-09-02T19:48:39.233481635Z [err]        reason: 'badRequest'
+2025-09-02T19:48:39.233488499Z [err]      }
+2025-09-02T19:48:39.233494909Z [err]    ]
+2025-09-02T19:48:39.233502297Z [err]  }
+2025-09-02T19:48:39.233509379Z [inf]  ??  Could not save to tracking sheet: Unable to parse range: NetSheets![1:[35
+2025-09-02T19:48:39.328294734Z [inf]  <= 'IDLE OK IDLE terminated (Success)'
+2025-09-02T19:48:39.328303387Z [inf]  => 'A12 UID STORE 13755 +FLAGS.SILENT (\\Seen)'
+2025-09-02T19:48:39.598084503Z [inf]  <= '* 61 FETCH (UID 13755 MODSEQ (1761659) FLAGS (\\Seen))'
+2025-09-02T19:48:39.601560935Z [inf]  <= 'A12 OK Success'
+2025-09-02T19:48:39.601567393Z [inf]  ? Email marked as read
+2025-09-02T19:48:39.601572510Z [inf]  => 'A13 UID SEARCH UNSEEN'
+2025-09-02T19:48:39.706452021Z [inf]  <= '* SEARCH'
+2025-09-02T19:48:39.706455950Z [inf]  <= 'A13 OK SEARCH completed (Success)'
+2025-09-02T19:48:39.706461322Z [inf]  ?? No recent emails
+2025-09-02T19:48:39.706465487Z [inf]  => 'IDLE IDLE'
+2025-09-02T19:48:39.816245456Z [inf]  <= '+ idling'
+2025-09-02T19:49:09.774034451Z [inf]  ?? Checking for new emails... [7:49:09 PM]
+2025-09-02T19:49:09.774041628Z [inf]  ?? Paused polling while processing...
+2025-09-02T19:49:09.774046183Z [inf]  => DONE
+2025-09-02T19:49:09.774050786Z [inf]  <= 'IDLE OK IDLE terminated (Success)'
+2025-09-02T19:49:09.774054508Z [inf]  => 'A14 UID SEARCH UNSEEN'
+2025-09-02T19:49:09.774058365Z [inf]  <= '* SEARCH'
+2025-09-02T19:49:09.774062424Z [inf]  <= 'A14 OK SEARCH completed (Success)'
+2025-09-02T19:49:09.774066785Z [inf]  ?? No recent emails
+2025-09-02T19:49:09.774072225Z [inf]  ?? Restarting 30-second polling interval...
+2025-09-02T19:49:09.774076198Z [inf]  => 'IDLE IDLE'
+2025-09-02T19:49:09.774079828Z [inf]  <= '+ idling'
+2025-09-02T19:49:39.746435669Z [inf]  ?? Checking for new emails... [7:49:39 PM]
+2025-09-02T19:49:39.746441104Z [inf]  ?? Paused polling while processing...
+2025-09-02T19:49:39.746445768Z [inf]  => DONE
+2025-09-02T19:49:39.746450305Z [inf]  <= 'IDLE OK IDLE terminated (Success)'
+2025-09-02T19:49:39.746455181Z [inf]  => 'A15 UID SEARCH UNSEEN'
+2025-09-02T19:49:39.746459859Z [inf]  <= '* SEARCH'
+2025-09-02T19:49:39.746464382Z [inf]  <= 'A15 OK SEARCH completed (Success)'
+2025-09-02T19:49:39.746468553Z [inf]  ?? No recent emails
+2025-09-02T19:49:39.746473019Z [inf]  ?? Restarting 30-second polling interval...
+2025-09-02T19:49:39.746477545Z [inf]  => 'IDLE IDLE'
+2025-09-02T19:49:39.799963155Z [inf]  <= '+ idling'
+2025-09-02T19:49:40.481948055Z [inf]  
+2025-09-02T19:49:40.481953599Z [inf]  ============================================================
+2025-09-02T19:49:40.481958846Z [inf]  ?? SYSTEM HEALTH REPORT
+2025-09-02T19:49:40.481964652Z [inf]  ============================================================
+2025-09-02T19:49:40.481970183Z [inf]  ??  Uptime: 3 minutes
+2025-09-02T19:49:40.481975670Z [inf]  ?? Success Rate: 100.0%
+2025-09-02T19:49:40.481980756Z [inf]  ? Successful: 1
+2025-09-02T19:49:40.481985572Z [inf]  ??  Partial: 0
+2025-09-02T19:49:40.481990663Z [inf]  ? Failed: 0
+2025-09-02T19:49:40.481995821Z [inf]  ?? Pending Retry: 0
+2025-09-02T19:49:40.482002702Z [inf]  ?? Manual Review Queue: 0 items
+2025-09-02T19:49:40.482008105Z [inf]  ? Last Success: 1 minutes ago
+2025-09-02T19:49:40.482013390Z [inf]  ============================================================
+2025-09-02T19:49:40.482018558Z [inf]  
+2025-09-02T19:50:10.505866596Z [inf]  ?? Checking for new emails... [7:50:09 PM]
+2025-09-02T19:50:10.505872161Z [inf]  ?? Paused polling while processing...
+2025-09-02T19:50:10.505877566Z [inf]  => DONE
+2025-09-02T19:50:10.505882777Z [inf]  <= 'IDLE OK IDLE terminated (Success)'
+2025-09-02T19:50:10.505887939Z [inf]  => 'A16 UID SEARCH UNSEEN'
+2025-09-02T19:50:10.505893136Z [inf]  <= '* SEARCH'
+2025-09-02T19:50:10.505900212Z [inf]  <= 'A16 OK SEARCH completed (Success)'
+2025-09-02T19:50:10.505904145Z [inf]  ?? No recent emails
+2025-09-02T19:50:10.505908234Z [inf]  ?? Restarting 30-second polling interval...
+2025-09-02T19:50:10.505912626Z [inf]  => 'IDLE IDLE'
+2025-09-02T19:50:10.505916444Z [inf]  <= '+ idling'
+2025-09-02T19:50:40.504342986Z [inf]  ?? Checking for new emails... [7:50:39 PM]
+2025-09-02T19:50:40.504349729Z [inf]  ?? Paused polling while processing...
+2025-09-02T19:50:40.504353393Z [inf]  => DONE
+2025-09-02T19:50:40.504358523Z [inf]  <= 'IDLE OK IDLE terminated (Success)'
+2025-09-02T19:50:40.504362387Z [inf]  => 'A17 UID SEARCH UNSEEN'
+2025-09-02T19:50:40.504366301Z [inf]  <= '* SEARCH'
+2025-09-02T19:50:40.504370175Z [inf]  <= 'A17 OK SEARCH completed (Success)'
+2025-09-02T19:50:40.504374232Z [inf]  ?? No recent emails
+2025-09-02T19:50:40.504378656Z [inf]  ?? Restarting 30-second polling interval...
+2025-09-02T19:50:40.504382460Z [inf]  => 'IDLE IDLE'
+2025-09-02T19:50:40.504386438Z [inf]  <= '+ idling'
+2025-09-02T19:51:10.509631785Z [inf]  ?? Checking for new emails... [7:51:10 PM]
+2025-09-02T19:51:10.509637393Z [inf]  ?? Paused polling while processing...
+2025-09-02T19:51:10.509642464Z [inf]  => DONE
+2025-09-02T19:51:10.509647949Z [inf]  <= 'IDLE OK IDLE terminated (Success)'
+2025-09-02T19:51:10.509654218Z [inf]  => 'A18 UID SEARCH UNSEEN'
+2025-09-02T19:51:10.509659987Z [inf]  <= '* SEARCH'
+2025-09-02T19:51:10.509665917Z [inf]  <= 'A18 OK SEARCH completed (Success)'
+2025-09-02T19:51:10.509670400Z [inf]  ?? No recent emails
+2025-09-02T19:51:10.509674699Z [inf]  ?? Restarting 30-second polling interval...
+2025-09-02T19:51:10.509679231Z [inf]  => 'IDLE IDLE'
+2025-09-02T19:51:10.509683231Z [inf]  <= '+ idling' 

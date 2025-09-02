@@ -73,3 +73,12 @@ node -r ts-node/register convert-contract2-to-images.ts
 - railway uses my github credentials use github credentials anytime you need to get into railway
 - when you read logs read them carefully and fully do not make any assumptions
 - so dont EVER tell me something is working unless you know it is
+
+## Recent Fixes
+
+### Address Matching Fix (Sept 2, 2025)
+- **Issue**: Listing info sheet had "890 Clark" but PDF extraction returned "890 Clark Cir Bentonville, AR 72713"
+- **Solution**: Enhanced address matching in listing-info-service.ts to handle partial addresses
+  - Added prefix matching so sheet entries like "890 Clark" match longer addresses from PDFs
+  - Now handles all variations: full addresses, partial addresses, different cases
+- **Result**: Tax data ($4702) now correctly pulled for "890 Clark" property regardless of address format

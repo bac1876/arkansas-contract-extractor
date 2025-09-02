@@ -28,24 +28,50 @@ export class ListingInfoService {
    * Initialize the service and fetch all listing data
    */
   async initialize(): Promise<void> {
+    console.log('🔄 Initializing ListingInfoService...');
+    console.log(`📁 Sheet ID: ${this.spreadsheetId}`);
+    
     try {
+      // Check for service account key
+      const keyFile = process.env.GOOGLE_SERVICE_ACCOUNT_KEY || 'service-account-key.json';
+      console.log(`🔑 Using service account key: ${keyFile}`);
+      
       // Setup Google Sheets API
       const auth = new google.auth.GoogleAuth({
-        keyFile: process.env.GOOGLE_SERVICE_ACCOUNT_KEY || 'service-account-key.json',
+        keyFile: keyFile,
         scopes: ['https://www.googleapis.com/auth/spreadsheets.readonly']
       });
 
+      console.log('🔐 Google Auth configured, creating sheets client...');
       this.sheets = google.sheets({ version: 'v4', auth: auth as any });
 
       // Fetch all data from the sheet
+      console.log('📥 Fetching data from Google Sheet...');
       await this.refreshData();
       this.initialized = true;
       
       console.log(`📊 Loaded ${this.listingData.length} property listings with tax and commission data`);
-    } catch (error) {
-      console.error('Failed to initialize ListingInfoService:', error);
+      
+      // Log first few listings for verification
+      if (this.listingData.length > 0) {
+        console.log('📋 Sample listings loaded:');
+        this.listingData.slice(0, 3).forEach(listing => {
+          console.log(`   - ${listing.address}: Tax=$${listing.annualTaxes}, Commission=${(listing.commissionPercent * 100).toFixed(1)}%`);
+        });
+      } else {
+        console.log('⚠️  WARNING: No listings were loaded from the Google Sheet!');
+      }
+    } catch (error: any) {
+      console.error('❌ Failed to initialize ListingInfoService:');
+      console.error('   Error message:', error.message);
+      console.error('   Error code:', error.code);
+      if (error.response) {
+        console.error('   API Response:', error.response.data);
+      }
       // Continue without the service - will use defaults
       this.initialized = false;
+      this.listingData = [];
+      console.log('⚠️  ListingInfoService will use default values for all properties');
     }
   }
 
@@ -54,12 +80,17 @@ export class ListingInfoService {
    */
   async refreshData(): Promise<void> {
     try {
+      console.log(`📡 Requesting data from sheet ${this.spreadsheetId}, range: Sheet1!A2:C100`);
       const response = await this.sheets.spreadsheets.values.get({
         spreadsheetId: this.spreadsheetId,
         range: 'Sheet1!A2:C100' // Skip header row, get up to 100 properties
       });
 
+      console.log(`📨 Google Sheets API response received`);
+      
       if (response.data.values && response.data.values.length > 0) {
+        console.log(`📝 Raw data rows received: ${response.data.values.length}`);
+        
         this.listingData = response.data.values
           .filter((row: any[]) => row.length >= 3 && row[0] && row[1] && row[2])
           .map((row: any[]) => ({
@@ -68,9 +99,20 @@ export class ListingInfoService {
             // Convert percentage to decimal (2.5 becomes 0.025)
             commissionPercent: parseFloat(String(row[2]).replace(/[^0-9.]/g, '')) / 100
           }));
+          
+        console.log(`✅ Successfully parsed ${this.listingData.length} valid listings`);
+      } else {
+        console.log('⚠️  No data values in sheet response');
+        this.listingData = [];
       }
-    } catch (error) {
-      console.error('Failed to refresh listing data:', error);
+    } catch (error: any) {
+      console.error('❌ Failed to refresh listing data:');
+      console.error('   Error message:', error.message);
+      if (error.response) {
+        console.error('   API Response status:', error.response.status);
+        console.error('   API Response data:', error.response.data);
+      }
+      this.listingData = [];
     }
   }
 
