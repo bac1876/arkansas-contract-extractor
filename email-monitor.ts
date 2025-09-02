@@ -577,12 +577,16 @@ export class EmailMonitor {
                       
                       // Generate PDF net sheet
                       try {
-                        pdfPath = await this.pdfGenerator.generateNetSheetPDF(
+                        const netSheetResult = await this.pdfGenerator.generateNetSheetPDF(
                           netSheetData,
                           propertyAddress,
                           extractionResult.data
                         );
-                        console.log(`📑 Generated PDF net sheet: ${path.basename(pdfPath)}`);
+                        pdfPath = netSheetResult.path;
+                        console.log(`📑 Generated ${netSheetResult.type.toUpperCase()} net sheet: ${path.basename(pdfPath)}`);
+                        
+                        // Store the type for later upload
+                        (pdfPath as any).fileType = netSheetResult.type;
                       } catch (pdfError) {
                         console.error('⚠️  Could not generate PDF:', pdfError);
                       }
@@ -643,16 +647,28 @@ export class EmailMonitor {
                           para13_items_excluded: data?.para13_items_excluded
                         };
                         
-                        const agentInfoPath = await this.agentInfoGenerator.generateAgentInfoSheet(agentInfoData);
-                        console.log(`📋 Generated agent info sheet: ${path.basename(agentInfoPath)}`);
+                        const agentInfoResult = await this.agentInfoGenerator.generateAgentInfoSheet(agentInfoData);
+                        console.log(`📋 Generated agent info sheet ${agentInfoResult.type.toUpperCase()}: ${path.basename(agentInfoResult.path)}`);
                         
                         // Upload agent info sheet to Google Drive
-                        if (this.drive && agentInfoPath) {
+                        if (this.drive && agentInfoResult) {
                           try {
+                            // Get the filename and check if it needs renaming
+                            let fileName = path.basename(agentInfoResult.path);
+                            const fileExt = path.extname(fileName).toLowerCase();
+                            
+                            // If it's HTML (fallback), rename to .pdf for consistency
+                            if (fileExt === '.html') {
+                              fileName = fileName.replace('.html', '.pdf');
+                              console.log(`   Renaming ${path.basename(agentInfoResult.path)} to ${fileName} for Drive`);
+                            }
+                            
+                            // Always use PDF mime type for consistency
+                            const mimeType = 'application/pdf';
                             const agentInfoUpload = await this.drive.uploadFile(
-                              agentInfoPath,  // Pass file path directly, not buffer
-                              path.basename(agentInfoPath),
-                              'application/pdf'
+                              agentInfoResult.path,
+                              fileName,
+                              mimeType
                             );
                             console.log('📤 Uploaded agent info sheet to Google Drive');
                             console.log(`   📎 Link: ${agentInfoUpload.webViewLink || agentInfoUpload.shareableLink}`);

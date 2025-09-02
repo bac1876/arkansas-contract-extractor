@@ -639,14 +639,30 @@ export class GoogleDriveIntegration {
       // Use Shared Drive if available, otherwise use shared folder
       const targetFolderId = this.sharedDriveId || this.sharedFolderId || this.netSheetsFolderId;
       
-      // Upload PDF if available
+      // Upload PDF/HTML if available
       if (pdfPath) {
         const path = require('path');
-        const pdfFileName = path.basename(pdfPath);
+        let pdfFileName = path.basename(pdfPath);
+        
+        // Detect actual file type based on extension
+        const fileExtension = path.extname(pdfPath).toLowerCase();
+        let mimeType = 'application/pdf';  // Default to PDF
+        
+        if (fileExtension === '.html') {
+          // If it's an HTML file, rename it to have .pdf extension for Drive
+          // This ensures it appears as a PDF in Drive even though it's HTML content
+          pdfFileName = pdfFileName.replace('.html', '.pdf');
+          mimeType = 'application/pdf';  // Keep PDF mime type for consistency
+          console.log('⚠️  Uploading HTML content as PDF (PDF generation failed on server)');
+          console.log(`   Renaming ${path.basename(pdfPath)} to ${pdfFileName} for Drive upload`);
+        } else if (fileExtension !== '.pdf') {
+          console.log(`⚠️  Unexpected file extension: ${fileExtension}, using PDF mime type`);
+        }
+        
         const pdfUpload = await this.uploadFile(
           pdfPath,
           pdfFileName,
-          'application/pdf',
+          mimeType,
           targetFolderId
         );
         results.pdfLink = pdfUpload.webViewLink;

@@ -333,7 +333,16 @@ export class GoogleDriveShared {
       // Upload PDF if available
       if (pdfPath) {
         const path = require('path');
-        const pdfFileName = path.basename(pdfPath);
+        let pdfFileName = path.basename(pdfPath);
+        
+        // If it's an HTML file (fallback from failed PDF generation), rename to .pdf
+        const fileExtension = path.extname(pdfPath).toLowerCase();
+        if (fileExtension === '.html') {
+          pdfFileName = pdfFileName.replace('.html', '.pdf');
+          console.log('⚠️  Uploading HTML content as PDF (PDF generation failed)');
+          console.log(`   Renaming ${path.basename(pdfPath)} to ${pdfFileName} for Drive upload`);
+        }
+        
         const pdfUpload = await this.uploadFile(
           pdfPath,
           pdfFileName,
