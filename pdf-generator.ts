@@ -142,15 +142,15 @@ export class PDFGenerator {
     .property-info {
       background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
       color: white;
-      padding: 20px;
+      padding: 15px;
       border-radius: 10px;
-      margin-bottom: 30px;
+      margin-bottom: 20px;
       box-shadow: 0 10px 20px rgba(0,0,0,0.1);
     }
     
     .property-info h2 {
-      font-size: 20px;
-      margin-bottom: 10px;
+      font-size: 18px;
+      margin-bottom: 5px;
       font-weight: 400;
     }
     
@@ -163,8 +163,8 @@ export class PDFGenerator {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 15px;
-      margin-bottom: 30px;
-      padding: 20px;
+      margin-bottom: 20px;
+      padding: 15px;
       background: #f8f9fa;
       border-radius: 10px;
     }
@@ -205,7 +205,7 @@ export class PDFGenerator {
       border: 1px solid #e0e0e0;
       border-top: none;
       border-radius: 0 0 5px 5px;
-      padding: 20px;
+      padding: 15px;
     }
     
     .cost-table {
@@ -222,8 +222,8 @@ export class PDFGenerator {
     }
     
     .cost-table td {
-      padding: 12px 0;
-      font-size: 14px;
+      padding: 10px 0;
+      font-size: 13px;
     }
     
     .cost-table .item-name {
@@ -246,9 +246,9 @@ export class PDFGenerator {
     
     .total-section {
       background: #f8f9fa;
-      padding: 20px;
+      padding: 15px;
       border-radius: 10px;
-      margin-top: 20px;
+      margin-top: 15px;
     }
     
     .total-row {
@@ -266,8 +266,8 @@ export class PDFGenerator {
     /* Removed net-seller styles - no longer needed */
     
     .disclaimer {
-      margin-top: 40px;
-      padding: 20px;
+      margin-top: 25px;
+      padding: 15px;
       background: #fff3cd;
       border-left: 4px solid #ffc107;
       border-radius: 5px;
@@ -286,11 +286,11 @@ export class PDFGenerator {
     }
     
     .footer {
-      margin-top: 50px;
+      margin-top: 25px;
       text-align: center;
       color: #888;
-      font-size: 12px;
-      padding-top: 20px;
+      font-size: 11px;
+      padding-top: 15px;
       border-top: 1px solid #e0e0e0;
     }
     
@@ -339,8 +339,7 @@ export class PDFGenerator {
   <div class="container">
     <!-- Header -->
     <div class="header">
-      <h1>SELLER NET SHEET</h1>
-      <div class="subtitle">Estimated Proceeds Statement</div>
+      <h1>ESTIMATED PROCEEDS STATEMENT</h1>
     </div>
     
     <!-- Property Information -->
@@ -351,20 +350,12 @@ export class PDFGenerator {
     <!-- Transaction Details -->
     <div class="info-grid">
       <div class="info-item">
-        <span class="info-label">Buyers:</span>
-        <span class="info-value">${buyerNames}</span>
-      </div>
-      <div class="info-item">
         <span class="info-label">Closing Date:</span>
         <span class="info-value">${closingDate}</span>
       </div>
       <div class="info-item">
         <span class="info-label">Sales Price:</span>
         <span class="info-value">${formatCurrency(netSheetData.sales_price)}</span>
-      </div>
-      <div class="info-item">
-        <span class="info-label">Days of Tax:</span>
-        <span class="info-value">${netSheetData.days_of_tax || 0} days</span>
       </div>
     </div>
     
