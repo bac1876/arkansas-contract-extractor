@@ -1,38 +1,29 @@
 # Use full Node.js image for better compatibility
 FROM node:20
 
-# Install dependencies for Playwright and ImageMagick
-# CRITICAL: Install ImageMagick with all delegate libraries for format support
+# Install dependencies for PDFKit and ImageMagick
+# CRITICAL: Install all required libraries for PDF generation
 RUN apt-get update && apt-get install -y \
+    # ImageMagick for image processing
     imagemagick \
     libmagickwand-dev \
     ghostscript \
-    # Delegate libraries for common image formats (CRITICAL for PDF support)
+    # Delegate libraries for image formats
     libjpeg-dev \
     libpng-dev \
     libtiff-dev \
     libwebp-dev \
-    # Dependencies for Playwright/Chromium
-    libnss3 \
-    libnspr4 \
-    libatk1.0-0 \
-    libatk-bridge2.0-0 \
-    libcups2 \
-    libdrm2 \
-    libdbus-1-3 \
-    libatspi2.0-0 \
-    libx11-6 \
-    libxcomposite1 \
-    libxdamage1 \
-    libxext6 \
-    libxfixes3 \
-    libxrandr2 \
-    libgbm1 \
-    libxcb1 \
-    libxkbcommon0 \
-    libpango-1.0-0 \
-    libcairo2 \
-    libasound2 \
+    # Canvas/Cairo dependencies for PDFKit
+    build-essential \
+    libcairo2-dev \
+    libpango1.0-dev \
+    libjpeg-dev \
+    libgif-dev \
+    librsvg2-dev \
+    # Font support for PDFKit
+    fonts-liberation \
+    fonts-noto \
+    fontconfig \
     && rm -rf /var/lib/apt/lists/*
 
 # Set working directory
