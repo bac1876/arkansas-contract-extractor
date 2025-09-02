@@ -11,7 +11,7 @@ export interface AgentInfoSheetData {
   // Property info
   property_address: string;
   purchase_price: number;
-  buyers: string;
+  buyers: string | string[];
   closing_date?: string;
   
   // Contract details
@@ -122,9 +122,15 @@ export class AgentInfoSheetGenerator {
       return value ? `${value}%` : 'TBD';
     };
     
-    const formatBuyerNames = (buyers: string | undefined): string => {
+    const formatBuyerNames = (buyers: string | string[] | undefined): string => {
       if (!buyers) return 'TBD';
-      // Replace comma with ampersand for buyer names
+      
+      // If it's an array, join with ' & '
+      if (Array.isArray(buyers)) {
+        return buyers.join(' & ');
+      }
+      
+      // If it's a string, replace comma with ampersand
       return buyers.replace(/,\s*/g, ' & ');
     };
     
