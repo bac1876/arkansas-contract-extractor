@@ -4,7 +4,15 @@
 [phases.setup]
 # Install ImageMagick and its development libraries using Apt
 # This ensures the 'convert' command is available for PDF to PNG conversion
-aptPkgs = ["imagemagick", "libmagickwand-dev"]
+# Also install font dependencies for PDFKit to generate real PDFs
+aptPkgs = [
+    "imagemagick", 
+    "libmagickwand-dev",
+    "fontconfig",           # Essential for PDFKit font management
+    "fonts-liberation",     # Base fonts for PDFKit
+    "libcairo2-dev",       # Cairo graphics library for PDFKit
+    "libpango1.0-dev"      # Pango text layout for PDFKit
+]
 
 # Note: libmagickwand-dev is crucial for proper ImageMagick functionality
-# It includes the libraries needed for image format support
+# fontconfig and cairo/pango are essential for PDFKit to render fonts properly
