@@ -72,6 +72,11 @@ export class ImageMagickExtractor {
   private openai: OpenAI;
 
   constructor() {
+    // Set ImageMagick policy path to allow PDF processing on Linux/Railway
+    if (process.platform !== 'win32') {
+      process.env.MAGICK_CONFIGURE_PATH = '/app/config';
+    }
+    
     this.openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
   }
 

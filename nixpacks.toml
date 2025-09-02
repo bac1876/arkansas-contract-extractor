@@ -2,12 +2,22 @@
 # Configuration to install ImageMagick on Railway
 
 [phases.setup]
-# Install ImageMagick and its development libraries using Apt
-# This ensures the 'convert' command is available for PDF to PNG conversion
-# Also install font dependencies for PDFKit to generate real PDFs
+# Install delegate libraries FIRST (they must be present before ImageMagick is installed)
+# This is crucial for format support - see Section 4.1 of deployment guide
 aptPkgs = [
+    # Delegate libraries for image format support (MUST come first!)
+    "libjpeg-dev",          # JPEG support
+    "libpng-dev",           # PNG support
+    "libtiff-dev",          # TIFF support
+    "libwebp-dev",          # WebP support
+    "ghostscript",          # PDF support (critical for PDF to PNG conversion)
+    "libgs-dev",            # Ghostscript development files
+    
+    # Now install ImageMagick (AFTER delegates)
     "imagemagick", 
-    "libmagickwand-dev",
+    "libmagickwand-dev",    # Development headers for ImageMagick
+    
+    # Font dependencies for PDFKit to generate real PDFs
     "fontconfig",           # Essential for PDFKit font management
     "fonts-liberation",     # Base fonts for PDFKit
     "libcairo2-dev",       # Cairo graphics library for PDFKit

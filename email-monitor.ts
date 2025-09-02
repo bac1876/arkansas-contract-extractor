@@ -11,6 +11,7 @@ import * as path from 'path';
 import { RobustExtractor } from './extraction-robust';
 import { HybridExtractor } from './extraction-hybrid';
 import { FallbackExtractor } from './extraction-fallback';
+import { DirectPDFExtractor } from './extraction-direct-pdf';
 import { ExtractionStatusTracker } from './extraction-status-tracker';
 import GoogleSheetsIntegration from './google-sheets-integration';
 import GoogleDriveIntegration from './google-drive-integration';
@@ -45,6 +46,7 @@ export class EmailMonitor {
   private robustExtractor: RobustExtractor;
   private extractor: HybridExtractor;
   private fallbackExtractor: FallbackExtractor;
+  private directPdfExtractor: DirectPDFExtractor;
   private statusTracker: ExtractionStatusTracker;
   private sheets?: GoogleSheetsIntegration;
   private drive?: GoogleDriveIntegration;
@@ -61,11 +63,19 @@ export class EmailMonitor {
   private lastCheckTime: Date = new Date();
 
   constructor() {
+    // Set ImageMagick policy path to allow PDF processing
+    // This overrides the default restrictive policy - see Section 4.2 of deployment guide
+    if (process.platform !== 'win32') {
+      process.env.MAGICK_CONFIGURE_PATH = '/app/config';
+      console.log('🎨 Set MAGICK_CONFIGURE_PATH for custom ImageMagick policy');
+    }
+    
     // Use RobustExtractor with multiple retries and fallback logic
     // Ensures extraction always attempts multiple times before giving up
     this.robustExtractor = new RobustExtractor();
     this.extractor = new HybridExtractor();
     this.fallbackExtractor = new FallbackExtractor();
+    this.directPdfExtractor = new DirectPDFExtractor();
     this.statusTracker = new ExtractionStatusTracker();
     this.calculator = new SellerNetSheetCalculator();
     this.pdfGenerator = new PDFGenerator();
