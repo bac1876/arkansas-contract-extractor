@@ -213,24 +213,6 @@ export class PDFGenerator {
       white-space: nowrap;
     }
     
-    .total-section {
-      background: #f8f9fa;
-      padding: 10px;
-      border-radius: 10px;
-      margin-top: 10px;
-    }
-    
-    .total-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 8px 0;
-      border-top: 2px solid #dee2e6;
-      margin-top: 8px;
-      font-size: 13px;
-      font-weight: 600;
-      color: #495057;
-    }
     
     /* Removed net-seller styles - no longer needed */
     
@@ -378,13 +360,6 @@ export class PDFGenerator {
             <td class="item-amount">${formatCurrency(netSheetData.survey_cost)}</td>
           </tr>` : ''}
         </table>
-        
-        <div class="total-section">
-          <div class="total-row">
-            <span>TOTAL ESTIMATED COSTS</span>
-            <span>${formatCurrency(netSheetData.total_costs)}</span>
-          </div>
-        </div>
       </div>
     </div>
     
@@ -453,8 +428,7 @@ export class PDFGenerator {
     
     return `
     <div style="margin-top: 10px; padding: 10px; background: #f8f9fa; border-radius: 8px;">
-      <h3 style="color: #2c3e50; font-size: 13px; margin-bottom: 8px; font-weight: 600;">NOTES</h3>
-      <div style="color: #555; font-size: 11px; line-height: 1.5;">
+      <div style="color: #555; font-size: 12px; line-height: 1.6;">
         ${notes.join('<br>')}
       </div>
     </div>`;
