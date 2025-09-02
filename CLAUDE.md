@@ -70,3 +70,6 @@ node -r ts-node/register convert-contract2-to-images.ts
 - STOP just doing placeholder things - it NEVER works out and then we are more messed up
 - please note and please stop offering local solutions it just makes things harder to deceipher too many choices
 - when you tell me something is fixed it needs to have been tested as the end user at a minimum you need to ask me if you want me to test - i do not want anything claiming to work that has not been tested as the end user
+- railway uses my github credentials use github credentials anytime you need to get into railway
+- when you read logs read them carefully and fully do not make any assumptions
+- so dont EVER tell me something is working unless you know it is

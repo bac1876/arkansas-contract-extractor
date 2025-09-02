@@ -233,7 +233,9 @@ export class GoogleSheetsIntegration {
       });
       
       // Find next column (D, E, F, etc. - skipping A, B, C for labels and notes)
-      const nextColumn = String.fromCharCode(68 + (currentData.data.values?.[0]?.length || 3) - 3); // Start at column D
+      const currentColumns = currentData.data.values?.[0]?.length || 3;
+      const columnIndex = Math.max(3, currentColumns); // Ensure we start at column D (index 3)
+      const nextColumn = String.fromCharCode(65 + columnIndex); // A=65, D=68
       
       // Update the column with net sheet data
       await this.sheets.spreadsheets.values.update({

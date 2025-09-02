@@ -28,12 +28,18 @@ RUN npm ci
 # Install TypeScript and ts-node for runtime
 RUN npm install typescript ts-node
 
-# Install Playwright and its browser
-RUN npx playwright install chromium
-RUN npx playwright install-deps chromium
-
 # Copy all source files
 COPY . .
+
+# Install Playwright dependencies first (system packages)
+RUN npx playwright install-deps chromium
+
+# Install Playwright browser with explicit path
+ENV PLAYWRIGHT_BROWSERS_PATH=/app/browsers
+RUN npx playwright install chromium
+
+# Verify browser installation
+RUN ls -la /app/browsers/chromium*/chrome-linux/ || echo "Browser directory check"
 
 # Fix ImageMagick policy to allow PDF processing
 # This is the critical fix from the deployment guide
@@ -50,8 +56,7 @@ RUN mkdir -p processed_contracts/pdfs \
     agent_info_sheets \
     gpt5_temp
 
-# Set environment variable for Playwright
-ENV PLAYWRIGHT_BROWSERS_PATH=/app/browsers
+# Set environment variable for production
 ENV NODE_ENV=production
 
 # Expose port for health checks
