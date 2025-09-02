@@ -1,5 +1,7 @@
 # Arkansas Contract Extractor
 
+**Version 1.0** - Production Ready on Railway ✅
+
 AI-powered extraction system for Arkansas real estate contracts using GPT-4 Vision API.
 
 ## Features
@@ -8,7 +10,11 @@ AI-powered extraction system for Arkansas real estate contracts using GPT-4 Visi
 - **Vision API**: Uses GPT-4 Vision with ImageMagick for superior PDF processing
 - **37+ Fields**: Comprehensive extraction including Para 13 fixtures
 - **Cash & Financed**: Handles both purchase types automatically
-- **Web Interface**: Simple upload interface for easy contract processing
+- **Email Monitoring**: Automated IMAP monitoring with attachment processing
+- **Seller Net Sheets**: Professional PDF generation with accurate calculations
+- **Agent Info Sheets**: Summary documents for listing agents
+- **Google Integration**: Sheets for data lookup, Drive for document storage
+- **Railway Deployment**: Fully deployed and running on Railway platform
 - **Dual Output**: Returns both JSON and CSV formats
 
 ## Extracted Fields
