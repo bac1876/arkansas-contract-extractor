@@ -653,18 +653,16 @@ export class EmailMonitor {
                         // Upload agent info sheet to Google Drive
                         if (this.drive && agentInfoResult) {
                           try {
-                            // Get the filename and check if it needs renaming
-                            let fileName = path.basename(agentInfoResult.path);
+                            // Use correct MIME type based on actual file type
+                            const fileName = path.basename(agentInfoResult.path);
                             const fileExt = path.extname(fileName).toLowerCase();
+                            let mimeType = 'application/pdf';
                             
-                            // If it's HTML (fallback), rename to .pdf for consistency
                             if (fileExt === '.html') {
-                              fileName = fileName.replace('.html', '.pdf');
-                              console.log(`   Renaming ${path.basename(agentInfoResult.path)} to ${fileName} for Drive`);
+                              mimeType = 'text/html';
+                              console.log('   Uploading as HTML (PDF generation failed)');
                             }
                             
-                            // Always use PDF mime type for consistency
-                            const mimeType = 'application/pdf';
                             const agentInfoUpload = await this.drive.uploadFile(
                               agentInfoResult.path,
                               fileName,

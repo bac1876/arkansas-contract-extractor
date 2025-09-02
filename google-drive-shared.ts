@@ -333,20 +333,22 @@ export class GoogleDriveShared {
       // Upload PDF if available
       if (pdfPath) {
         const path = require('path');
-        let pdfFileName = path.basename(pdfPath);
+        const pdfFileName = path.basename(pdfPath);
         
-        // If it's an HTML file (fallback from failed PDF generation), rename to .pdf
+        // Detect actual file type and use appropriate MIME type
         const fileExtension = path.extname(pdfPath).toLowerCase();
+        let mimeType = 'application/pdf';
+        
         if (fileExtension === '.html') {
-          pdfFileName = pdfFileName.replace('.html', '.pdf');
-          console.log('⚠️  Uploading HTML content as PDF (PDF generation failed)');
-          console.log(`   Renaming ${path.basename(pdfPath)} to ${pdfFileName} for Drive upload`);
+          mimeType = 'text/html';
+          console.log('⚠️  Uploading HTML content (PDF generation failed)');
+          console.log('   File will be viewable as HTML in Google Drive');
         }
         
         const pdfUpload = await this.uploadFile(
           pdfPath,
           pdfFileName,
-          'application/pdf'
+          mimeType
         );
         results.pdfLink = pdfUpload.webViewLink;
       }

@@ -642,19 +642,17 @@ export class GoogleDriveIntegration {
       // Upload PDF/HTML if available
       if (pdfPath) {
         const path = require('path');
-        let pdfFileName = path.basename(pdfPath);
+        const pdfFileName = path.basename(pdfPath);
         
         // Detect actual file type based on extension
         const fileExtension = path.extname(pdfPath).toLowerCase();
         let mimeType = 'application/pdf';  // Default to PDF
         
         if (fileExtension === '.html') {
-          // If it's an HTML file, rename it to have .pdf extension for Drive
-          // This ensures it appears as a PDF in Drive even though it's HTML content
-          pdfFileName = pdfFileName.replace('.html', '.pdf');
-          mimeType = 'application/pdf';  // Keep PDF mime type for consistency
-          console.log('⚠️  Uploading HTML content as PDF (PDF generation failed on server)');
-          console.log(`   Renaming ${path.basename(pdfPath)} to ${pdfFileName} for Drive upload`);
+          // Keep HTML as HTML so it can be opened properly
+          mimeType = 'text/html';
+          console.log('⚠️  Uploading HTML file (PDF generation failed on server)');
+          console.log('   Note: File will be viewable as HTML in Google Drive');
         } else if (fileExtension !== '.pdf') {
           console.log(`⚠️  Unexpected file extension: ${fileExtension}, using PDF mime type`);
         }

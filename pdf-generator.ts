@@ -21,7 +21,7 @@ export class PDFGenerator {
   /**
    * Generate a professional PDF net sheet
    */
-  async generateNetSheetPDF(netSheetData: any, propertyAddress: string, contractData?: any): Promise<string> {
+  async generateNetSheetPDF(netSheetData: any, propertyAddress: string, contractData?: any): Promise<{ path: string; type: 'pdf' | 'html' }> {
     // Clean address for filename - replace special chars with spaces, then collapse multiple spaces
     const cleanAddress = propertyAddress
       .replace(/[^a-zA-Z0-9\s]/g, ' ')  // Replace special chars with spaces
@@ -37,12 +37,23 @@ export class PDFGenerator {
     
     // Generate PDF using Playwright
     try {
+      console.log('🚀 Launching Playwright browser for PDF generation...');
+      
       // Launch browser with Railway-compatible options
       const browser = await chromium.launch({
         headless: true,
-        args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage']
+        args: [
+          '--no-sandbox', 
+          '--disable-setuid-sandbox', 
+          '--disable-dev-shm-usage',
+          '--disable-gpu',
+          '--disable-web-security',
+          '--disable-features=IsolateOrigins',
+          '--disable-site-isolation-trials'
+        ]
       });
       
+      console.log('📄 Creating PDF from HTML content...');
       const page = await browser.newPage();
       await page.setContent(htmlContent, { waitUntil: 'networkidle' });
       
@@ -61,16 +72,26 @@ export class PDFGenerator {
       
       await browser.close();
       
-      console.log(`📄 Net sheet PDF generated: ${filePath}`);
-      return filePath;
+      console.log(`✅ Net sheet PDF generated successfully: ${filePath}`);
+      return { path: filePath, type: 'pdf' };
       
-    } catch (error) {
-      console.error('Failed to generate PDF:', error);
+    } catch (error: any) {
+      console.error('⚠️ Failed to generate PDF with Playwright:', error.message);
+      
+      // Log more details about the error
+      if (error.message?.includes('Executable doesn\'t exist')) {
+        console.error('   🔧 Playwright browser not installed. Run: npx playwright install chromium');
+      }
+      if (error.message?.includes('Failed to launch')) {
+        console.error('   🔧 Browser launch failed. This often happens in containerized environments.');
+      }
+      
       // Fallback to HTML if PDF generation fails
       const htmlPath = filePath.replace('.pdf', '.html');
       await fs.writeFile(htmlPath, htmlContent);
-      console.log(`📄 Net sheet saved as HTML (PDF failed): ${htmlPath}`);
-      return htmlPath;
+      console.log(`📄 Net sheet saved as HTML (PDF generation failed): ${htmlPath}`);
+      console.log('   ⚠️ This will be uploaded as HTML, not PDF');
+      return { path: htmlPath, type: 'html' };
     }
   }
   

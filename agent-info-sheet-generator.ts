@@ -56,7 +56,7 @@ export class AgentInfoSheetGenerator {
   /**
    * Generate agent information sheet PDF
    */
-  async generateAgentInfoSheet(data: AgentInfoSheetData): Promise<string> {
+  async generateAgentInfoSheet(data: AgentInfoSheetData): Promise<{ path: string; type: 'pdf' | 'html' }> {
     // Clean address for filename
     const cleanAddress = data.property_address
       .replace(/[^a-zA-Z0-9\s]/g, ' ')
@@ -96,14 +96,16 @@ export class AgentInfoSheetGenerator {
       await browser.close();
       
       console.log(`📄 Agent info sheet PDF generated: ${filePath}`);
-      return filePath;
-    } catch (error) {
-      console.error('Failed to generate PDF:', error);
+      return { path: filePath, type: 'pdf' };
+    } catch (error: any) {
+      console.error('⚠️ Failed to generate agent info PDF:', error.message);
+      
       // Fallback to HTML if PDF generation fails
       const htmlPath = filePath.replace('.pdf', '.html');
       await fs.writeFile(htmlPath, htmlContent);
       console.log(`📄 Agent info sheet saved as HTML (PDF failed): ${htmlPath}`);
-      return htmlPath;
+      console.log('   ⚠️ This will be uploaded as HTML, not PDF');
+      return { path: htmlPath, type: 'html' };
     }
   }
   
