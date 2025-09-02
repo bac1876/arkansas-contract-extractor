@@ -110,23 +110,39 @@ export class ListingInfoService {
     // Normalize the input address
     const inputNorm = this.normalizeAddress(fullAddress);
     
-    // Try to find a match
+    // Try to find a match using multiple strategies
     for (const listing of this.listingData) {
       const listingNorm = this.normalizeAddress(listing.address);
       
-      // Match if street number and primary street name match
+      // Strategy 1: Exact match on number and street (case-insensitive)
       if (listingNorm.number && listingNorm.street && 
           inputNorm.number === listingNorm.number && 
-          inputNorm.street === listingNorm.street) {
+          inputNorm.street.toLowerCase() === listingNorm.street.toLowerCase()) {
         console.log(`✅ Found listing match: "${listing.address}" for property "${fullAddress}"`);
         console.log(`   📊 Taxes: $${listing.annualTaxes}, Commission: ${(listing.commissionPercent * 100).toFixed(1)}%`);
         return listing;
       }
       
-      // Also check if the full simplified addresses contain each other
+      // Strategy 2: Number matches and street name starts with same word
+      // This handles "890 Clark" matching "890 Clark Cir"
+      if (listingNorm.number && inputNorm.number === listingNorm.number) {
+        const inputStreetWords = inputNorm.full.split(' ').filter(w => w && w !== inputNorm.number);
+        const listingStreetWords = listingNorm.full.split(' ').filter(w => w && w !== listingNorm.number);
+        
+        if (inputStreetWords.length > 0 && listingStreetWords.length > 0) {
+          // Check if first street word matches (e.g., "clark" matches in both)
+          if (inputStreetWords[0] === listingStreetWords[0]) {
+            console.log(`✅ Found listing match (partial street): "${listing.address}" for property "${fullAddress}"`);
+            console.log(`   📊 Taxes: $${listing.annualTaxes}, Commission: ${(listing.commissionPercent * 100).toFixed(1)}%`);
+            return listing;
+          }
+        }
+      }
+      
+      // Strategy 3: Check if the full simplified addresses contain each other
       // This handles cases like "3312 Alliance" matching variations
       if (inputNorm.full.includes(listingNorm.full) || listingNorm.full.includes(inputNorm.full)) {
-        console.log(`✅ Found listing match: "${listing.address}" for property "${fullAddress}"`);
+        console.log(`✅ Found listing match (contains): "${listing.address}" for property "${fullAddress}"`);
         console.log(`   📊 Taxes: $${listing.annualTaxes}, Commission: ${(listing.commissionPercent * 100).toFixed(1)}%`);
         return listing;
       }
@@ -134,6 +150,7 @@ export class ListingInfoService {
 
     console.log(`⚠️  No listing data found for: "${fullAddress}" - using defaults`);
     console.log(`   Normalized to: "${inputNorm.number} ${inputNorm.street}"`);
+    console.log(`   Available listings: ${this.listingData.slice(0, 3).map(l => l.address).join(', ')}${this.listingData.length > 3 ? '...' : ''}`);
     return null;
   }
 
