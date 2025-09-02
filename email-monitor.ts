@@ -11,7 +11,6 @@ import * as path from 'path';
 import { RobustExtractor } from './extraction-robust';
 import { HybridExtractor } from './extraction-hybrid';
 import { FallbackExtractor } from './extraction-fallback';
-import { DirectPDFExtractor } from './extraction-direct-pdf';
 import { ExtractionStatusTracker } from './extraction-status-tracker';
 import GoogleSheetsIntegration from './google-sheets-integration';
 import GoogleDriveIntegration from './google-drive-integration';
@@ -46,7 +45,6 @@ export class EmailMonitor {
   private robustExtractor: RobustExtractor;
   private extractor: HybridExtractor;
   private fallbackExtractor: FallbackExtractor;
-  private directPdfExtractor: DirectPDFExtractor;
   private statusTracker: ExtractionStatusTracker;
   private sheets?: GoogleSheetsIntegration;
   private drive?: GoogleDriveIntegration;
@@ -75,7 +73,6 @@ export class EmailMonitor {
     this.robustExtractor = new RobustExtractor();
     this.extractor = new HybridExtractor();
     this.fallbackExtractor = new FallbackExtractor();
-    this.directPdfExtractor = new DirectPDFExtractor();
     this.statusTracker = new ExtractionStatusTracker();
     this.calculator = new SellerNetSheetCalculator();
     this.pdfGenerator = new PDFGenerator();
@@ -602,16 +599,12 @@ export class EmailMonitor {
                       
                       // Generate PDF net sheet
                       try {
-                        const netSheetResult = await this.pdfGenerator.generateNetSheetPDF(
+                        pdfPath = await this.pdfGenerator.generateNetSheetPDF(
                           netSheetData,
                           propertyAddress,
                           extractionResult.data
                         );
-                        pdfPath = netSheetResult.path;
-                        console.log(`📑 Generated ${netSheetResult.type.toUpperCase()} net sheet: ${path.basename(pdfPath)}`);
-                        
-                        // Store the type for later upload
-                        (pdfPath as any).fileType = netSheetResult.type;
+                        console.log(`📑 Generated net sheet: ${path.basename(pdfPath)}`);
                       } catch (pdfError) {
                         console.error('⚠️  Could not generate PDF:', pdfError);
                       }

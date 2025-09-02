@@ -1,12 +1,10 @@
 /**
  * PDF Generator for Seller Net Sheets
  * Creates professional, branded PDF documents for sellers
- * Uses PDFKit for reliable PDF generation without browser dependencies
  */
 
-import PDFDocument from 'pdfkit';
+import { chromium } from 'playwright';
 import * as fs from 'fs/promises';
-import * as fsSync from 'fs';
 import * as path from 'path';
 
 export class PDFGenerator {
@@ -21,220 +19,63 @@ export class PDFGenerator {
   }
   
   /**
-   * Generate a professional PDF net sheet using PDFKit
+   * Generate a professional PDF net sheet
    */
-  async generateNetSheetPDF(netSheetData: any, propertyAddress: string, contractData?: any): Promise<{ path: string; type: 'pdf' | 'html' }> {
-    // Clean address for filename
+  async generateNetSheetPDF(netSheetData: any, propertyAddress: string, contractData?: any): Promise<string> {
+    // Clean address for filename - replace special chars with spaces, then collapse multiple spaces
     const cleanAddress = propertyAddress
-      .replace(/[^a-zA-Z0-9\s]/g, ' ')
-      .replace(/\s+/g, '_')
-      .trim();
+      .replace(/[^a-zA-Z0-9\s]/g, ' ')  // Replace special chars with spaces
+      .replace(/\s+/g, '_')              // Replace spaces with underscores
+      .trim();                           // Remove leading/trailing spaces
     
+    // Use the format: netsheet_address.pdf
     const fileName = `netsheet_${cleanAddress}.pdf`;
     const filePath = path.join(this.outputDir, fileName);
     
+    // Generate HTML content
+    const htmlContent = this.generateHTML(netSheetData, propertyAddress, contractData);
+    
+    // Generate PDF using Playwright
     try {
-      console.log('🚀 Generating PDF with PDFKit (browser-free)...');
-      
-      await new Promise<void>((resolve, reject) => {
-        // Create PDF document
-        const doc = new PDFDocument({
-          size: 'LETTER',
-          margin: 50,
-          info: {
-            Title: `Seller Net Sheet - ${propertyAddress}`,
-            Author: 'Arkansas Contract System',
-            Subject: 'Seller Net Sheet'
-          }
-        });
-        
-        // Pipe to file
-        const stream = fsSync.createWriteStream(filePath);
-        doc.pipe(stream);
-        
-        // Helper function for currency formatting
-        const formatCurrency = (value: number) => {
-          return `$${(value || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-        };
-        
-        const today = new Date().toLocaleDateString('en-US', { 
-          year: 'numeric', 
-          month: 'long', 
-          day: 'numeric' 
-        });
-        
-        const buyerNames = contractData?.buyers || 'N/A';
-        const closingDate = contractData?.closing_date || netSheetData.closing_date || 'TBD';
-        
-        // Header with gradient effect (simulated)
-        doc.rect(0, 0, 612, 100)
-           .fill('#667eea');
-        
-        doc.fontSize(28)
-           .font('Helvetica-Bold')
-           .fillColor('#ffffff')
-           .text('SELLER NET SHEET', 0, 30, { align: 'center', width: 612 });
-        
-        doc.fontSize(12)
-           .font('Helvetica')
-           .text('PROFESSIONAL ESTIMATE', 0, 65, { align: 'center', width: 612 });
-        
-        // Reset color for body
-        doc.fillColor('#000000');
-        
-        // Property Info Section
-        doc.fontSize(16)
-           .font('Helvetica-Bold')
-           .text('Property Information', 50, 130);
-        
-        doc.fontSize(11)
-           .font('Helvetica');
-        
-        // Property details
-        doc.text(`Address: ${propertyAddress}`, 50, 160);
-        doc.text(`Date: ${today}`, 50, 180);
-        doc.text(`Buyers: ${buyerNames}`, 50, 200);
-        doc.text(`Closing Date: ${closingDate}`, 50, 220);
-        
-        // Sales Price Section
-        doc.rect(50, 250, 512, 40)
-           .fillAndStroke('#f5f5f5', '#cccccc');
-        
-        doc.fontSize(14)
-           .font('Helvetica-Bold')
-           .fillColor('#000000')
-           .text('Sales Price', 60, 265, { continued: true, width: 400 })
-           .text(formatCurrency(netSheetData.sales_price || 0), { align: 'right', width: 440 });
-        
-        // Seller Costs Section
-        doc.fontSize(14)
-           .font('Helvetica-Bold')
-           .fillColor('#d32f2f')
-           .text('LESS SELLER COSTS:', 50, 310);
-        
-        let yPosition = 340;
-        
-        // Cost items
-        const costs = [
-          { label: 'Seller Concessions', value: netSheetData.seller_concessions || 0 },
-          { label: 'Taxes Prorated', value: netSheetData.taxes_prorated || 0, note: netSheetData.taxDaysNote },
-          { label: 'Commission - Seller', value: netSheetData.commission_seller || 0, note: netSheetData.commission_percent ? `${netSheetData.commission_percent}% of sales price` : null },
-          { label: 'Buyer Agency Fees', value: netSheetData.buyer_agency_fees || 0 },
-          { label: 'Closing Fee', value: netSheetData.closing_fee || 0 },
-          { label: 'Title Search', value: netSheetData.title_search || 0 },
-          { label: 'Title Insurance', value: netSheetData.title_insurance || 0 },
-          { label: 'Title & Recording Fees', value: netSheetData.title_recording_fees || 0 },
-          { label: 'Pest Transfer', value: netSheetData.pest_transfer || 0 },
-          { label: 'Tax Stamps', value: netSheetData.tax_stamps || 0, note: 'Purchase price × 0.0033 ÷ 2' },
-          { label: 'Home Warranty', value: netSheetData.home_warranty || 0 }
-        ];
-        
-        doc.fontSize(11)
-           .font('Helvetica')
-           .fillColor('#000000');
-        
-        costs.forEach(cost => {
-          if (cost.value > 0 || cost.label === 'Seller Concessions') {
-            doc.text(cost.label, 70, yPosition);
-            if (cost.note) {
-              doc.fontSize(9)
-                 .fillColor('#666666')
-                 .text(`(${cost.note})`, 250, yPosition);
-              doc.fontSize(11)
-                 .fillColor('#000000');
-            }
-            doc.text(formatCurrency(cost.value), 450, yPosition, { align: 'right', width: 100 });
-            yPosition += 22;
-          }
-        });
-        
-        // Total line
-        yPosition += 10;
-        doc.moveTo(50, yPosition)
-           .lineTo(562, yPosition)
-           .stroke();
-        
-        yPosition += 15;
-        
-        // Total Costs
-        doc.fontSize(12)
-           .font('Helvetica-Bold')
-           .text('TOTAL COSTS', 70, yPosition)
-           .fillColor('#d32f2f')
-           .text(formatCurrency(netSheetData.total_costs || 0), 450, yPosition, { align: 'right', width: 100 });
-        
-        yPosition += 40;
-        
-        // Net to Seller Box
-        doc.rect(50, yPosition, 512, 50)
-           .fillAndStroke('#e8f5e9', '#4caf50');
-        
-        doc.fontSize(16)
-           .font('Helvetica-Bold')
-           .fillColor('#2e7d32')
-           .text('ESTIMATED NET TO SELLER', 60, yPosition + 15, { continued: true, width: 350 })
-           .text(formatCurrency(netSheetData.cash_to_seller || 0), { align: 'right', width: 440 });
-        
-        // Tax Warning if applicable
-        if (netSheetData.taxWarning) {
-          yPosition += 70;
-          doc.rect(50, yPosition, 512, 40)
-             .fillAndStroke('#fff3e0', '#ff9800');
-          
-          doc.fontSize(10)
-             .font('Helvetica-Bold')
-             .fillColor('#e65100')
-             .text('⚠️ TAX ESTIMATE WARNING', 60, yPosition + 8);
-          
-          doc.fontSize(9)
-             .font('Helvetica')
-             .fillColor('#000000')
-             .text('Using default $10/day. Actual tax amount may vary significantly.', 60, yPosition + 22);
-        }
-        
-        // Disclaimer at bottom
-        doc.fontSize(9)
-           .font('Helvetica-Oblique')
-           .fillColor('#666666')
-           .text('* This is an estimate only and not a guarantee of actual costs or proceeds.', 50, 680, { align: 'center', width: 512 });
-        doc.text('Actual costs may vary. Please consult with your closing agent for final figures.', 50, 695, { align: 'center', width: 512 });
-        
-        // Footer
-        doc.fontSize(8)
-           .font('Helvetica')
-           .fillColor('#999999')
-           .text(`Generated on ${today} by Arkansas Contract System`, 50, 720, { align: 'center', width: 512 });
-        
-        // Finalize PDF
-        doc.end();
-        
-        stream.on('finish', () => {
-          console.log(`✅ Net sheet PDF generated successfully: ${filePath}`);
-          resolve();
-        });
-        
-        stream.on('error', (err) => {
-          console.error('Stream error:', err);
-          reject(err);
-        });
+      // Launch browser with Railway-compatible options
+      const browser = await chromium.launch({
+        headless: true,
+        args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage']
       });
       
-      return { path: filePath, type: 'pdf' };
+      const page = await browser.newPage();
+      await page.setContent(htmlContent, { waitUntil: 'networkidle' });
       
-    } catch (error: any) {
-      console.error('⚠️ Failed to generate PDF:', error.message);
+      // Generate PDF with professional settings
+      await page.pdf({
+        path: filePath,
+        format: 'Letter',
+        printBackground: true,
+        margin: {
+          top: '0.5in',
+          right: '0.5in',
+          bottom: '0.5in',
+          left: '0.5in'
+        }
+      });
       
-      // Fallback to HTML only if PDF generation completely fails
-      const htmlContent = this.generateHTML(netSheetData, propertyAddress, contractData);
+      await browser.close();
+      
+      console.log(`📄 Net sheet PDF generated: ${filePath}`);
+      return filePath;
+      
+    } catch (error) {
+      console.error('Failed to generate PDF:', error);
+      // Fallback to HTML if PDF generation fails
       const htmlPath = filePath.replace('.pdf', '.html');
       await fs.writeFile(htmlPath, htmlContent);
-      console.log(`📄 Net sheet saved as HTML (PDF generation failed): ${htmlPath}`);
-      return { path: htmlPath, type: 'html' };
+      console.log(`📄 Net sheet saved as HTML (PDF failed): ${htmlPath}`);
+      return htmlPath;
     }
   }
   
   /**
-   * Generate HTML content as fallback
+   * Generate professional HTML content for the PDF
    */
   private generateHTML(netSheetData: any, propertyAddress: string, contractData?: any): string {
     const formatCurrency = (value: number) => {
@@ -248,6 +89,7 @@ export class PDFGenerator {
     });
     
     const buyerNames = contractData?.buyers || 'N/A';
+    // Try to get closing date from either location
     const closingDate = contractData?.closing_date || netSheetData.closing_date || 'TBD';
     const hasTaxWarning = netSheetData.taxWarning === true;
     
@@ -284,7 +126,7 @@ export class PDFGenerator {
     
     .header h1 {
       color: #2c3e50;
-      font-size: 28px;
+      font-size: 24px;
       margin-bottom: 5px;
       font-weight: 500;
       letter-spacing: 1px;
@@ -317,199 +159,373 @@ export class PDFGenerator {
       opacity: 0.9;
     }
     
+    .info-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+      margin-bottom: 30px;
+      padding: 20px;
+      background: #f8f9fa;
+      border-radius: 10px;
+    }
+    
+    .info-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px solid #e0e0e0;
+    }
+    
+    .info-label {
+      color: #666;
+      font-size: 14px;
+    }
+    
+    .info-value {
+      font-weight: 600;
+      color: #2c3e50;
+    }
+    
     .section {
       margin-bottom: 30px;
     }
     
     .section-title {
+      background: #2c3e50;
+      color: white;
+      padding: 10px 20px;
       font-size: 18px;
-      color: #2c3e50;
-      margin-bottom: 15px;
-      padding-bottom: 5px;
-      border-bottom: 2px solid #ecf0f1;
+      font-weight: 500;
+      border-radius: 5px 5px 0 0;
+      letter-spacing: 1px;
     }
     
-    .line-item {
-      display: flex;
-      justify-content: space-between;
-      padding: 10px 0;
-      border-bottom: 1px solid #ecf0f1;
+    .section-content {
+      background: white;
+      border: 1px solid #e0e0e0;
+      border-top: none;
+      border-radius: 0 0 5px 5px;
+      padding: 20px;
     }
     
-    .line-item .label {
+    .cost-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    
+    .cost-table tr {
+      border-bottom: 1px solid #f0f0f0;
+    }
+    
+    .cost-table tr:last-child {
+      border-bottom: none;
+    }
+    
+    .cost-table td {
+      padding: 12px 0;
+      font-size: 14px;
+    }
+    
+    .cost-table .item-name {
       color: #555;
     }
     
-    .line-item .value {
-      font-weight: 500;
-      color: #2c3e50;
+    .cost-table .item-calculation {
+      color: #888;
+      font-size: 12px;
+      font-style: italic;
+      text-align: center;
     }
     
-    .total-line {
+    .cost-table .item-amount {
+      text-align: right;
+      font-weight: 600;
+      color: #2c3e50;
+      white-space: nowrap;
+    }
+    
+    .total-section {
+      background: #f8f9fa;
+      padding: 20px;
+      border-radius: 10px;
+      margin-top: 20px;
+    }
+    
+    .total-row {
       display: flex;
       justify-content: space-between;
-      padding: 15px 0;
-      border-top: 2px solid #e74c3c;
-      border-bottom: 2px solid #e74c3c;
-      margin: 20px 0;
-      font-size: 18px;
-      font-weight: bold;
-    }
-    
-    .total-line .label {
-      color: #e74c3c;
-    }
-    
-    .total-line .value {
-      color: #e74c3c;
-    }
-    
-    .net-amount {
-      background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
-      color: white;
-      padding: 25px;
-      border-radius: 10px;
-      text-align: center;
-      margin: 30px 0;
-      box-shadow: 0 10px 20px rgba(0,0,0,0.15);
-    }
-    
-    .net-amount .label {
+      align-items: center;
+      padding: 10px 0;
+      border-top: 2px solid #dee2e6;
+      margin-top: 10px;
       font-size: 16px;
-      margin-bottom: 10px;
-      opacity: 0.9;
+      font-weight: 600;
+      color: #495057;
     }
     
-    .net-amount .amount {
-      font-size: 36px;
-      font-weight: bold;
-    }
+    /* Removed net-seller styles - no longer needed */
     
-    .warning {
-      background: #fff3e0;
-      border-left: 4px solid #ff9800;
-      padding: 15px;
-      margin: 20px 0;
+    .disclaimer {
+      margin-top: 40px;
+      padding: 20px;
+      background: #fff3cd;
+      border-left: 4px solid #ffc107;
       border-radius: 5px;
     }
     
-    .warning .title {
-      color: #e65100;
-      font-weight: bold;
+    .disclaimer h3 {
+      color: #856404;
+      font-size: 16px;
+      margin-bottom: 10px;
+    }
+    
+    .disclaimer p {
+      color: #856404;
+      font-size: 13px;
+      line-height: 1.6;
+    }
+    
+    .footer {
+      margin-top: 50px;
+      text-align: center;
+      color: #888;
+      font-size: 12px;
+      padding-top: 20px;
+      border-top: 1px solid #e0e0e0;
+    }
+    
+    .footer .company {
+      font-weight: 600;
+      color: #2c3e50;
       margin-bottom: 5px;
     }
     
-    .disclaimer {
-      text-align: center;
-      color: #7f8c8d;
-      font-size: 12px;
-      margin-top: 40px;
-      padding-top: 20px;
-      border-top: 1px solid #ecf0f1;
+    .tax-warning {
+      background-color: #ffebee !important;
+    }
+    
+    .tax-warning .item-name {
+      color: #d32f2f !important;
+      font-weight: bold;
+    }
+    
+    .tax-warning .item-amount {
+      color: #d32f2f !important;
+      font-weight: bold;
+    }
+    
+    .tax-warning-notice {
+      color: #d32f2f;
+      font-size: 10px;
+      font-style: italic;
+      padding-left: 10px;
+    }
+    
+    @media print {
+      .container {
+        max-width: 100%;
+      }
+      
+      .property-info,
+      .net-seller,
+      .tax-warning {
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
     }
   </style>
 </head>
 <body>
   <div class="container">
+    <!-- Header -->
     <div class="header">
       <h1>SELLER NET SHEET</h1>
-      <div class="subtitle">Professional Estimate</div>
+      <div class="subtitle">Estimated Proceeds Statement</div>
     </div>
     
+    <!-- Property Information -->
     <div class="property-info">
       <h2>${propertyAddress}</h2>
-      <div class="date">Prepared: ${today}</div>
-      <div>Buyers: ${buyerNames}</div>
-      <div>Closing Date: ${closingDate}</div>
     </div>
     
+    <!-- Transaction Details -->
+    <div class="info-grid">
+      <div class="info-item">
+        <span class="info-label">Buyers:</span>
+        <span class="info-value">${buyerNames}</span>
+      </div>
+      <div class="info-item">
+        <span class="info-label">Closing Date:</span>
+        <span class="info-value">${closingDate}</span>
+      </div>
+      <div class="info-item">
+        <span class="info-label">Sales Price:</span>
+        <span class="info-value">${formatCurrency(netSheetData.sales_price)}</span>
+      </div>
+      <div class="info-item">
+        <span class="info-label">Days of Tax:</span>
+        <span class="info-value">${netSheetData.days_of_tax || 0} days</span>
+      </div>
+    </div>
+    
+    <!-- Seller Costs -->
     <div class="section">
-      <div class="section-title">Transaction Details</div>
-      <div class="line-item">
-        <span class="label">Sales Price</span>
-        <span class="value">${formatCurrency(netSheetData.sales_price || 0)}</span>
+      <div class="section-title">SELLER'S ESTIMATED COSTS</div>
+      <div class="section-content">
+        <table class="cost-table">
+          <tr>
+            <td class="item-name">Seller Concessions</td>
+            <td class="item-calculation"></td>
+            <td class="item-amount">${formatCurrency(netSheetData.seller_concessions)}</td>
+          </tr>
+          <tr class="${hasTaxWarning ? 'tax-warning' : ''}">
+            <td class="item-name">
+              Taxes Prorated
+              ${hasTaxWarning ? '<span class="tax-warning-notice">*NEEDS VERIFICATION</span>' : ''}
+            </td>
+            <td class="item-calculation">${netSheetData.days_of_tax} days @ ${formatCurrency(netSheetData.tax_per_day)}/day</td>
+            <td class="item-amount">${formatCurrency(netSheetData.taxes_prorated)}</td>
+          </tr>
+          <tr>
+            <td class="item-name">Commission - Seller</td>
+            <td class="item-calculation"></td>
+            <td class="item-amount">${formatCurrency(netSheetData.commission_seller)}</td>
+          </tr>
+          <tr>
+            <td class="item-name">Buyer Agency Fees</td>
+            <td class="item-calculation"></td>
+            <td class="item-amount">${formatCurrency(netSheetData.buyer_agency_fees)}</td>
+          </tr>
+          <tr>
+            <td class="item-name">Closing Fee</td>
+            <td class="item-calculation"></td>
+            <td class="item-amount">${formatCurrency(netSheetData.closing_fee)}</td>
+          </tr>
+          <tr>
+            <td class="item-name">Title Search</td>
+            <td class="item-calculation"></td>
+            <td class="item-amount">${formatCurrency(netSheetData.title_search)}</td>
+          </tr>
+          <tr>
+            <td class="item-name">Title Insurance</td>
+            <td class="item-calculation"></td>
+            <td class="item-amount">${formatCurrency(netSheetData.title_insurance)}</td>
+          </tr>
+          <tr>
+            <td class="item-name">Title & Recording Fees</td>
+            <td class="item-calculation"></td>
+            <td class="item-amount">${formatCurrency(netSheetData.title_recording_fees)}</td>
+          </tr>
+          <tr>
+            <td class="item-name">Pest Transfer*</td>
+            <td class="item-calculation">*Estimate</td>
+            <td class="item-amount">${formatCurrency(netSheetData.pest_transfer)}</td>
+          </tr>
+          <tr>
+            <td class="item-name">Tax Stamps</td>
+            <td class="item-calculation">Purchase price × 0.0033 ÷ 2</td>
+            <td class="item-amount">${formatCurrency(netSheetData.tax_stamps)}</td>
+          </tr>
+          <tr>
+            <td class="item-name">Home Warranty</td>
+            <td class="item-calculation"></td>
+            <td class="item-amount">${formatCurrency(netSheetData.home_warranty)}</td>
+          </tr>
+          ${netSheetData.survey_cost > 0 ? `
+          <tr>
+            <td class="item-name">Survey${netSheetData.survey_note ? ' *' : ''}</td>
+            <td class="item-calculation">${netSheetData.survey_note || ''}</td>
+            <td class="item-amount">${formatCurrency(netSheetData.survey_cost)}</td>
+          </tr>` : ''}
+        </table>
+        
+        <div class="total-section">
+          <div class="total-row">
+            <span>TOTAL ESTIMATED COSTS</span>
+            <span>${formatCurrency(netSheetData.total_costs)}</span>
+          </div>
+        </div>
       </div>
     </div>
     
+    <!-- Net to Seller Summary -->
     <div class="section">
-      <div class="section-title" style="color: #e74c3c;">Less Seller Costs</div>
-      ${netSheetData.seller_concessions > 0 ? `
-      <div class="line-item">
-        <span class="label">Seller Concessions</span>
-        <span class="value">${formatCurrency(netSheetData.seller_concessions)}</span>
-      </div>` : ''}
-      ${netSheetData.taxes_prorated > 0 ? `
-      <div class="line-item">
-        <span class="label">Taxes Prorated ${netSheetData.taxDaysNote ? `(${netSheetData.taxDaysNote})` : ''}</span>
-        <span class="value">${formatCurrency(netSheetData.taxes_prorated)}</span>
-      </div>` : ''}
-      ${netSheetData.commission_seller > 0 ? `
-      <div class="line-item">
-        <span class="label">Commission - Seller ${netSheetData.commission_percent ? `(${netSheetData.commission_percent}%)` : ''}</span>
-        <span class="value">${formatCurrency(netSheetData.commission_seller)}</span>
-      </div>` : ''}
-      ${netSheetData.buyer_agency_fees > 0 ? `
-      <div class="line-item">
-        <span class="label">Buyer Agency Fees</span>
-        <span class="value">${formatCurrency(netSheetData.buyer_agency_fees)}</span>
-      </div>` : ''}
-      <div class="line-item">
-        <span class="label">Closing Fee</span>
-        <span class="value">${formatCurrency(netSheetData.closing_fee || 0)}</span>
+      <div class="section-title">NET PROCEEDS</div>
+      <div class="section-content">
+        <table class="cost-table">
+          <tr style="font-size: 16px; font-weight: bold;">
+            <td class="item-name">Sales Price</td>
+            <td></td>
+            <td class="item-amount">${formatCurrency(netSheetData.sales_price)}</td>
+          </tr>
+          <tr style="font-size: 16px; font-weight: bold;">
+            <td class="item-name">Less: Total Costs</td>
+            <td></td>
+            <td class="item-amount">(${formatCurrency(netSheetData.total_costs)})</td>
+          </tr>
+          <tr style="font-size: 18px; font-weight: bold; background: #f0f0f0;">
+            <td class="item-name">Estimated Net to Seller</td>
+            <td></td>
+            <td class="item-amount">${formatCurrency(netSheetData.cash_to_seller)}</td>
+          </tr>
+        </table>
       </div>
-      <div class="line-item">
-        <span class="label">Title Search</span>
-        <span class="value">${formatCurrency(netSheetData.title_search || 0)}</span>
-      </div>
-      <div class="line-item">
-        <span class="label">Title Insurance</span>
-        <span class="value">${formatCurrency(netSheetData.title_insurance || 0)}</span>
-      </div>
-      <div class="line-item">
-        <span class="label">Title & Recording Fees</span>
-        <span class="value">${formatCurrency(netSheetData.title_recording_fees || 0)}</span>
-      </div>
-      <div class="line-item">
-        <span class="label">Pest Transfer</span>
-        <span class="value">${formatCurrency(netSheetData.pest_transfer || 0)}</span>
-      </div>
-      <div class="line-item">
-        <span class="label">Tax Stamps</span>
-        <span class="value">${formatCurrency(netSheetData.tax_stamps || 0)}</span>
-      </div>
-      ${netSheetData.home_warranty > 0 ? `
-      <div class="line-item">
-        <span class="label">Home Warranty</span>
-        <span class="value">${formatCurrency(netSheetData.home_warranty)}</span>
-      </div>` : ''}
     </div>
     
-    <div class="total-line">
-      <span class="label">TOTAL COSTS</span>
-      <span class="value">${formatCurrency(netSheetData.total_costs || 0)}</span>
-    </div>
+    <!-- Notes Section -->
+    ${this.generateNotesSection(contractData)}
     
-    <div class="net-amount">
-      <div class="label">ESTIMATED NET TO SELLER</div>
-      <div class="amount">${formatCurrency(netSheetData.cash_to_seller || 0)}</div>
-    </div>
-    
-    ${hasTaxWarning ? `
-    <div class="warning">
-      <div class="title">⚠️ Tax Estimate Warning</div>
-      <div>Using default estimate of $10/day for property taxes. Actual tax amount may vary significantly based on property assessment.</div>
-    </div>` : ''}
-    
-    <div class="disclaimer">
-      <p>* This is an estimate only and not a guarantee of actual costs or proceeds.</p>
-      <p>Actual costs may vary. Please consult with your closing agent for final figures.</p>
-      <p style="margin-top: 20px;">Generated on ${today}</p>
+    <!-- Footer -->
+    <div class="footer">
+      <div class="company">Arkansas Contract Agent</div>
+      <div>Generated on ${new Date().toLocaleString()}</div>
+      <div>This document is confidential and intended solely for the named recipient</div>
     </div>
   </div>
 </body>
 </html>`;
   }
+
+  /**
+   * Generate the Notes section with contract-specific information
+   */
+  private generateNotesSection(contractData: any): string {
+    const notes: string[] = [];
+    
+    // Check for earnest money
+    if (contractData?.earnest_money && contractData.earnest_money > 0) {
+      notes.push(`<strong>Earnest Money:</strong> The buyer is offering earnest money`);
+    }
+    
+    // Check for non-refundable deposit
+    if (contractData?.non_refundable === 'YES' && contractData?.non_refundable_amount > 0) {
+      const amount = `$${(contractData.non_refundable_amount || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+      notes.push(`<strong>Non-Refundable Deposit:</strong> Buyer is offering non-refundable deposit in the amount of ${amount}`);
+    }
+    
+    // Check for contingency
+    if (contractData?.para14_contingency === 'B') {
+      notes.push(`<strong>Contingency:</strong> Buyer has a contingency to sell a home`);
+    }
+    
+    // Check for included fixtures
+    if (contractData?.para13_items_included && contractData.para13_items_included.trim() !== '') {
+      notes.push(`<strong>Fixtures:</strong> The buyer is requesting the following items stay with the house: ${contractData.para13_items_included}`);
+    }
+    
+    // Only return the section if there are notes
+    if (notes.length === 0) {
+      return '';
+    }
+    
+    return `
+    <div style="margin-top: 30px; padding: 20px; background: #f8f9fa; border-radius: 10px;">
+      <h3 style="color: #2c3e50; font-size: 18px; margin-bottom: 15px; font-weight: 600;">NOTES</h3>
+      <div style="color: #555; font-size: 14px; line-height: 1.8;">
+        ${notes.join('<br>')}
+      </div>
+    </div>`;
+  }
 }
 
-// Export for use in other modules
 export default PDFGenerator;

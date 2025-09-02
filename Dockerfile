@@ -1,39 +1,18 @@
-# Use full Node.js image for better compatibility
+# Use Node.js 20 for better compatibility
 FROM node:20
 
-# Install dependencies for PDFKit and ImageMagick
-# CRITICAL: Order matters! Delegate libraries MUST be installed BEFORE ImageMagick
-# See Section 4.1 of deployment guide
+# Install ImageMagick and dependencies
+# Based on proven Version 4.0 setup
 RUN apt-get update && apt-get install -y \
-    # Build essentials first
+    # ImageMagick with all format support
+    imagemagick \
+    libmagickwand-dev \
+    # Ghostscript for PDF support
+    ghostscript \
+    # Build tools
     build-essential \
     curl \
     ca-certificates \
-    \
-    # STEP 1: Install delegate libraries FIRST (BEFORE ImageMagick!)
-    libjpeg-dev \
-    libpng-dev \
-    libtiff-dev \
-    libwebp-dev \
-    libgif-dev \
-    librsvg2-dev \
-    \
-    # STEP 2: Install Ghostscript for PDF support
-    ghostscript \
-    libgs-dev \
-    \
-    # STEP 3: NOW install ImageMagick (AFTER all delegates)
-    imagemagick \
-    libmagickwand-dev \
-    \
-    # Canvas/Cairo dependencies for PDFKit
-    libcairo2-dev \
-    libpango1.0-dev \
-    \
-    # Font support for PDFKit
-    fonts-liberation \
-    fonts-noto \
-    fontconfig \
     && rm -rf /var/lib/apt/lists/*
 
 # Set working directory
@@ -56,39 +35,9 @@ RUN npx playwright install-deps chromium
 # Copy all source files
 COPY . .
 
-# Copy our custom ImageMagick policy (Section 4.2 of deployment guide)
-COPY config/policy.xml /app/config/policy.xml
-
-# Set ImageMagick to use our custom policy instead of system default
-ENV MAGICK_CONFIGURE_PATH=/app/config
-
-# Verify ImageMagick installation and delegates
-RUN echo "🎨 Verifying ImageMagick installation..." && \
-    which convert && convert -version && \
-    echo "📋 Checking supported formats..." && \
-    convert -list format | grep -E "JPEG|PNG|PDF" && \
-    echo "🔍 Checking delegates..." && \
-    convert -list delegate | grep -E "jpeg|png|ps|pdf" && \
-    echo "📜 Checking active policy..." && \
-    convert -list policy && \
-    echo "✅ ImageMagick verification complete"
-
-# Fix ImageMagick policy permissions (may be in different locations)
-RUN for policy in /etc/ImageMagick-6/policy.xml /etc/ImageMagick-7/policy.xml /etc/ImageMagick/policy.xml; do \
-      if [ -f "$policy" ]; then \
-        echo "Fixing policy at: $policy" && \
-        sed -i '/<policy domain="coder" rights="none" pattern="PDF" \/>/d' "$policy" && \
-        sed -i '/<policy domain="coder" rights="none" pattern="PS" \/>/d' "$policy" && \
-        sed -i '/<policy domain="coder" rights="none" pattern="EPS" \/>/d' "$policy" && \
-        sed -i '/<policy domain="coder" rights="none" pattern="XPS" \/>/d' "$policy"; \
-      fi; \
-    done
-
-# Verify PDF conversion works
-RUN echo '%PDF-1.4' > /tmp/test.pdf && \
-    convert /tmp/test.pdf /tmp/test.png 2>&1 && \
-    echo '✅ PDF conversion test successful!' || \
-    echo '⚠️ PDF conversion test failed, but continuing...'
+# Fix ImageMagick policy to allow PDF processing
+# This is the critical fix from the deployment guide
+RUN sed -i 's/<policy domain="coder" rights="none" pattern="PDF" \/>/<policy domain="coder" rights="read|write" pattern="PDF" \/>/g' /etc/ImageMagick-6/policy.xml || true
 
 # Create necessary directories
 RUN mkdir -p processed_contracts/pdfs \
@@ -109,5 +58,4 @@ ENV NODE_ENV=production
 EXPOSE 3000
 
 # Use the start script that includes health check
-# This is critical - start.js handles health checks and proper initialization
 CMD ["node", "start.js"]
