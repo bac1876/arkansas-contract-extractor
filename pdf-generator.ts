@@ -187,17 +187,17 @@ export class PDFGenerator {
     }
     
     .section {
-      margin-bottom: 30px;
+      margin-bottom: 20px;
     }
     
     .section-title {
       background: #2c3e50;
       color: white;
-      padding: 10px 20px;
-      font-size: 18px;
+      padding: 8px 15px;
+      font-size: 14px;
       font-weight: 500;
       border-radius: 5px 5px 0 0;
-      letter-spacing: 1px;
+      letter-spacing: 0.5px;
     }
     
     .section-content {
@@ -275,14 +275,14 @@ export class PDFGenerator {
     
     .disclaimer h3 {
       color: #856404;
-      font-size: 16px;
-      margin-bottom: 10px;
+      font-size: 13px;
+      margin-bottom: 8px;
     }
     
     .disclaimer p {
       color: #856404;
-      font-size: 13px;
-      line-height: 1.6;
+      font-size: 11px;
+      line-height: 1.5;
     }
     
     .footer {
