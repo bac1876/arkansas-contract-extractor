@@ -421,12 +421,6 @@ export class AgentInfoSheetGenerator {
       <p><strong>Home Warranty Note:</strong> ${data.para15_other_details}</p>
     </div>` : ''}
     
-    <!-- Footer -->
-    <div class="footer">
-      <div>Arkansas Contract Agent - Other Information About Offer</div>
-      <div>Generated on ${today}</div>
-      <div style="margin-top: 5px;">This document is for internal use only</div>
-    </div>
   </div>
 </body>
 </html>`;
