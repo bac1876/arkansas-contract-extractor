@@ -73,10 +73,22 @@ RUN echo "🎨 Verifying ImageMagick installation..." && \
     convert -list policy && \
     echo "✅ ImageMagick verification complete"
 
+# Fix ImageMagick policy permissions (may be in different locations)
+RUN for policy in /etc/ImageMagick-6/policy.xml /etc/ImageMagick-7/policy.xml /etc/ImageMagick/policy.xml; do \
+      if [ -f "$policy" ]; then \
+        echo "Fixing policy at: $policy" && \
+        sed -i '/<policy domain="coder" rights="none" pattern="PDF" \/>/d' "$policy" && \
+        sed -i '/<policy domain="coder" rights="none" pattern="PS" \/>/d' "$policy" && \
+        sed -i '/<policy domain="coder" rights="none" pattern="EPS" \/>/d' "$policy" && \
+        sed -i '/<policy domain="coder" rights="none" pattern="XPS" \/>/d' "$policy"; \
+      fi; \
+    done
+
 # Verify PDF conversion works
 RUN echo '%PDF-1.4' > /tmp/test.pdf && \
-    convert /tmp/test.pdf /tmp/test.png 2>&1 || \
-    echo 'Warning: PDF conversion test failed, but continuing...'
+    convert /tmp/test.pdf /tmp/test.png 2>&1 && \
+    echo '✅ PDF conversion test successful!' || \
+    echo '⚠️ PDF conversion test failed, but continuing...'
 
 # Create necessary directories
 RUN mkdir -p processed_contracts/pdfs \
@@ -97,4 +109,5 @@ ENV NODE_ENV=production
 EXPOSE 3000
 
 # Use the start script that includes health check
+# This is critical - start.js handles health checks and proper initialization
 CMD ["node", "start.js"]
