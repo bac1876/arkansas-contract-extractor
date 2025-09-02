@@ -136,6 +136,16 @@ export class ListingInfoService {
             console.log(`   📊 Taxes: $${listing.annualTaxes}, Commission: ${(listing.commissionPercent * 100).toFixed(1)}%`);
             return listing;
           }
+          
+          // Also check if the listing address is contained at the start of the input
+          // This handles "890 clark" in sheet matching "890 clark cir bentonville ar 72713" from PDF
+          const listingFullNorm = listingStreetWords.join(' ');
+          const inputFullNorm = inputStreetWords.join(' ');
+          if (inputFullNorm.startsWith(listingFullNorm)) {
+            console.log(`✅ Found listing match (prefix match): "${listing.address}" for property "${fullAddress}"`);
+            console.log(`   📊 Taxes: $${listing.annualTaxes}, Commission: ${(listing.commissionPercent * 100).toFixed(1)}%`);
+            return listing;
+          }
         }
       }
       
@@ -143,6 +153,14 @@ export class ListingInfoService {
       // This handles cases like "3312 Alliance" matching variations
       if (inputNorm.full.includes(listingNorm.full) || listingNorm.full.includes(inputNorm.full)) {
         console.log(`✅ Found listing match (contains): "${listing.address}" for property "${fullAddress}"`);
+        console.log(`   📊 Taxes: $${listing.annualTaxes}, Commission: ${(listing.commissionPercent * 100).toFixed(1)}%`);
+        return listing;
+      }
+      
+      // Strategy 4: Check if listing address is at the start of input address
+      // This handles "890 clark" matching "890 clark cir bentonville ar 72713"
+      if (inputNorm.full.startsWith(listingNorm.full)) {
+        console.log(`✅ Found listing match (starts with): "${listing.address}" for property "${fullAddress}"`);
         console.log(`   📊 Taxes: $${listing.annualTaxes}, Commission: ${(listing.commissionPercent * 100).toFixed(1)}%`);
         return listing;
       }
