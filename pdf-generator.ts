@@ -114,21 +114,21 @@ export class PDFGenerator {
     .container {
       max-width: 800px;
       margin: 0 auto;
-      padding: 20px;
+      padding: 10px;
     }
     
     
     .property-info {
       background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
       color: white;
-      padding: 15px;
+      padding: 10px;
       border-radius: 10px;
-      margin-bottom: 20px;
+      margin-bottom: 15px;
       box-shadow: 0 10px 20px rgba(0,0,0,0.1);
     }
     
     .property-info h2 {
-      font-size: 18px;
+      font-size: 14px;
       margin-bottom: 5px;
       font-weight: 400;
     }
@@ -141,9 +141,9 @@ export class PDFGenerator {
     .info-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 15px;
-      margin-bottom: 20px;
-      padding: 15px;
+      gap: 10px;
+      margin-bottom: 15px;
+      padding: 10px;
       background: #f8f9fa;
       border-radius: 10px;
     }
@@ -166,25 +166,15 @@ export class PDFGenerator {
     }
     
     .section {
-      margin-bottom: 20px;
+      margin-bottom: 15px;
     }
     
-    .section-title {
-      background: #2c3e50;
-      color: white;
-      padding: 8px 15px;
-      font-size: 14px;
-      font-weight: 500;
-      border-radius: 5px 5px 0 0;
-      letter-spacing: 0.5px;
-    }
     
     .section-content {
       background: white;
       border: 1px solid #e0e0e0;
-      border-top: none;
-      border-radius: 0 0 5px 5px;
-      padding: 15px;
+      border-radius: 5px;
+      padding: 10px;
     }
     
     .cost-table {
@@ -201,8 +191,8 @@ export class PDFGenerator {
     }
     
     .cost-table td {
-      padding: 10px 0;
-      font-size: 13px;
+      padding: 8px 0;
+      font-size: 12px;
     }
     
     .cost-table .item-name {
@@ -225,9 +215,9 @@ export class PDFGenerator {
     
     .total-section {
       background: #f8f9fa;
-      padding: 15px;
+      padding: 10px;
       border-radius: 10px;
-      margin-top: 15px;
+      margin-top: 10px;
     }
     
     .total-row {
@@ -321,7 +311,6 @@ export class PDFGenerator {
     
     <!-- Seller Costs -->
     <div class="section">
-      <div class="section-title">SELLER'S ESTIMATED COSTS</div>
       <div class="section-content">
         <table class="cost-table">
           <tr>
@@ -401,7 +390,6 @@ export class PDFGenerator {
     
     <!-- Net to Seller Summary -->
     <div class="section">
-      <div class="section-title">NET PROCEEDS</div>
       <div class="section-content">
         <table class="cost-table">
           <tr style="font-size: 16px; font-weight: bold;">
