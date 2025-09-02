@@ -428,7 +428,7 @@ export class PDFGenerator {
     
     return `
     <div style="margin-top: 10px; padding: 10px; background: #f8f9fa; border-radius: 8px;">
-      <div style="color: #555; font-size: 12px; line-height: 1.6;">
+      <div style="color: #555; font-size: 14px; line-height: 1.6;">
         ${notes.join('<br>')}
       </div>
     </div>`;
