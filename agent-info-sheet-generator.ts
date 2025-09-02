@@ -325,12 +325,6 @@ export class AgentInfoSheetGenerator {
 </head>
 <body>
   <div class="container">
-    <!-- Header -->
-    <div class="header">
-      <h1>OTHER INFORMATION ABOUT OFFER</h1>
-      <div class="subtitle">Contract Summary</div>
-    </div>
-    
     <!-- Property Information -->
     <div class="property-section">
       <div class="property-address">${data.property_address}</div>
@@ -352,28 +346,6 @@ export class AgentInfoSheetGenerator {
           <span class="detail-value ${!data.contract_expiration_date ? 'highlight' : ''}">
             ${data.contract_expiration_date || 'CHECK CONTRACT'} ${data.contract_expiration_time || ''}
           </span>
-        </div>
-      </div>
-    </div>
-    
-    <!-- Commission Information -->
-    <div class="section">
-      <div class="section-title">COMMISSION INFORMATION</div>
-      <div class="section-content">
-        <div class="commission-box">
-          <div class="commission-row">
-            <span class="commission-label">Listing Agent Commission:</span>
-            <span class="commission-value">${formatPercent(data.listing_agent_commission)}</span>
-          </div>
-          <div class="commission-row">
-            <span class="commission-label">Selling Agent Commission:</span>
-            <span class="commission-value">${formatPercent(data.selling_agent_commission)}</span>
-          </div>
-          ${data.listing_agent_commission && data.purchase_price ? `
-          <div class="commission-row" style="border-top: 1px solid #ccc; margin-top: 10px; padding-top: 10px;">
-            <span class="commission-label">Estimated Listing Commission:</span>
-            <span class="commission-value">${formatCurrency(data.purchase_price * (data.listing_agent_commission / 100))}</span>
-          </div>` : ''}
         </div>
       </div>
     </div>
