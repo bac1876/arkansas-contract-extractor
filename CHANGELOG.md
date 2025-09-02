@@ -1,5 +1,19 @@
 # Changelog
 
+## Version 1.0.1 - Bug Fix Release
+*Released: September 2, 2025*
+
+### 🐛 Bug Fixes
+- Fixed agent info sheet generation error where buyers field could be either string or array
+- `formatBuyerNames` function now properly handles both data types
+- Agent info sheet now successfully generates regardless of buyer data format
+
+### 📝 Notes
+- Quick patch to fix critical agent info sheet generation failure
+- No other functionality changes
+
+---
+
 ## Version 1.0 - First Stable Railway Deployment
 *Released: September 2, 2025*
 
