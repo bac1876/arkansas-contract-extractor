@@ -504,10 +504,25 @@ export class EmailMonitor {
                       continue; // Skip to next attachment
                     }
                     
+                    // Check for critical fields before generating net sheet
+                    const propertyAddress = extractionResult.data?.property_address || '';
+                    const purchasePrice = extractionResult.data?.purchase_price || 0;
+                    
+                    if (!propertyAddress || purchasePrice === 0) {
+                      console.log('⚠️  Skipping net sheet generation - missing critical data');
+                      console.log(`   Property Address: "${propertyAddress}"`);
+                      console.log(`   Purchase Price: $${purchasePrice}`);
+                      results.extractionResults.push({
+                        attachment: attachment.filename,
+                        success: false,
+                        error: `Missing critical data - Property: "${propertyAddress}", Price: $${purchasePrice}`,
+                        fieldsExtracted: extractionResult.fieldsExtracted || 0,
+                        totalFields: 41
+                      });
+                      continue; // Skip to next attachment
+                    }
+                    
                     try {
-                      // Get property address for lookup
-                      const propertyAddress = extractionResult.data?.property_address || '';
-                      
                       // Look up property-specific taxes and commission
                       const propertyData = this.listingInfo.getPropertyData(
                         propertyAddress,
