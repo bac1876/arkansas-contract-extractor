@@ -122,6 +122,12 @@ export class AgentInfoSheetGenerator {
       return value ? `${value}%` : 'TBD';
     };
     
+    const formatBuyerNames = (buyers: string | undefined): string => {
+      if (!buyers) return 'TBD';
+      // Replace comma with ampersand for buyer names
+      return buyers.replace(/,\s*/g, ' & ');
+    };
+    
     const today = new Date().toLocaleDateString('en-US', { 
       year: 'numeric', 
       month: 'long', 
@@ -339,7 +345,7 @@ export class AgentInfoSheetGenerator {
         </div>
         <div class="detail-item">
           <span class="detail-label">Buyers:</span>
-          <span class="detail-value">${data.buyers || 'TBD'}</span>
+          <span class="detail-value">${formatBuyerNames(data.buyers)}</span>
         </div>
         <div class="detail-item">
           <span class="detail-label">Contract Expires:</span>
