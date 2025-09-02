@@ -2,24 +2,34 @@
 FROM node:20
 
 # Install dependencies for PDFKit and ImageMagick
-# CRITICAL: Install all required libraries for PDF generation
+# CRITICAL: Order matters! Delegate libraries MUST be installed BEFORE ImageMagick
+# See Section 4.1 of deployment guide
 RUN apt-get update && apt-get install -y \
-    # ImageMagick for image processing
-    imagemagick \
-    libmagickwand-dev \
-    ghostscript \
-    # Delegate libraries for image formats
+    # Build essentials first
+    build-essential \
+    curl \
+    ca-certificates \
+    \
+    # STEP 1: Install delegate libraries FIRST (BEFORE ImageMagick!)
     libjpeg-dev \
     libpng-dev \
     libtiff-dev \
     libwebp-dev \
-    # Canvas/Cairo dependencies for PDFKit
-    build-essential \
-    libcairo2-dev \
-    libpango1.0-dev \
-    libjpeg-dev \
     libgif-dev \
     librsvg2-dev \
+    \
+    # STEP 2: Install Ghostscript for PDF support
+    ghostscript \
+    libgs-dev \
+    \
+    # STEP 3: NOW install ImageMagick (AFTER all delegates)
+    imagemagick \
+    libmagickwand-dev \
+    \
+    # Canvas/Cairo dependencies for PDFKit
+    libcairo2-dev \
+    libpango1.0-dev \
+    \
     # Font support for PDFKit
     fonts-liberation \
     fonts-noto \
@@ -46,16 +56,22 @@ RUN npx playwright install-deps chromium
 # Copy all source files
 COPY . .
 
-# Verify ImageMagick installation and fix PDF policy
-RUN which convert && convert -version
+# Copy our custom ImageMagick policy (Section 4.2 of deployment guide)
+COPY config/policy.xml /app/config/policy.xml
 
-# CRITICAL: Fix ImageMagick policy to allow PDF processing
-# Railway/Docker often has restrictive policies that block PDF conversion
-RUN sed -i '/disable ghostscript format types/,+6d' /etc/ImageMagick-6/policy.xml || true
-RUN sed -i '/<policy domain="coder" rights="none" pattern="PDF" \/>/d' /etc/ImageMagick-6/policy.xml || true
-RUN sed -i '/<policy domain="coder" rights="none" pattern="PS" \/>/d' /etc/ImageMagick-6/policy.xml || true
-RUN sed -i '/<policy domain="coder" rights="none" pattern="EPS" \/>/d' /etc/ImageMagick-6/policy.xml || true
-RUN sed -i '/<policy domain="coder" rights="none" pattern="XPS" \/>/d' /etc/ImageMagick-6/policy.xml || true
+# Set ImageMagick to use our custom policy instead of system default
+ENV MAGICK_CONFIGURE_PATH=/app/config
+
+# Verify ImageMagick installation and delegates
+RUN echo "🎨 Verifying ImageMagick installation..." && \
+    which convert && convert -version && \
+    echo "📋 Checking supported formats..." && \
+    convert -list format | grep -E "JPEG|PNG|PDF" && \
+    echo "🔍 Checking delegates..." && \
+    convert -list delegate | grep -E "jpeg|png|ps|pdf" && \
+    echo "📜 Checking active policy..." && \
+    convert -list policy && \
+    echo "✅ ImageMagick verification complete"
 
 # Verify PDF conversion works
 RUN echo '%PDF-1.4' > /tmp/test.pdf && \
