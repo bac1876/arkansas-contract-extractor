@@ -80,15 +80,12 @@ export class EmailMonitor {
     this.listingInfo = new ListingInfoService();
     this.setupFolders();
     
-    // Services will be initialized before connecting
-  }
-
-  async initializeServices() {
-    await this.loadProcessedEmails();
-    await this.initGoogleSheets();
-    await this.initGoogleDrive();
-    await this.initDropbox();
-    await this.initListingInfo();
+    // Initialize services without blocking
+    this.loadProcessedEmails();
+    this.initGoogleSheets();
+    this.initGoogleDrive();
+    this.initDropbox();
+    this.initListingInfo();
   }
 
   async loadProcessedEmails() {
@@ -980,16 +977,13 @@ if (require.main === module) {
   // Health check server already started at the top of the file
   console.log('✅ Connecting to email server...');
 
-  // Initialize services first, then connect
-  monitor.initializeServices().then(() => {
-    // Connect to email (async operation)
-    return monitor.connect({
-      user: email,
-      password: password,
-      host: 'imap.gmail.com',
-      port: 993,
-      tls: true
-    });
+  // Connect to email (async operation)
+  monitor.connect({
+    user: email,
+    password: password,
+    host: 'imap.gmail.com',
+    port: 993,
+    tls: true
   }).then(() => {
     console.log('✅ Email monitor is running...');
     console.log(`📧 Send contracts to: ${email}`);
