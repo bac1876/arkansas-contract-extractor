@@ -235,7 +235,18 @@ export class GoogleSheetsIntegration {
       // Find next column (D, E, F, etc. - skipping A, B, C for labels and notes)
       const currentColumns = currentData.data.values?.[0]?.length || 3;
       const columnIndex = Math.max(3, currentColumns); // Ensure we start at column D (index 3)
-      const nextColumn = String.fromCharCode(65 + columnIndex); // A=65, D=68
+      
+      // Convert column index to column letter(s) - handles AA, AB, etc.
+      const getColumnLetter = (index: number): string => {
+        let letter = '';
+        while (index >= 0) {
+          letter = String.fromCharCode((index % 26) + 65) + letter;
+          index = Math.floor(index / 26) - 1;
+        }
+        return letter;
+      };
+      
+      const nextColumn = getColumnLetter(columnIndex);
       
       // Update the column with net sheet data
       await this.sheets.spreadsheets.values.update({

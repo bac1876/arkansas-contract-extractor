@@ -80,8 +80,7 @@ export class EmailMonitor {
     this.listingInfo = new ListingInfoService();
     this.setupFolders();
     
-    // Initialize services asynchronously
-    this.initializeServices();
+    // Services will be initialized before connecting
   }
 
   async initializeServices() {
@@ -704,6 +703,7 @@ export class EmailMonitor {
                         }
                         
                         // Upload to Dropbox if configured
+                        console.log(`🔍 Dropbox check: dropbox=${!!this.dropbox}, isReady=${this.dropbox?.isReady()}`);
                         if (this.dropbox && this.dropbox.isReady()) {
                           try {
                             console.log('📤 Uploading to Dropbox...');
@@ -714,11 +714,19 @@ export class EmailMonitor {
                             
                             if (dropboxResults.netSheetLink || dropboxResults.agentInfoLink) {
                               console.log('☁️  Files backed up to Dropbox successfully');
+                              if (dropboxResults.netSheetLink) {
+                                console.log(`   📎 Dropbox Net Sheet: ${dropboxResults.netSheetLink}`);
+                              }
+                              if (dropboxResults.agentInfoLink) {
+                                console.log(`   📎 Dropbox Agent Info: ${dropboxResults.agentInfoLink}`);
+                              }
                             }
                           } catch (dropboxError) {
                             console.error('⚠️  Dropbox upload failed:', dropboxError);
                             // Continue - Dropbox is optional
                           }
+                        } else {
+                          console.log('⚠️  Dropbox not available for upload');
                         }
                       } catch (agentInfoError) {
                         console.error('⚠️  Could not generate agent info sheet:', agentInfoError);
@@ -972,13 +980,16 @@ if (require.main === module) {
   // Health check server already started at the top of the file
   console.log('✅ Connecting to email server...');
 
-  // Connect to email (async operation)
-  monitor.connect({
-    user: email,
-    password: password,
-    host: 'imap.gmail.com',
-    port: 993,
-    tls: true
+  // Initialize services first, then connect
+  monitor.initializeServices().then(() => {
+    // Connect to email (async operation)
+    return monitor.connect({
+      user: email,
+      password: password,
+      host: 'imap.gmail.com',
+      port: 993,
+      tls: true
+    });
   }).then(() => {
     console.log('✅ Email monitor is running...');
     console.log(`📧 Send contracts to: ${email}`);
