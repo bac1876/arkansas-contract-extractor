@@ -79,6 +79,7 @@ export class EmailMonitor {
     this.setupFolders();
     this.initGoogleSheets();
     this.initGoogleDrive();
+    this.initDropbox();
     this.initListingInfo();
     this.loadProcessedEmails();
   }
@@ -165,6 +166,24 @@ export class EmailMonitor {
       console.log('📁 Google Drive integration ready');
     } catch (error) {
       console.log('⚠️  Google Drive integration not available');
+    }
+  }
+
+  async initDropbox() {
+    try {
+      const dropbox = new DropboxIntegration();
+      if (dropbox.isConfigured()) {
+        const initialized = await dropbox.initialize();
+        if (initialized) {
+          this.dropbox = dropbox;
+          console.log('☁️  Dropbox integration ready');
+        }
+      } else {
+        console.log('ℹ️  Dropbox not configured - skipping');
+      }
+    } catch (error) {
+      console.error('⚠️  Dropbox initialization failed:', error);
+      // Continue without Dropbox - it's optional
     }
   }
 
@@ -670,6 +689,24 @@ export class EmailMonitor {
                             console.log(`   📎 Link: ${agentInfoUpload.webViewLink || agentInfoUpload.shareableLink}`);
                           } catch (uploadError) {
                             console.error('⚠️  Could not upload agent info sheet:', uploadError);
+                          }
+                        }
+                        
+                        // Upload to Dropbox if configured
+                        if (this.dropbox && this.dropbox.isReady()) {
+                          try {
+                            console.log('📤 Uploading to Dropbox...');
+                            const dropboxResults = await this.dropbox.uploadContractFiles(
+                              pdfPath,
+                              agentInfoResult.path
+                            );
+                            
+                            if (dropboxResults.netSheetLink || dropboxResults.agentInfoLink) {
+                              console.log('☁️  Files backed up to Dropbox successfully');
+                            }
+                          } catch (dropboxError) {
+                            console.error('⚠️  Dropbox upload failed:', dropboxError);
+                            // Continue - Dropbox is optional
                           }
                         }
                       } catch (agentInfoError) {

@@ -1,6 +1,6 @@
 # Arkansas Contract Extractor
 
-**Version 1.0.1** - Production Ready on Railway ✅
+**Version 1.1.0** - Production Ready on Railway ✅
 
 AI-powered extraction system for Arkansas real estate contracts using GPT-4 Vision API.
 

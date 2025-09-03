@@ -1,5 +1,39 @@
 # Changelog
 
+## Version 1.1.0 - Dropbox Integration
+*Released: September 2, 2025*
+
+### ✨ New Features
+- **Dropbox Integration**: Added optional Dropbox backup for all generated files
+  - Automatic upload of net sheet PDFs
+  - Automatic upload of agent info sheets
+  - Shareable links generated for each file
+  - Works alongside existing Google Drive integration
+  - Completely optional - system works without it
+
+### 🔧 Technical Details
+- New `dropbox-integration.ts` module
+- Dropbox SDK v10.34.0 added
+- Environment variables: `DROPBOX_ACCESS_TOKEN` and `DROPBOX_FOLDER_PATH`
+- Files are organized in Dropbox folders: `/Net Sheets` and `/Agent Info Sheets`
+
+### 📝 Configuration
+- Add `DROPBOX_ACCESS_TOKEN` to `.env` file
+- Get token from: https://www.dropbox.com/developers/apps
+- Optional: Customize folder path with `DROPBOX_FOLDER_PATH`
+
+---
+
+## Version 1.0.2 - Output Structure Changes
+*Released: September 2, 2025*
+
+### 🔧 Changes
+- Removed CSV net sheet generation (keeping PDF and Google Sheets only)
+- Agent info sheets now save in root directory instead of subdirectory
+- Simplified output structure per user requirements
+
+---
+
 ## Version 1.0.1 - Bug Fix Release
 *Released: September 2, 2025*
 
