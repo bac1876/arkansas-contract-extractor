@@ -18,6 +18,7 @@ import SellerNetSheetCalculator from './seller-net-sheet-calculator';
 import PDFGenerator from './pdf-generator';
 import AgentInfoSheetGenerator from './agent-info-sheet-generator';
 import { ListingInfoService } from './listing-info-service';
+import DropboxIntegration from './dropbox-integration';
 import * as dotenv from 'dotenv';
 
 dotenv.config();
@@ -51,6 +52,7 @@ export class EmailMonitor {
   private pdfGenerator: PDFGenerator;
   private agentInfoGenerator: AgentInfoSheetGenerator;
   private listingInfo: ListingInfoService;
+  private dropbox?: DropboxIntegration;
   private processedFolder: string = 'processed_contracts';
   private isProcessing: boolean = false;
   private processedEmailsFile: string = 'processed_emails.json';
@@ -77,11 +79,17 @@ export class EmailMonitor {
     this.agentInfoGenerator = new AgentInfoSheetGenerator();
     this.listingInfo = new ListingInfoService();
     this.setupFolders();
-    this.initGoogleSheets();
-    this.initGoogleDrive();
-    this.initDropbox();
-    this.initListingInfo();
-    this.loadProcessedEmails();
+    
+    // Initialize services asynchronously
+    this.initializeServices();
+  }
+
+  async initializeServices() {
+    await this.loadProcessedEmails();
+    await this.initGoogleSheets();
+    await this.initGoogleDrive();
+    await this.initDropbox();
+    await this.initListingInfo();
   }
 
   async loadProcessedEmails() {
@@ -171,18 +179,21 @@ export class EmailMonitor {
 
   async initDropbox() {
     try {
-      const dropbox = new DropboxIntegration();
-      if (dropbox.isConfigured()) {
-        const initialized = await dropbox.initialize();
+      this.dropbox = new DropboxIntegration();
+      if (this.dropbox.isConfigured()) {
+        const initialized = await this.dropbox.initialize();
         if (initialized) {
-          this.dropbox = dropbox;
           console.log('☁️  Dropbox integration ready');
+        } else {
+          this.dropbox = undefined;
         }
       } else {
         console.log('ℹ️  Dropbox not configured - skipping');
+        this.dropbox = undefined;
       }
     } catch (error) {
       console.error('⚠️  Dropbox initialization failed:', error);
+      this.dropbox = undefined;
       // Continue without Dropbox - it's optional
     }
   }

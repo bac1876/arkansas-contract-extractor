@@ -16,7 +16,7 @@ export class DropboxIntegration {
   private initialized: boolean = false;
   
   constructor() {
-    this.basePath = process.env.DROPBOX_FOLDER_PATH || '/Arkansas Contract Agent';
+    this.basePath = process.env.DROPBOX_FOLDER_PATH || '/Extracted Contracts';
   }
   
   /**
@@ -56,14 +56,21 @@ export class DropboxIntegration {
     if (!this.dbx) return;
     
     try {
-      await this.dbx.filesCreateFolderV2({ path: folderPath });
+      await this.dbx.filesCreateFolderV2({ 
+        path: folderPath,
+        autorename: false 
+      });
       console.log(`📁 Created Dropbox folder: ${folderPath}`);
     } catch (error: any) {
       // Check if error is because folder already exists
-      if (error?.error?.error_summary?.includes('path/conflict/folder')) {
+      if (error?.status === 409 || 
+          error?.error?.error_summary?.includes('path/conflict/folder') ||
+          error?.error?.error?.path?.tag === 'conflict') {
         // Folder already exists, that's fine
         return;
       }
+      // Log more details for debugging
+      console.error(`Failed to create folder ${folderPath}:`, error?.error || error?.message || error);
       // Re-throw other errors
       throw error;
     }
