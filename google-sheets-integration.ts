@@ -346,12 +346,15 @@ export class GoogleSheetsIntegration {
       // Save contract data and get ID
       const contractId = await this.appendContractData(contractData, source);
       
-      // Save net sheet data
+      // Skip net sheet tracking - not needed, was causing column limit errors
+      // Individual net sheets are created separately and that's sufficient
+      /*
       await this.appendNetSheetData(
         netSheetData, 
         contractId, 
         contractData.property_address || 'Unknown Property'
       );
+      */
       
       console.log(`\n✅ Complete extraction saved to Google Sheets`);
       console.log(`   Contract ID: ${contractId}`);

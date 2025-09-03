@@ -1,0 +1,643 @@
+✅ Connecting to email server...
+📝 Loaded 30 processed email IDs
+✅ Using Google credentials from local file
+✅ Google Sheets API initialized
+📊 Google Sheets integration configured and initialized
+✅ Using Google credentials from local file
+✅ Google Drive API initialized
+📁 Using Shared Drive: Arkansas Contract Data
+✅ Connected to Shared Drive: Arkansas Contract Data
+📁 Google Drive integration ready
+✅ Dropbox integration initialized
+☁️  Dropbox integration ready
+🔄 Initializing ListingInfoService (Simple CSV version)...
+📁 Sheet ID: 1OQCak69VSAuAlP3B1PxeRepLXsD5Kn5l2MF-Czjklxw
+📥 Fetching data from public Google Sheet (CSV export)...
+📨 Received CSV data (245 characters)
+📝 Raw data rows received: 11
+✅ Successfully loaded 10 property listings
+📋 Sample listings loaded:
+   - 15 dunbarton: Tax=$951, Commission=2.5%
+   - 890 clark: Tax=$4702, Commission=3.0%
+   - 306 college: Tax=$4730, Commission=2.7%
+📋 Listing info service ready
+🔐 Attempting connection with:
+   Email: offers@searchnwa.com
+   Password: ggao****mt zpfz
+   Host: imap.gmail.com
+📧 Connecting to offers@searchnwa.com...
+[connection] Connected to host
+<= '* OK Gimap ready for requests from 2601:280:4900:4d10:b507:f083:e8dd:bead 2ea640d94c315-4890cecbba8mb85920909a9'
+=> 'A0 CAPABILITY'
+<= '* CAPABILITY IMAP4rev1 UNSELECT IDLE NAMESPACE QUOTA ID XLIST CHILDREN X-GM-EXT-1 XYZZY SASL-IR AUTH=XOAUTH2 AUTH=PLAIN AUTH=PLAIN-CLIENTTOKEN AUTH=OAUTHBEARER'
+<= 'A0 OK Thats all she wrote! 2ea640d94c315-4890cecbba8mb85920909a9'
+=> 'A1 LOGIN "offers@searchnwa.com" "ggao mydb xnmt zpfz"'
+<= '* CAPABILITY IMAP4rev1 UNSELECT IDLE NAMESPACE QUOTA ID XLIST CHILDREN X-GM-EXT-1 UIDPLUS COMPRESS=DEFLATE ENABLE MOVE CONDSTORE ESEARCH UTF8=ACCEPT LIST-EXTENDED LIST-STATUS LITERAL- SPECIAL-USE APPENDLIMIT=35651584'
+<= 'A1 OK offers@searchnwa.com authenticated (Success)'
+=> 'A2 NAMESPACE'
+<= '* NAMESPACE (("" "/")) NIL NIL'
+<= 'A2 OK Success'
+=> 'A3 LIST "" ""'
+<= '* LIST (\\Noselect) "/" "/"'
+<= 'A3 OK Success'
+✅ Connected to email server
+=> 'A4 SELECT "INBOX" (CONDSTORE)'
+✅ Email monitor is running...
+📧 Send contracts to: offers@searchnwa.com
+Press Ctrl+C to stop
+<= '* FLAGS (\\Answered \\Flagged \\Draft \\Deleted \\Seen $Forwarded $NotPhishing $Phishing Forwarded)'
+<= '* OK [PERMANENTFLAGS (\\Answered \\Flagged \\Draft \\Deleted \\Seen $Forwarded $NotPhishing $Phishing Forwarded \\*)] Flags permitted.'
+<= '* OK [UIDVALIDITY 1] UIDs valid.'
+<= '* 10 EXISTS'
+<= '* 0 RECENT'
+<= '* OK [UIDNEXT 13781] Predicted next UID.'
+<= '* OK [HIGHESTMODSEQ 1766642]'
+<= 'A4 OK [READ-WRITE] INBOX selected. (Success)'
+📬 Monitoring inbox (10 messages)
+⏰ Setting up 30-second polling interval...
+=> 'A5 UID SEARCH UNSEEN'
+<= '* SEARCH'
+<= 'A5 OK SEARCH completed (Success)'
+📭 No recent emails
+=> 'IDLE IDLE'
+<= '+ idling'
+
+============================================================
+📊 SYSTEM HEALTH REPORT
+============================================================
+⏱️  Uptime: 35 minutes
+📈 Success Rate: 100.0%
+✅ Successful: 72
+⚠️  Partial: 0
+❌ Failed: 0
+🔄 Pending Retry: 0
+📋 Manual Review Queue: 0 items
+✅ Last Success: 6 minutes ago
+============================================================
+
+🔄 Checking for new emails... [11:10:55 AM]
+⏸️ Paused polling while processing...
+=> DONE
+<= 'IDLE OK IDLE terminated (Success)'
+=> 'A6 UID SEARCH UNSEEN'
+<= '* SEARCH'
+<= 'A6 OK SEARCH completed (Success)'
+📭 No recent emails
+🔄 Restarting 30-second polling interval...
+=> 'IDLE IDLE'
+<= '+ idling'
+<= '* 11 EXISTS'
+📨 1 new email(s) received!
+⏸️ Paused polling while processing...
+=> DONE
+<= 'IDLE OK IDLE terminated (Success)'
+=> 'A7 UID SEARCH UNSEEN'
+<= '* SEARCH 13781'
+<= 'A7 OK SEARCH completed (Success)'
+📨 Found 1 unread email(s)
+=> 'A8 UID FETCH 13781 (X-GM-THRID X-GM-MSGID X-GM-LABELS MODSEQ UID FLAGS INTERNALDATE BODYSTRUCTURE BODY.PEEK[])'
+<= '* 11 FETCH (X-GM-THRID 1842263561130791438 X-GM-MSGID 1842263561130791438 X-GM-LABELS ("\\\\Important") UID 13781 MODSEQ (1766721) INTERNALDATE "03-Sep-2025 17:10:42 +0000" FLAGS () BODYSTRUCTURE ((("TEXT" "PLAIN" ("CHARSET" "utf-8") NIL NIL "7BIT" 65 2 NIL NIL NIL)("TEXT" "HTML" ("CHARSET" "utf-8") NIL NIL "QUOTED-PRINTABLE" 472 10 NIL NIL NIL) "ALTERNATIVE" ("BOUNDARY" "--_NmP-3e04a1b6e637dd7d-Part_2") NIL NIL)("APPLICATION" "PDF" ("NAME" "Offer (EXE)-3418 Justice Dr.pdf") NIL NIL "BASE64" 1352700 NIL ("ATTACHMENT" ("FILENAME" "Offer (EXE)-3418 Justice Dr.pdf")) NIL) "MIXED" ("BOUNDARY" "--_NmP-3e04a1b6e637dd7d-Part_1") NIL NIL) BODY[] {1359780}'
+<= '* 11 FETCH (X-GM-THRID 1842263561130791438 X-GM-MSGID 1842263561130791438 X-GM-LABELS ("\\\\Important") UID 13781 MODSEQ (1766721) INTERNALDATE "03-Sep-2025 17:10:42 +0000" FLAGS () BODYSTRUCTURE ((("TEXT" "PLAIN" ("CHARSET" "utf-8") NIL NIL "7BIT" 65 2 NIL NIL NIL)("TEXT" "HTML" ("CHARSET" "utf-8") NIL NIL "QUOTED-PRINTABLE" 472 10 NIL NIL NIL) "ALTERNATIVE" ("BOUNDARY" "--_NmP-3e04a1b6e637dd7d-Part_2") NIL NIL)("APPLICATION" "PDF" ("NAME" "Offer (EXE)-3418 Justice Dr.pdf") NIL NIL "BASE64" 1352700 NIL ("ATTACHMENT" ("FILENAME" "Offer (EXE)-3418 Justice Dr.pdf")) NIL) "MIXED" ("BOUNDARY" "--_NmP-3e04a1b6e637dd7d-Part_1") NIL NIL) )'
+<= 'A8 OK Success'
+=> 'IDLE IDLE'
+
+============================================================
+📧 Processing email from: contractextraction@gmail.com
+📋 Subject: TEST-IMAGEMAGICK-FIX - 3418 Justice Dr - 2025-09-03T17:10:37.755Z
+📅 Date: Wed Sep 03 2025 11:10:37 GMT-0600 (Mountain Daylight Time)
+📋 Checking attachments: 1 found
+🔍 Attachment details:
+  [0] Type: application/pdf, Name: Offer (EXE)-3418 Justice Dr.pdf, Size: 988512
+🔎 Checking attachment: Offer (EXE)-3418 Justice Dr.pdf (application/pdf)
+📎 Found PDF: Offer (EXE)-3418 Justice Dr.pdf
+💾 PDF saved to: processed_contracts\pdfs\1756919456829_Offer (EXE)-3418 Justice Dr.pdf
+   Size: 988512 bytes
+🔍 Starting robust extraction with automatic retries...
+🚀 Starting Robust Extraction Process
+📄 PDF: 1756919456829_Offer (EXE)-3418 Justice Dr.pdf
+
+📊 Phase 1: Primary Extraction (GPT-5-mini)
+
+🔄 Attempt 1/3
+🔍 GPT-5 Extractor: Starting extraction for: C:\Users\Owner\Claude Code Projects\SmthosExp\arkansas-contract-agent\processed_contracts\pdfs\1756919456829_Offer (EXE)-3418 Justice Dr.pdf
+   Platform: win32
+   Node version: v20.19.3
+   PDF size: 988512 bytes
+   PDF header: %PDF-
+🖼️ Converting PDF to PNG using ImageMagick...
+📊 PDF file stats:
+   Size: 988512 bytes
+   Path: C:\Users\Owner\Claude Code Projects\SmthosExp\arkansas-contract-agent\processed_contracts\pdfs\1756919456829_Offer (EXE)-3418 Justice Dr.pdf
+   Header verification: %PDF- (should be %PDF-)
+🎨 Running ImageMagick command: C:\Program Files\ImageMagick-7.1.2-Q16\magick.exe convert -density 150 C:\Users\Owner\Claude Code Projects\SmthosExp\arkansas-contract-agent\processed_contracts\pdfs\1756919456829_Offer (EXE)-3418 Justice Dr.pdf -alpha remove -background white -resize 1224x1584 -depth 8 C:\Users\Owner\Claude Code Projects\SmthosExp\arkansas-contract-agent\gpt5_temp_1756919456891\page-%d.png
+   Platform: win32
+   Working dir: C:\Users\Owner\Claude Code Projects\SmthosExp\arkansas-contract-agent
+<= '+ idling'
+✅ ImageMagick conversion successful
+✅ Converted 17 pages to PNG
+   First PNG size: 637574 bytes
+🤖 Using GPT-5 Responses API for extraction...
+📄 Processing page 1...
+✅ Page 1: Extracted 5 fields
+  Page 1 returned: [ 'buyers', 'property_address', 'purchase_price', 'loan_type' ]
+⏭️  Skipping page 2 (not needed)
+⏭️  Skipping page 3 (not needed)
+📄 Processing page 4...
+✅ Page 4: Extracted 4 fields
+  Page 4 returned: [ 'earnest_money', 'non_refundable' ]
+📄 Processing page 5...
+✅ Page 5: Extracted 1 fields
+  Page 5 returned: [ 'para10_title_option' ]
+📄 Processing page 6...
+✅ Page 6: Extracted 4 fields
+  Page 6 returned: [
+  'para11_survey_option',
+  'para13_items_included',
+  'para13_items_excluded'
+]
+📄 Processing page 7...
+✅ Page 7: Extracted 2 fields
+  Page 7 returned: [ 'para14_contingency' ]
+📄 Processing page 8...
+✅ Page 8: Extracted 3 fields
+  Page 8 returned: [ 'para15_home_warranty', 'para15_warranty_cost' ]
+⏭️  Skipping page 9 (not needed)
+📄 Processing page 10...
+✅ Page 10: Extracted 1 fields
+  Page 10 returned: [ 'para19_termite_option' ]
+⏭️  Skipping page 11 (not needed)
+📄 Processing page 12...
+✅ Page 12: Extracted 1 fields
+  Page 12 returned: [ 'closing_date' ]
+⏭️  Skipping page 13 (not needed)
+📄 Processing page 14...
+✅ Page 14: Extracted 2 fields
+  Page 14 returned: [ 'buyer_agency_fee', 'other_terms' ]
+⏭️  Skipping page 15 (not needed)
+📄 Processing page 16...
+✅ Page 16: Extracted 6 fields
+  Page 16 returned: [
+  'para38_expiration_date',
+  'selling_firm_name',
+  'selling_agent_name',
+  'selling_agent_arec',
+  'selling_agent_email',
+  'selling_agent_phone'
+]
+⏭️  Skipping page 17 (not needed)
+🧹 Cleaning up temp files...
+✅ GPT-5 Extraction complete: 29/28 fields identified (100%)
+   📊 21 fields have values, 8 fields correctly identified as empty
+💭 Total reasoning tokens used: 2504
+
+📋 EXTRACTION VALIDATION REPORT
+=========================================
+
+📄 File: 1756919456829_Offer (EXE)-3418 Justice Dr.pdf
+🏠 Extracted Address: 3418 Justice Drive, Springdale, AR 72764
+💰 Purchase Price: $270,000
+👥 Buyers: Antonio Pimentel II, Alondra Elizalde Araujo
+
+⚠️  WARNINGS:
+   ⚠️ POSSIBLE MISMATCH: Filename mentions "(exe)" but extracted address is "3418 Justice Drive, Springdale, AR 72764"
+   ⚠️ Paragraph 3 financing option not identified
+
+🚨 CRITICAL ISSUES DETECTED - MANUAL REVIEW REQUIRED
+This extraction may be from the wrong PDF or have serious errors.
+=========================================
+
+✅ Successfully extracted with gpt-5-mini
+  ✅ GPT-5-mini succeeded: 29 fields in 79.5s
+✅ Successful extraction with 29 fields!
+📄 Extraction completed:
+   Success: true
+   Method: undefined
+   Extraction Rate: 100%%
+   Fields Extracted: 29/28
+   Property Address: 3418 Justice Drive, Springdale, AR 72764
+   Purchase Price: 270000
+📊 Extraction completed after 1 attempt(s)
+   Method: GPT-5-mini
+   Fields: 29/28
+✅ Extraction successful: 100%
+⚠️  No listing data found for: "3418 Justice Drive, Springdale, AR 72764" - using defaults
+   Normalized to: "3418 justice"
+   Available listings: 15 dunbarton, 890 clark, 306 college...
+⚠️  ATTENTION: No tax data for "3418 Justice Drive, Springdale, AR 72764" - NEEDS MANUAL VERIFICATION
+🔍 DEBUG - Extracted data fields:
+  paragraph_5: undefined
+  additional_terms: undefined
+  para5_custom_text: undefined
+📊 Net sheet input values:
+  seller_concessions: undefined
+  para32_other_terms: undefined
+📊 Using default data: Taxes=$3650, Commission=3.0%
+❗ TAX WARNING: Using default tax value - NEEDS MANUAL VERIFICATION
+📄 Net sheet PDF generated: net_sheets_pdf\netsheet_3418_Justice_Drive_Springdale_AR_72764.pdf
+📑 Generated net sheet: netsheet_3418_Justice_Drive_Springdale_AR_72764.pdf
+📤 Uploading netsheet_3418_Justice_Drive_Springdale_AR_72764.pdf to Google Drive...
+✅ Uploaded: netsheet_3418_Justice_Drive_Springdale_AR_72764.pdf
+   📁 Folder: 0AHKbof5whHFPUk9PVA
+   👤 Owner: unknown
+   🔗 Link: https://drive.google.com/file/d/13IQde8G7Gne7RPV7MOQCPwf-dr6Saz-0/view?usp=drivesdk
+📤 Uploaded PDF to Google Drive
+   📎 PDF Link: https://drive.google.com/file/d/13IQde8G7Gne7RPV7MOQCPwf-dr6Saz-0/view?usp=drivesdk
+📄 Agent info sheet PDF generated: offer_info_3418_Justice_Drive_Springdale_AR_72764.pdf
+📋 Generated agent info sheet PDF: offer_info_3418_Justice_Drive_Springdale_AR_72764.pdf
+📤 Uploading offer_info_3418_Justice_Drive_Springdale_AR_72764.pdf to Google Drive...
+✅ Uploaded: offer_info_3418_Justice_Drive_Springdale_AR_72764.pdf
+   📁 Folder: 1ee_DdnkDgGu2lP9h02FzbbwSoI_J92Cq
+   👤 Owner: unknown
+   🔗 Link: https://drive.google.com/file/d/1waDhGxuI-QIHsTCqL6Mi2ejbxx4IEb4h/view?usp=drivesdk
+📤 Uploaded agent info sheet to Google Drive
+   📎 Link: https://drive.google.com/file/d/1waDhGxuI-QIHsTCqL6Mi2ejbxx4IEb4h/view?usp=drivesdk
+🔍 Dropbox check: dropbox=true, isReady=true
+📤 Uploading to Dropbox...
+   📎 Dropbox Net Sheet: https://www.dropbox.com/scl/fi/2rusrw7vgjsvtti7q9ywt/netsheet_3418_Justice_Drive_Springdale_AR_72764.pdf?rlkey=6njl9oqogcmoogmryqv7rcggt&dl=0
+<= '* 11 FETCH (UID 13781 MODSEQ (1766728) FLAGS (\\Seen))'
+   📎 Dropbox Agent Info: https://www.dropbox.com/scl/fi/pk9mjz2ohb37fk35cfapc/offer_info_3418_Justice_Drive_Springdale_AR_72764.pdf?rlkey=mpgwillaxioobu6q0qz41rrv9&dl=0
+☁️  Files backed up to Dropbox successfully
+   📎 Dropbox Net Sheet: https://www.dropbox.com/scl/fi/2rusrw7vgjsvtti7q9ywt/netsheet_3418_Justice_Drive_Springdale_AR_72764.pdf?rlkey=6njl9oqogcmoogmryqv7rcggt&dl=0
+   📎 Dropbox Agent Info: https://www.dropbox.com/scl/fi/pk9mjz2ohb37fk35cfapc/offer_info_3418_Justice_Drive_Springdale_AR_72764.pdf?rlkey=mpgwillaxioobu6q0qz41rrv9&dl=0
+📁 Creating sheet in Shared Drive (no quota limits)...
+✅ Created spreadsheet: Net Sheet - 3418 Justice Drive Springdale AR 72764 - 2025-09-03
+   📁 In folder: 0AHKbof5whHFPUk9PVA
+   👤 Owner: unknown (storage counts against their quota)
+✅ Net sheet formatted
+⚠️  Tax warning formatting applied
+✅ Net sheet populated with data
+ℹ️  Sheet is private (accessible via link)
+📊 Created individual net sheet in Google Drive
+   📎 Link: https://docs.google.com/spreadsheets/d/1NuZWAKgwMcrm6XihWaSLmOh7j3RvBLVoZhPwXz6RklM/edit
+✅ Contract data saved to Google Sheets
+Failed to append net sheet data: GaxiosError: Range (NetSheets!AA1:AA35) exceeds grid limits. Max rows: 1000, max columns: 26
+    at Gaxios._request (C:\Users\Owner\Claude Code Projects\SmthosExp\arkansas-contract-agent\node_modules\googleapis-common\node_modules\gaxios\src\gaxios.ts:169:15)
+    at processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async JWT.requestAsync (C:\Users\Owner\Claude Code Projects\SmthosExp\arkansas-contract-agent\node_modules\googleapis-common\node_modules\google-auth-library\build\src\auth\oauth2client.js:382:18)
+    at async GoogleSheetsIntegration.appendNetSheetData (C:\Users\Owner\Claude Code Projects\SmthosExp\arkansas-contract-agent\google-sheets-integration.ts:252:7)
+    at async GoogleSheetsIntegration.saveCompleteExtraction (C:\Users\Owner\Claude Code Projects\SmthosExp\arkansas-contract-agent\google-sheets-integration.ts:350:7)
+    at async C:\Users\Owner\Claude Code Projects\SmthosExp\arkansas-contract-agent\email-monitor.ts:753:27 {
+  response: {
+    config: {
+      url: 'https://sheets.googleapis.com/v4/spreadsheets/1xeiS8rAqYncRKHGp6oiN8n3-Z9lRwLqrAc0PY_RJuhI/values/NetSheets%21AA1%3AAA35?valueInputOption=USER_ENTERED',
+      method: 'PUT',
+      userAgentDirectives: [Array],
+      paramsSerializer: [Function (anonymous)],
+      data: [Object],
+      headers: [Object],
+      params: [Object],
+      validateStatus: [Function (anonymous)],
+      retry: true,
+      body: '{"values":[["2025-09-03T17:12:33.660Z"],[""],["$270,000.00"],[""],["$0.00"],[""],["$240.00"],[""],["$8,100.00"],[""],["$7,290.00"],[""],["$400.00"],[""],["$300.00"],[""],["$500.00"],[""],["$100.00"],[""],["$450.00"],[""],["$445.50"],[""],["$0.00"],[""],["$17,825.50"],[""],[""],["$252,174.50"],[""],["3418 Justice Drive, Springdale, AR 72764"],["9/3/2025"],[24],["$10.00"]]}',
+      responseType: 'json',
+      retryConfig: [Object]
+    },
+    data: { error: [Object] },
+    headers: {
+      'alt-svc': 'h3=":443"; ma=2592000,h3-29=":443"; ma=2592000',
+      'content-encoding': 'gzip',
+      'content-type': 'application/json; charset=UTF-8',
+      date: 'Wed, 03 Sep 2025 17:12:33 GMT',
+      server: 'ESF',
+      'transfer-encoding': 'chunked',
+      vary: 'Origin, X-Origin, Referer',
+      'x-content-type-options': 'nosniff',
+      'x-frame-options': 'SAMEORIGIN',
+      'x-l2-request-path': 'l2-managed-6',
+      'x-xss-protection': '0'
+    },
+    status: 400,
+    statusText: 'Bad Request',
+    request: {
+      responseURL: 'https://sheets.googleapis.com/v4/spreadsheets/1xeiS8rAqYncRKHGp6oiN8n3-Z9lRwLqrAc0PY_RJuhI/values/NetSheets%21AA1%3AAA35?valueInputOption=USER_ENTERED'
+    }
+  },
+  config: {
+    url: 'https://sheets.googleapis.com/v4/spreadsheets/1xeiS8rAqYncRKHGp6oiN8n3-Z9lRwLqrAc0PY_RJuhI/values/NetSheets%21AA1%3AAA35?valueInputOption=USER_ENTERED',
+    method: 'PUT',
+    userAgentDirectives: [ [Object] ],
+    paramsSerializer: [Function (anonymous)],
+    data: { values: [Array] },
+    headers: {
+      'x-goog-api-client': 'gdcl/6.0.4 gl-node/20.19.3',
+      'Accept-Encoding': 'gzip',
+      'User-Agent': 'google-api-nodejs-client/6.0.4 (gzip)',
+      Authorization: 'Bearer ya29.c.c0ASRK0GZXxTStQ2fJXIwXg1bYpcfM4Rk-eFez6ZrCs5Wp2WI-mGT4hWU64oqiDIL6KvQC5p-A32ck0qyiRGf_ZMk-c4f8sifaFSq66A0_ZM_gf3IUxMi2jpciDlc4eGUvHFKAO-osScrmcT9frpuuaPiZd5mM-1WqA3Ek33jOxx8E1fRHKiVEPqjBVcrmjJPU8_KG6jMWLeyrMUBu23i9Fyne5pCI5UAfpMwmDvyhboBfB56Y__C5blQzVIkyxU0U24h-FYcKlXJdjdmKB2aEyGy3-zu8o3b7iotB3jSvJQ8p97bGLTw_hxYma2V4sWkd5PX8CakWjpYKDn1sHae5RxeNCZsO0qJXo4xF1J255xHeYiwFJUztvG_8E385PWy-RRg6RzyMQIw9MWMhpfaZ9Vh-U5Oskxyt4Xhgblai1V0qunwgZ-YkrjBFzfzld9f4wrkpgn19xjruX-SUk8wOF3gf7vZIuFBao5v3wvfUQXozQ-XXSoez0OoexdOihRmVRFutt9f3crsc91IQB3tyn2vtW3dUBfjo7fJzOX9-sB690vZR-g4c03Qb0rXflYyaxSs-mhZtzRncIxrWf1wzX4fQzmxmQafRcqV5Jm8ZWVripszdp67ordZn_h83Os08JXUh-BSm3wmnjw8tqutfk5QkV2F6Wb3Qsswm4udkJYmfYzM2OqtxR49kio3JnMUU2fZR1eZ2xzwhvpyheWme9b9pf6Bh0nQSv-4gpo3IYMsy-Xwj_1OaqQmR1Fihwxzl6nl5zknUI5hSlu7Ukqrj55Yxe595-g1S7dwaW_jl6O0S3-m_ra_tFgM-mU_bf-2OisZIvk3RJpSuSR8UFiO-xvmJj-hYhS5laO6V_3sQfBpvMiOyQ2kbjtVn1ycUsuOwqOy3yyeiuc75MhkF-cry8xs1cqbY2bJ1xU-ZO7dge00SpcSaobzZny6yWY4gnkzQ_MjJ1mB7nfRrg8uURXSnw-wfa_S4l0rWcMiiqRajahdpBQ9vq1Z5lUY',
+      'Content-Type': 'application/json',
+      Accept: 'application/json'
+    },
+    params: { valueInputOption: 'USER_ENTERED' },
+    validateStatus: [Function (anonymous)],
+    retry: true,
+    body: '{"values":[["2025-09-03T17:12:33.660Z"],[""],["$270,000.00"],[""],["$0.00"],[""],["$240.00"],[""],["$8,100.00"],[""],["$7,290.00"],[""],["$400.00"],[""],["$300.00"],[""],["$500.00"],[""],["$100.00"],[""],["$450.00"],[""],["$445.50"],[""],["$0.00"],[""],["$17,825.50"],[""],[""],["$252,174.50"],[""],["3418 Justice Drive, Springdale, AR 72764"],["9/3/2025"],[24],["$10.00"]]}',
+    responseType: 'json',
+    retryConfig: {
+      currentRetryAttempt: 0,
+      retry: 3,
+      httpMethodsToRetry: [Array],
+      noResponseRetries: 2,
+      statusCodesToRetry: [Array]
+    }
+  },
+  code: 400,
+  errors: [
+    {
+      message: 'Range (NetSheets!AA1:AA35) exceeds grid limits. Max rows: 1000, max columns: 26',
+      domain: 'global',
+      reason: 'badRequest'
+    }
+  ]
+}
+Failed to save complete extraction: GaxiosError: Range (NetSheets!AA1:AA35) exceeds grid limits. Max rows: 1000, max columns: 26
+    at Gaxios._request (C:\Users\Owner\Claude Code Projects\SmthosExp\arkansas-contract-agent\node_modules\googleapis-common\node_modules\gaxios\src\gaxios.ts:169:15)
+    at processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async JWT.requestAsync (C:\Users\Owner\Claude Code Projects\SmthosExp\arkansas-contract-agent\node_modules\googleapis-common\node_modules\google-auth-library\build\src\auth\oauth2client.js:382:18)
+    at async GoogleSheetsIntegration.appendNetSheetData (C:\Users\Owner\Claude Code Projects\SmthosExp\arkansas-contract-agent\google-sheets-integration.ts:252:7)
+    at async GoogleSheetsIntegration.saveCompleteExtraction (C:\Users\Owner\Claude Code Projects\SmthosExp\arkansas-contract-agent\google-sheets-integration.ts:350:7)
+    at async C:\Users\Owner\Claude Code Projects\SmthosExp\arkansas-contract-agent\email-monitor.ts:753:27 {
+  response: {
+    config: {
+      url: 'https://sheets.googleapis.com/v4/spreadsheets/1xeiS8rAqYncRKHGp6oiN8n3-Z9lRwLqrAc0PY_RJuhI/values/NetSheets%21AA1%3AAA35?valueInputOption=USER_ENTERED',
+      method: 'PUT',
+      userAgentDirectives: [Array],
+      paramsSerializer: [Function (anonymous)],
+      data: [Object],
+      headers: [Object],
+      params: [Object],
+      validateStatus: [Function (anonymous)],
+      retry: true,
+      body: '{"values":[["2025-09-03T17:12:33.660Z"],[""],["$270,000.00"],[""],["$0.00"],[""],["$240.00"],[""],["$8,100.00"],[""],["$7,290.00"],[""],["$400.00"],[""],["$300.00"],[""],["$500.00"],[""],["$100.00"],[""],["$450.00"],[""],["$445.50"],[""],["$0.00"],[""],["$17,825.50"],[""],[""],["$252,174.50"],[""],["3418 Justice Drive, Springdale, AR 72764"],["9/3/2025"],[24],["$10.00"]]}',
+      responseType: 'json',
+      retryConfig: [Object]
+    },
+    data: { error: [Object] },
+    headers: {
+      'alt-svc': 'h3=":443"; ma=2592000,h3-29=":443"; ma=2592000',
+      'content-encoding': 'gzip',
+      'content-type': 'application/json; charset=UTF-8',
+      date: 'Wed, 03 Sep 2025 17:12:33 GMT',
+      server: 'ESF',
+      'transfer-encoding': 'chunked',
+      vary: 'Origin, X-Origin, Referer',
+      'x-content-type-options': 'nosniff',
+      'x-frame-options': 'SAMEORIGIN',
+      'x-l2-request-path': 'l2-managed-6',
+      'x-xss-protection': '0'
+    },
+    status: 400,
+    statusText: 'Bad Request',
+    request: {
+      responseURL: 'https://sheets.googleapis.com/v4/spreadsheets/1xeiS8rAqYncRKHGp6oiN8n3-Z9lRwLqrAc0PY_RJuhI/values/NetSheets%21AA1%3AAA35?valueInputOption=USER_ENTERED'
+    }
+  },
+  config: {
+    url: 'https://sheets.googleapis.com/v4/spreadsheets/1xeiS8rAqYncRKHGp6oiN8n3-Z9lRwLqrAc0PY_RJuhI/values/NetSheets%21AA1%3AAA35?valueInputOption=USER_ENTERED',
+    method: 'PUT',
+    userAgentDirectives: [ [Object] ],
+    paramsSerializer: [Function (anonymous)],
+    data: { values: [Array] },
+    headers: {
+      'x-goog-api-client': 'gdcl/6.0.4 gl-node/20.19.3',
+      'Accept-Encoding': 'gzip',
+      'User-Agent': 'google-api-nodejs-client/6.0.4 (gzip)',
+      Authorization: 'Bearer ya29.c.c0ASRK0GZXxTStQ2fJXIwXg1bYpcfM4Rk-eFez6ZrCs5Wp2WI-mGT4hWU64oqiDIL6KvQC5p-A32ck0qyiRGf_ZMk-c4f8sifaFSq66A0_ZM_gf3IUxMi2jpciDlc4eGUvHFKAO-osScrmcT9frpuuaPiZd5mM-1WqA3Ek33jOxx8E1fRHKiVEPqjBVcrmjJPU8_KG6jMWLeyrMUBu23i9Fyne5pCI5UAfpMwmDvyhboBfB56Y__C5blQzVIkyxU0U24h-FYcKlXJdjdmKB2aEyGy3-zu8o3b7iotB3jSvJQ8p97bGLTw_hxYma2V4sWkd5PX8CakWjpYKDn1sHae5RxeNCZsO0qJXo4xF1J255xHeYiwFJUztvG_8E385PWy-RRg6RzyMQIw9MWMhpfaZ9Vh-U5Oskxyt4Xhgblai1V0qunwgZ-YkrjBFzfzld9f4wrkpgn19xjruX-SUk8wOF3gf7vZIuFBao5v3wvfUQXozQ-XXSoez0OoexdOihRmVRFutt9f3crsc91IQB3tyn2vtW3dUBfjo7fJzOX9-sB690vZR-g4c03Qb0rXflYyaxSs-mhZtzRncIxrWf1wzX4fQzmxmQafRcqV5Jm8ZWVripszdp67ordZn_h83Os08JXUh-BSm3wmnjw8tqutfk5QkV2F6Wb3Qsswm4udkJYmfYzM2OqtxR49kio3JnMUU2fZR1eZ2xzwhvpyheWme9b9pf6Bh0nQSv-4gpo3IYMsy-Xwj_1OaqQmR1Fihwxzl6nl5zknUI5hSlu7Ukqrj55Yxe595-g1S7dwaW_jl6O0S3-m_ra_tFgM-mU_bf-2OisZIvk3RJpSuSR8UFiO-xvmJj-hYhS5laO6V_3sQfBpvMiOyQ2kbjtVn1ycUsuOwqOy3yyeiuc75MhkF-cry8xs1cqbY2bJ1xU-ZO7dge00SpcSaobzZny6yWY4gnkzQ_MjJ1mB7nfRrg8uURXSnw-wfa_S4l0rWcMiiqRajahdpBQ9vq1Z5lUY',
+      'Content-Type': 'application/json',
+      Accept: 'application/json'
+    },
+    params: { valueInputOption: 'USER_ENTERED' },
+    validateStatus: [Function (anonymous)],
+    retry: true,
+    body: '{"values":[["2025-09-03T17:12:33.660Z"],[""],["$270,000.00"],[""],["$0.00"],[""],["$240.00"],[""],["$8,100.00"],[""],["$7,290.00"],[""],["$400.00"],[""],["$300.00"],[""],["$500.00"],[""],["$100.00"],[""],["$450.00"],[""],["$445.50"],[""],["$0.00"],[""],["$17,825.50"],[""],[""],["$252,174.50"],[""],["3418 Justice Drive, Springdale, AR 72764"],["9/3/2025"],[24],["$10.00"]]}',
+    responseType: 'json',
+    retryConfig: {
+      currentRetryAttempt: 0,
+      retry: 3,
+      httpMethodsToRetry: [Array],
+      noResponseRetries: 2,
+      statusCodesToRetry: [Array]
+    }
+  },
+  code: 400,
+  errors: [
+    {
+      message: 'Range (NetSheets!AA1:AA35) exceeds grid limits. Max rows: 1000, max columns: 26',
+      domain: 'global',
+      reason: 'badRequest'
+    }
+  ]
+}
+⚠️  Could not save to tracking sheet: Range (NetSheets!AA1:AA35) exceeds grid limits. Max rows: 1000, max columns: 26
+💰 Net sheet generated successfully
+📤 Processing complete for: contractextraction@gmail.com
+   - Attachments processed: 1
+   - Successful extractions: 1
+============================================================
+============================================================
+
+✅ Marking email as read and adding "Processed Contracts" label...
+=> DONE
+✅ Processing complete, checking for new emails...
+🔄 Restarting 30-second polling interval...
+<= 'IDLE OK IDLE terminated (Success)'
+=> 'A9 UID STORE 13781 +FLAGS.SILENT (\\Seen)'
+<= 'A9 OK Success'
+✅ Email marked as read
+=> 'A10 UID SEARCH UNSEEN'
+<= '* SEARCH'
+<= 'A10 OK SEARCH completed (Success)'
+📭 No recent emails
+=> 'IDLE IDLE'
+<= '+ idling'
+🔄 Checking for new emails... [11:13:03 AM]
+⏸️ Paused polling while processing...
+=> DONE
+<= 'IDLE OK IDLE terminated (Success)'
+=> 'A11 UID SEARCH UNSEEN'
+<= '* SEARCH'
+<= 'A11 OK SEARCH completed (Success)'
+📭 No recent emails
+🔄 Restarting 30-second polling interval...
+=> 'IDLE IDLE'
+<= '+ idling'
+🔄 Checking for new emails... [11:13:34 AM]
+⏸️ Paused polling while processing...
+=> DONE
+<= 'IDLE OK IDLE terminated (Success)'
+=> 'A12 UID SEARCH UNSEEN'
+<= '* SEARCH'
+<= 'A12 OK SEARCH completed (Success)'
+📭 No recent emails
+🔄 Restarting 30-second polling interval...
+=> 'IDLE IDLE'
+<= '+ idling'
+🔄 Checking for new emails... [11:14:04 AM]
+⏸️ Paused polling while processing...
+=> DONE
+<= 'IDLE OK IDLE terminated (Success)'
+=> 'A13 UID SEARCH UNSEEN'
+<= '* SEARCH'
+<= 'A13 OK SEARCH completed (Success)'
+📭 No recent emails
+🔄 Restarting 30-second polling interval...
+=> 'IDLE IDLE'
+<= '+ idling'
+🔄 Checking for new emails... [11:14:34 AM]
+⏸️ Paused polling while processing...
+=> DONE
+<= 'IDLE OK IDLE terminated (Success)'
+=> 'A14 UID SEARCH UNSEEN'
+<= '* SEARCH'
+<= 'A14 OK SEARCH completed (Success)'
+📭 No recent emails
+🔄 Restarting 30-second polling interval...
+=> 'IDLE IDLE'
+<= '+ idling'
+🔄 Checking for new emails... [11:15:04 AM]
+⏸️ Paused polling while processing...
+=> DONE
+<= 'IDLE OK IDLE terminated (Success)'
+=> 'A15 UID SEARCH UNSEEN'
+<= '* SEARCH'
+<= 'A15 OK SEARCH completed (Success)'
+📭 No recent emails
+🔄 Restarting 30-second polling interval...
+=> 'IDLE IDLE'
+<= '+ idling'
+
+============================================================
+📊 SYSTEM HEALTH REPORT
+============================================================
+⏱️  Uptime: 43 minutes
+📈 Success Rate: 100.0%
+✅ Successful: 74
+⚠️  Partial: 0
+❌ Failed: 0
+🔄 Pending Retry: 0
+📋 Manual Review Queue: 0 items
+✅ Last Success: 2 minutes ago
+============================================================
+
+🔄 Checking for new emails... [11:15:34 AM]
+⏸️ Paused polling while processing...
+=> DONE
+<= 'IDLE OK IDLE terminated (Success)'
+=> 'A16 UID SEARCH UNSEEN'
+<= '* SEARCH'
+<= 'A16 OK SEARCH completed (Success)'
+📭 No recent emails
+🔄 Restarting 30-second polling interval...
+=> 'IDLE IDLE'
+<= '+ idling'
+🔄 Checking for new emails... [11:16:04 AM]
+⏸️ Paused polling while processing...
+=> DONE
+<= 'IDLE OK IDLE terminated (Success)'
+=> 'A17 UID SEARCH UNSEEN'
+<= '* SEARCH'
+<= 'A17 OK SEARCH completed (Success)'
+📭 No recent emails
+🔄 Restarting 30-second polling interval...
+=> 'IDLE IDLE'
+<= '+ idling'
+🔄 Checking for new emails... [11:16:34 AM]
+⏸️ Paused polling while processing...
+=> DONE
+<= 'IDLE OK IDLE terminated (Success)'
+=> 'A18 UID SEARCH UNSEEN'
+<= '* SEARCH'
+<= 'A18 OK SEARCH completed (Success)'
+📭 No recent emails
+🔄 Restarting 30-second polling interval...
+=> 'IDLE IDLE'
+<= '+ idling'
+🔄 Checking for new emails... [11:17:05 AM]
+⏸️ Paused polling while processing...
+=> DONE
+<= 'IDLE OK IDLE terminated (Success)'
+=> 'A19 UID SEARCH UNSEEN'
+<= '* SEARCH'
+<= 'A19 OK SEARCH completed (Success)'
+📭 No recent emails
+🔄 Restarting 30-second polling interval...
+=> 'IDLE IDLE'
+<= '+ idling'
+🔄 Checking for new emails... [11:17:35 AM]
+⏸️ Paused polling while processing...
+=> DONE
+<= 'IDLE OK IDLE terminated (Success)'
+=> 'A20 UID SEARCH UNSEEN'
+<= '* SEARCH'
+<= 'A20 OK SEARCH completed (Success)'
+📭 No recent emails
+🔄 Restarting 30-second polling interval...
+=> 'IDLE IDLE'
+<= '+ idling'
+🔄 Checking for new emails... [11:18:05 AM]
+⏸️ Paused polling while processing...
+=> DONE
+<= 'IDLE OK IDLE terminated (Success)'
+=> 'A21 UID SEARCH UNSEEN'
+<= '* SEARCH'
+<= 'A21 OK SEARCH completed (Success)'
+📭 No recent emails
+🔄 Restarting 30-second polling interval...
+=> 'IDLE IDLE'
+<= '+ idling'
+🔄 Checking for new emails... [11:18:35 AM]
+⏸️ Paused polling while processing...
+=> DONE
+<= 'IDLE OK IDLE terminated (Success)'
+=> 'A22 UID SEARCH UNSEEN'
+<= '* SEARCH'
+<= 'A22 OK SEARCH completed (Success)'
+📭 No recent emails
+🔄 Restarting 30-second polling interval...
+=> 'IDLE IDLE'
+<= '+ idling'
+🔄 Checking for new emails... [11:19:05 AM]
+⏸️ Paused polling while processing...
+=> DONE
+<= 'IDLE OK IDLE terminated (Success)'
+=> 'A23 UID SEARCH UNSEEN'
+<= '* SEARCH'
+<= 'A23 OK SEARCH completed (Success)'
+📭 No recent emails
+🔄 Restarting 30-second polling interval...
+=> 'IDLE IDLE'
+<= '+ idling'
+🔄 Checking for new emails... [11:19:36 AM]
+⏸️ Paused polling while processing...
+=> DONE
+<= 'IDLE OK IDLE terminated (Success)'
+=> 'A24 UID SEARCH UNSEEN'
+<= '* SEARCH'
+<= 'A24 OK SEARCH completed (Success)'
+📭 No recent emails
+🔄 Restarting 30-second polling interval...
+=> 'IDLE IDLE'
+<= '+ idling'
+🔄 Checking for new emails... [11:20:06 AM]
+⏸️ Paused polling while processing...
+=> DONE
+<= 'IDLE OK IDLE terminated (Success)'
+=> 'A25 UID SEARCH UNSEEN'
+<= '* SEARCH'
+<= 'A25 OK SEARCH completed (Success)'
+📭 No recent emails
+🔄 Restarting 30-second polling interval...
+=> 'IDLE IDLE'
+<= '+ idling'
+
+============================================================
+📊 SYSTEM HEALTH REPORT
+============================================================
+⏱️  Uptime: 43 minutes
+📈 Success Rate: 100.0%
+✅ Successful: 74
+⚠️  Partial: 0
+❌ Failed: 0
+🔄 Pending Retry: 0
+📋 Manual Review Queue: 0 items
+✅ Last Success: 7 minutes ago
+============================================================
+
