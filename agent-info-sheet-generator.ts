@@ -43,7 +43,7 @@ export interface AgentInfoSheetData {
 }
 
 export class AgentInfoSheetGenerator {
-  private outputDir: string = 'agent_info_sheets';
+  private outputDir: string = '.';
   
   constructor() {
     this.ensureOutputDir();

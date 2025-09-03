@@ -17,7 +17,6 @@ import GoogleDriveIntegration from './google-drive-integration';
 import SellerNetSheetCalculator from './seller-net-sheet-calculator';
 import PDFGenerator from './pdf-generator';
 import AgentInfoSheetGenerator from './agent-info-sheet-generator';
-import CSVExporter from './csv-exporter';
 import { ListingInfoService } from './listing-info-service';
 import * as dotenv from 'dotenv';
 
@@ -51,7 +50,6 @@ export class EmailMonitor {
   private calculator: SellerNetSheetCalculator;
   private pdfGenerator: PDFGenerator;
   private agentInfoGenerator: AgentInfoSheetGenerator;
-  private csvExporter: CSVExporter;
   private listingInfo: ListingInfoService;
   private processedFolder: string = 'processed_contracts';
   private isProcessing: boolean = false;
@@ -77,7 +75,6 @@ export class EmailMonitor {
     this.calculator = new SellerNetSheetCalculator();
     this.pdfGenerator = new PDFGenerator();
     this.agentInfoGenerator = new AgentInfoSheetGenerator();
-    this.csvExporter = new CSVExporter();
     this.listingInfo = new ListingInfoService();
     this.setupFolders();
     this.initGoogleSheets();
@@ -595,7 +592,6 @@ export class EmailMonitor {
 
                       // Generate PDF net sheet with proper naming
                       let pdfPath: string | undefined;
-                      let csvPath: string | undefined;
                       
                       // Generate PDF net sheet
                       try {
@@ -609,29 +605,13 @@ export class EmailMonitor {
                         console.error('⚠️  Could not generate PDF:', pdfError);
                       }
 
-                      // Generate CSV net sheet with proper naming
-                      try {
-                        csvPath = await this.csvExporter.exportNetSheet(
-                          netSheetData,
-                          propertyAddress,
-                          extractionResult.data
-                        );
-                        console.log(`📄 Generated CSV net sheet: ${path.basename(csvPath)}`);
-                      } catch (csvError) {
-                        console.error('⚠️  Could not generate CSV:', csvError);
-                      }
-
-                      // Upload PDF and CSV files to Google Drive
-                      if (this.drive && (pdfPath || csvPath)) {
+                      // Upload PDF file to Google Drive
+                      if (this.drive && pdfPath) {
                         try {
-                          const uploadResults = await this.drive.uploadNetSheetFiles(pdfPath, csvPath);
+                          const uploadResults = await this.drive.uploadNetSheetFiles(pdfPath, undefined);
                           if (uploadResults.pdfLink) {
                             console.log('📤 Uploaded PDF to Google Drive');
                             console.log(`   📎 PDF Link: ${uploadResults.pdfLink}`);
-                          }
-                          if (uploadResults.csvLink) {
-                            console.log('📤 Uploaded CSV to Google Drive');
-                            console.log(`   📎 CSV Link: ${uploadResults.csvLink}`);
                           }
                         } catch (uploadError) {
                           console.error('⚠️  Could not upload files to Google Drive:', uploadError);
