@@ -7,8 +7,8 @@ const Imap = require('imap');
 const { simpleParser } = require('mailparser');
 import * as fs from 'fs/promises';
 import * as path from 'path';
-import { OfferSheetExtractor } from './offer-sheet-extractor';
-import { OfferSheetFormatter } from './offer-sheet-formatter';
+import { OfferSheetImageMagickExtractor } from './offer-sheet-imagemagick-extractor';
+import { SimpleFormatter } from './simple-formatter';
 import { AzureEmailService } from './azure-email-service';
 import { loadEmailConfig } from './config/email-config';
 import * as dotenv from 'dotenv';
@@ -25,16 +25,16 @@ interface ProcessedEmail {
 
 export class OfferSheetProcessor {
   private imap: any;
-  private extractor: OfferSheetExtractor;
-  private formatter: OfferSheetFormatter;
+  private extractor: OfferSheetImageMagickExtractor;
+  private formatter: SimpleFormatter;
   private emailService: AzureEmailService;
   private config = loadEmailConfig();
   private processedEmails: Set<number> = new Set();
   private isProcessing: boolean = false;
   
   constructor() {
-    this.extractor = new OfferSheetExtractor();
-    this.formatter = new OfferSheetFormatter();
+    this.extractor = new OfferSheetImageMagickExtractor();
+    this.formatter = new SimpleFormatter();
     this.emailService = new AzureEmailService();
     
     this.setupDirectories();
@@ -260,7 +260,14 @@ export class OfferSheetProcessor {
         try {
           // Extract data
           console.log('🔍 Extracting offer sheet data...');
-          const offerData = await this.extractor.extractFromPDF(pdfPath);
+          const extractionResult = await this.extractor.extractFromPDF(pdfPath);
+          
+          if (!extractionResult.success || !extractionResult.data) {
+            console.error('❌ Extraction failed:', extractionResult.error);
+            return false;
+          }
+          
+          const offerData = extractionResult.data;
           
           // Format email
           console.log('📝 Formatting offer sheet...');

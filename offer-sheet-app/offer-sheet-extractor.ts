@@ -52,11 +52,11 @@ export class OfferSheetExtractor {
    * Extract offer sheet data from a contract PDF
    * @param useFullExtraction - If true, uses HybridExtractor for complete extraction
    */
-  async extractFromPDF(pdfPath: string, useFullExtraction: boolean = false): Promise<OfferSheetData> {
+  async extractFromPDF(pdfPath: string, useFullExtraction: boolean = true): Promise<OfferSheetData> {
     console.log('📄 Extracting offer sheet data from:', pdfPath);
-    console.log('🤖 Using:', useFullExtraction ? 'HybridExtractor with GPT-5' : 'Direct GPT-5-mini vision calls');
+    console.log('🤖 Using:', useFullExtraction ? 'HybridExtractor with GPT-4' : 'Direct GPT-4-mini vision calls');
     
-    // Option 1: Use HybridExtractor for complete extraction
+    // Option 1: Use HybridExtractor for complete extraction (DEFAULT for Railway)
     if (useFullExtraction) {
       const result = await this.hybridExtractor.extractFromPDF(pdfPath, {
         model: 'auto',  // Will automatically select GPT-5-mini if available
