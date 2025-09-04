@@ -188,7 +188,9 @@ const server = app.listen(PORT, '0.0.0.0', () => {
     processor.start().then(() => {
       console.log('✅ Offer Sheet processor running successfully!');
       console.log('📧 Monitoring: contractextraction@gmail.com');
-      console.log('⏰ Check interval: Every 5 minutes');
+      const intervalMinutes = parseFloat(process.env.CHECK_INTERVAL_MINUTES || '0.5');
+      const intervalDisplay = intervalMinutes < 1 ? `${intervalMinutes * 60} seconds` : `${intervalMinutes} minutes`;
+      console.log(`⏰ Check interval: Every ${intervalDisplay}`);
       
       if (process.env.SENDGRID_API_KEY) {
         console.log('✉️ Using Azure SendGrid for email delivery');

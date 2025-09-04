@@ -63,7 +63,7 @@ export function loadEmailConfig(): EmailConfig {
     },
     
     processing: {
-      checkIntervalMinutes: 5,
+      checkIntervalMinutes: parseFloat(process.env.CHECK_INTERVAL_MINUTES || '0.5'), // Default 30 seconds
       processedEmailsFile: 'offer-sheet-app/processed-offer-sheets.json',
       attachmentsDir: 'offer-sheet-app/attachments'
     }
