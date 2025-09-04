@@ -19,6 +19,8 @@ export interface OfferSheetData {
   itemsToConvey: string | null;
   homeWarranty: string | null;
   survey: string | null;
+  propertyAddress: string | null;
+  loanType: string | null;
 }
 
 export class OfferSheetImageMagickExtractor extends ImageMagickExtractor {
@@ -49,9 +51,9 @@ export class OfferSheetImageMagickExtractor extends ImageMagickExtractor {
       
       // Extract just the fields we need for offer sheet
       const offerData: OfferSheetData = {
-        buyerNames: fullResult.data.buyers?.join(', ') || null,
+        buyerNames: fullResult.data.buyers?.join(' and ') || null,
         purchasePrice: fullResult.data.purchase_price || fullResult.data.cash_amount || null,
-        closeDate: fullResult.data.close_date || null,
+        closeDate: fullResult.data.closing_date || null,
         sellerConcessions: fullResult.data.seller_concessions ? 
           parseFloat(fullResult.data.seller_concessions.replace(/[^0-9.]/g, '')) : null,
         earnestMoney: fullResult.data.earnest_money === 'YES' ? 
@@ -63,7 +65,9 @@ export class OfferSheetImageMagickExtractor extends ImageMagickExtractor {
         itemsToConvey: fullResult.data.personal_property || null,
         homeWarranty: fullResult.data.home_warranty === 'YES' ?
           `Yes - ${fullResult.data.warranty_details || 'Details not specified'}` : 'No',
-        survey: fullResult.data.survey_option || null
+        survey: fullResult.data.survey_option || null,
+        propertyAddress: fullResult.data.property_address || null,
+        loanType: fullResult.data.loan_type || null
       };
       
       console.log('✅ Offer sheet extraction complete');

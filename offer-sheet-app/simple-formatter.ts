@@ -3,16 +3,23 @@
  * Creates HTML email from simple extracted data
  */
 
-import { SimpleOfferData } from './simple-pdf-extractor';
+import { OfferSheetData } from './offer-sheet-imagemagick-extractor';
 
 export class SimpleFormatter {
   
-  formatOfferSheet(data: SimpleOfferData): string {
+  formatOfferSheet(data: OfferSheetData): string {
     const sections: string[] = [];
     
-    // Add all available fields
+    // Add buyer fields - handle multiple buyers
     if (data.buyerNames) {
-      sections.push(this.formatField('Buyer Name', data.buyerNames));
+      const buyers = data.buyerNames.split(' and ');
+      if (buyers.length > 1) {
+        buyers.forEach((buyer, index) => {
+          sections.push(this.formatField(`Buyer ${index + 1}`, buyer.trim()));
+        });
+      } else {
+        sections.push(this.formatField('Buyer', data.buyerNames));
+      }
     }
     
     if (data.purchasePrice !== null) {
@@ -25,6 +32,10 @@ export class SimpleFormatter {
     
     if (data.closeDate) {
       sections.push(this.formatField('Close Date', data.closeDate));
+    }
+    
+    if (data.loanType) {
+      sections.push(this.formatField('Loan Type', data.loanType));
     }
     
     if (data.contingency) {
@@ -122,7 +133,7 @@ export class SimpleFormatter {
       <body>
         <div class="header">
           <h1>Offer Summary</h1>
-          <p>Arkansas Real Estate Contract</p>
+          <p>${data.propertyAddress || 'Property Address Not Available'}</p>
         </div>
         
         <div class="content">
@@ -149,15 +160,32 @@ export class SimpleFormatter {
     return html;
   }
   
-  formatPlainText(data: SimpleOfferData): string {
-    const lines: string[] = ['OFFER SUMMARY\n'];
+  formatPlainText(data: OfferSheetData): string {
+    const lines: string[] = ['OFFER SUMMARY'];
     
-    if (data.buyerNames) lines.push(`Buyer Name: ${data.buyerNames}`);
+    if (data.propertyAddress) {
+      lines.push(`Property: ${data.propertyAddress}`);
+    }
+    lines.push(''); // blank line after header
+    
+    // Handle multiple buyers
+    if (data.buyerNames) {
+      const buyers = data.buyerNames.split(' and ');
+      if (buyers.length > 1) {
+        buyers.forEach((buyer, index) => {
+          lines.push(`Buyer ${index + 1}: ${buyer.trim()}`);
+        });
+      } else {
+        lines.push(`Buyer: ${data.buyerNames}`);
+      }
+    }
+    
     if (data.purchasePrice !== null) lines.push(`Purchase Price: ${this.formatCurrency(data.purchasePrice)}`);
     if (data.sellerConcessions !== null && data.sellerConcessions > 0) {
       lines.push(`Seller Concessions: ${this.formatCurrency(data.sellerConcessions)}`);
     }
     if (data.closeDate) lines.push(`Close Date: ${data.closeDate}`);
+    if (data.loanType) lines.push(`Loan Type: ${data.loanType}`);
     if (data.contingency) lines.push(`Contingency: ${data.contingency}`);
     if (data.earnestMoney) lines.push(`Earnest Money: ${data.earnestMoney}`);
     if (data.nonRefundableDeposit) lines.push(`Non-Refundable Deposit: ${data.nonRefundableDeposit}`);
@@ -174,7 +202,7 @@ export class SimpleFormatter {
   private formatField(label: string, value: string): string {
     return `
       <div class="field">
-        <span class="label">${label}:</span>
+        <span class="label">${label}: </span>
         <span class="value">${value}</span>
       </div>
     `;
