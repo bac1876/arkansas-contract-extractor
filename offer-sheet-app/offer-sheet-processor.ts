@@ -129,38 +129,64 @@ export class OfferSheetProcessor {
     this.isProcessing = true;
     console.log('📬 Checking for new emails...');
     
-    this.imap.openBox('INBOX', false, async (err: any, box: any) => {
-      if (err) {
-        console.error('Error opening inbox:', err);
-        this.isProcessing = false;
-        return;
-      }
-      
-      // Search for unprocessed emails with attachments
-      this.imap.search(['UNSEEN'], async (err: any, results: number[]) => {
+    // Create a fresh connection for each check to ensure we see new emails
+    const imap = new Imap({
+      user: this.config.incoming.user,
+      password: this.config.incoming.password,
+      host: this.config.incoming.host,
+      port: this.config.incoming.port,
+      tls: this.config.incoming.tls,
+      tlsOptions: this.config.incoming.tlsOptions
+    });
+    
+    imap.once('ready', () => {
+      imap.openBox('INBOX', false, async (err: any, box: any) => {
         if (err) {
-          console.error('Search error:', err);
+          console.error('Error opening inbox:', err);
           this.isProcessing = false;
+          imap.end();
           return;
         }
         
-        if (results.length === 0) {
-          console.log('📭 No new emails');
-          this.isProcessing = false;
-          return;
-        }
-        
-        console.log(`📨 Found ${results.length} new emails`);
-        
-        for (const uid of results) {
-          if (!this.processedEmails.has(uid)) {
-            await this.processEmail(uid);
+        // Search for unprocessed emails with attachments
+        imap.search(['UNSEEN'], async (err: any, results: number[]) => {
+          if (err) {
+            console.error('Search error:', err);
+            this.isProcessing = false;
+            imap.end();
+            return;
           }
-        }
-        
-        this.isProcessing = false;
+          
+          if (results.length === 0) {
+            console.log('📭 No new emails');
+            this.isProcessing = false;
+            imap.end();
+            return;
+          }
+          
+          console.log(`📨 Found ${results.length} new emails`);
+          
+          // Store imap reference for processing
+          this.imap = imap;
+          
+          for (const uid of results) {
+            if (!this.processedEmails.has(uid)) {
+              await this.processEmail(uid);
+            }
+          }
+          
+          this.isProcessing = false;
+          imap.end();
+        });
       });
     });
+    
+    imap.once('error', (err: any) => {
+      console.error('IMAP error:', err);
+      this.isProcessing = false;
+    });
+    
+    imap.connect();
   }
   
   private async processEmail(uid: number) {
