@@ -1,0 +1,45 @@
+# Dockerfile for Offer Sheet Service
+# Lighter weight version focused on offer sheet processing
+
+FROM node:20
+
+# Install ImageMagick for PDF processing
+RUN apt-get update && apt-get install -y \
+    imagemagick \
+    libmagickwand-dev \
+    ghostscript \
+    && rm -rf /var/lib/apt/lists/*
+
+# Set working directory
+WORKDIR /app
+
+# Copy package files
+COPY package.json package-lock.json ./
+COPY tsconfig.json ./
+
+# Install dependencies
+RUN npm ci
+
+# Install TypeScript and ts-node for runtime
+RUN npm install typescript ts-node
+
+# Copy all source files
+COPY . .
+
+# Fix ImageMagick policy to allow PDF processing
+RUN sed -i 's/<policy domain="coder" rights="none" pattern="PDF" \/>/<policy domain="coder" rights="read|write" pattern="PDF" \/>/g' /etc/ImageMagick-6/policy.xml || true
+
+# Create necessary directories for offer sheet app
+RUN mkdir -p offer-sheet-app/attachments \
+    offer-sheet-app/logs \
+    offer-sheet-app/test-output \
+    temp_images
+
+# Set environment variable for production
+ENV NODE_ENV=production
+
+# Expose port for health checks
+EXPOSE 3000
+
+# Use the offer sheet specific start script
+CMD ["node", "start-offer-sheet.js"]

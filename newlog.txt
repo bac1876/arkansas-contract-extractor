@@ -842,3 +842,196 @@ Failed to save complete extraction: GaxiosError: Range (NetSheets!AA1:AA35) exce
 🔄 Restarting 30-second polling interval...
 => 'IDLE IDLE'
 <= '+ idling'
+🔄 Checking for new emails... [11:29:08 AM]
+⏸️ Paused polling while processing...
+=> DONE
+<= 'IDLE OK IDLE terminated (Success)'
+=> 'A43 UID SEARCH UNSEEN'
+<= '* SEARCH'
+<= 'A43 OK SEARCH completed (Success)'
+📭 No recent emails
+🔄 Restarting 30-second polling interval...
+=> 'IDLE IDLE'
+<= '+ idling'
+🔄 Checking for new emails... [11:29:39 AM]
+⏸️ Paused polling while processing...
+=> DONE
+<= 'IDLE OK IDLE terminated (Success)'
+=> 'A44 UID SEARCH UNSEEN'
+<= '* SEARCH'
+<= 'A44 OK SEARCH completed (Success)'
+📭 No recent emails
+🔄 Restarting 30-second polling interval...
+=> 'IDLE IDLE'
+<= '+ idling'
+🔄 Checking for new emails... [11:30:09 AM]
+⏸️ Paused polling while processing...
+=> DONE
+<= 'IDLE OK IDLE terminated (Success)'
+=> 'A45 UID SEARCH UNSEEN'
+<= '* SEARCH'
+<= 'A45 OK SEARCH completed (Success)'
+📭 No recent emails
+🔄 Restarting 30-second polling interval...
+=> 'IDLE IDLE'
+<= '+ idling'
+
+============================================================
+📊 SYSTEM HEALTH REPORT
+============================================================
+⏱️  Uptime: 43 minutes
+📈 Success Rate: 100.0%
+✅ Successful: 74
+⚠️  Partial: 0
+❌ Failed: 0
+🔄 Pending Retry: 0
+📋 Manual Review Queue: 0 items
+✅ Last Success: 17 minutes ago
+============================================================
+
+🔄 Checking for new emails... [11:30:39 AM]
+⏸️ Paused polling while processing...
+=> DONE
+<= 'IDLE OK IDLE terminated (Success)'
+=> 'A46 UID SEARCH UNSEEN'
+<= '* SEARCH'
+<= 'A46 OK SEARCH completed (Success)'
+📭 No recent emails
+🔄 Restarting 30-second polling interval...
+=> 'IDLE IDLE'
+<= '+ idling'
+🔄 Checking for new emails... [11:31:10 AM]
+⏸️ Paused polling while processing...
+=> DONE
+<= 'IDLE OK IDLE terminated (Success)'
+=> 'A47 UID SEARCH UNSEEN'
+<= '* SEARCH'
+<= 'A47 OK SEARCH completed (Success)'
+📭 No recent emails
+🔄 Restarting 30-second polling interval...
+=> 'IDLE IDLE'
+<= '+ idling'
+🔄 Checking for new emails... [11:31:40 AM]
+⏸️ Paused polling while processing...
+=> DONE
+<= 'IDLE OK IDLE terminated (Success)'
+=> 'A48 UID SEARCH UNSEEN'
+<= '* SEARCH'
+<= 'A48 OK SEARCH completed (Success)'
+📭 No recent emails
+🔄 Restarting 30-second polling interval...
+=> 'IDLE IDLE'
+<= '+ idling'
+🔄 Checking for new emails... [11:32:11 AM]
+⏸️ Paused polling while processing...
+=> DONE
+<= 'IDLE OK IDLE terminated (Success)'
+=> 'A49 UID SEARCH UNSEEN'
+<= '* SEARCH'
+<= 'A49 OK SEARCH completed (Success)'
+📭 No recent emails
+🔄 Restarting 30-second polling interval...
+=> 'IDLE IDLE'
+<= '+ idling'
+🔄 Checking for new emails... [11:32:41 AM]
+⏸️ Paused polling while processing...
+=> DONE
+<= 'IDLE OK IDLE terminated (Success)'
+=> 'A50 UID SEARCH UNSEEN'
+<= '* SEARCH'
+<= 'A50 OK SEARCH completed (Success)'
+📭 No recent emails
+🔄 Restarting 30-second polling interval...
+=> 'IDLE IDLE'
+<= '+ idling'
+🔄 Checking for new emails... [11:33:11 AM]
+⏸️ Paused polling while processing...
+=> DONE
+<= 'IDLE OK IDLE terminated (Success)'
+=> 'A51 UID SEARCH UNSEEN'
+<= '* SEARCH'
+<= 'A51 OK SEARCH completed (Success)'
+📭 No recent emails
+🔄 Restarting 30-second polling interval...
+=> 'IDLE IDLE'
+<= '+ idling'
+🔄 Checking for new emails... [11:33:42 AM]
+⏸️ Paused polling while processing...
+=> DONE
+<= 'IDLE OK IDLE terminated (Success)'
+=> 'A52 UID SEARCH UNSEEN'
+<= '* SEARCH'
+<= 'A52 OK SEARCH completed (Success)'
+📭 No recent emails
+🔄 Restarting 30-second polling interval...
+=> 'IDLE IDLE'
+<= '+ idling'
+🔄 Checking for new emails... [11:34:12 AM]
+⏸️ Paused polling while processing...
+=> DONE
+<= 'IDLE OK IDLE terminated (Success)'
+=> 'A53 UID SEARCH UNSEEN'
+<= '* SEARCH'
+<= 'A53 OK SEARCH completed (Success)'
+📭 No recent emails
+🔄 Restarting 30-second polling interval...
+=> 'IDLE IDLE'
+<= '+ idling'
+🔄 Checking for new emails... [11:34:42 AM]
+⏸️ Paused polling while processing...
+=> DONE
+<= 'IDLE OK IDLE terminated (Success)'
+=> 'A54 UID SEARCH UNSEEN'
+<= '* SEARCH'
+<= 'A54 OK SEARCH completed (Success)'
+📭 No recent emails
+🔄 Restarting 30-second polling interval...
+=> 'IDLE IDLE'
+<= '+ idling'
+🔄 Checking for new emails... [11:35:12 AM]
+⏸️ Paused polling while processing...
+=> DONE
+<= 'IDLE OK IDLE terminated (Success)'
+=> 'A55 UID SEARCH UNSEEN'
+<= '* SEARCH'
+<= 'A55 OK SEARCH completed (Success)'
+📭 No recent emails
+🔄 Restarting 30-second polling interval...
+=> 'IDLE IDLE'
+<= '+ idling'
+
+============================================================
+📊 SYSTEM HEALTH REPORT
+============================================================
+⏱️  Uptime: 43 minutes
+📈 Success Rate: 100.0%
+✅ Successful: 74
+⚠️  Partial: 0
+❌ Failed: 0
+🔄 Pending Retry: 0
+📋 Manual Review Queue: 0 items
+✅ Last Success: 22 minutes ago
+============================================================
+
+🔄 Checking for new emails... [11:35:42 AM]
+⏸️ Paused polling while processing...
+=> DONE
+<= 'IDLE OK IDLE terminated (Success)'
+=> 'A56 UID SEARCH UNSEEN'
+<= '* SEARCH'
+<= 'A56 OK SEARCH completed (Success)'
+📭 No recent emails
+🔄 Restarting 30-second polling interval...
+=> 'IDLE IDLE'
+<= '+ idling'
+🔄 Checking for new emails... [11:36:12 AM]
+⏸️ Paused polling while processing...
+=> DONE
+<= 'IDLE OK IDLE terminated (Success)'
+=> 'A57 UID SEARCH UNSEEN'
+<= '* SEARCH'
+<= 'A57 OK SEARCH completed (Success)'
+📭 No recent emails
+🔄 Restarting 30-second polling interval...
+=> 'IDLE IDLE'
+<= '+ idling'

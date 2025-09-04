@@ -37,7 +37,7 @@ async function sendTestEmail() {
   const mailOptions = {
     from: 'contractextraction@gmail.com',
     to: 'offers@searchnwa.com',
-    subject: `TEST-IMAGEMAGICK-FIX - 3418 Justice Dr - ${new Date().toISOString()}`,
+    subject: `RAILWAY-TEST-${Date.now()} - 3418 Justice Dr`,
     text: 'This is a test email with a contract PDF attached for processing.',
     html: `
       <div style="font-family: Arial, sans-serif;">

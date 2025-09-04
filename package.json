@@ -5,6 +5,7 @@
   "main": "server.ts",
   "scripts": {
     "start": "node start.js",
+    "start:combined": "node start-combined.js",
     "dev": "ts-node server.ts",
     "monitor": "node -r ts-node/register email-monitor.ts",
     "api": "ts-node api-server.ts",
@@ -12,7 +13,9 @@
     "test": "ts-node test-all-contracts.js",
     "test-sheets": "ts-node test-google-sheets.ts",
     "test-drive": "ts-node test-google-drive-fix.ts",
-    "test-pdf": "ts-node test-pdf-generation.ts"
+    "test-pdf": "ts-node test-pdf-generation.ts",
+    "offer-sheet": "ts-node offer-sheet-app/offer-sheet-processor.ts",
+    "test-offer-sheet": "ts-node test-offer-sheet-app.ts"
   },
   "keywords": [],
   "author": "",
