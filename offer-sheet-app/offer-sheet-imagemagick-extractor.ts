@@ -65,7 +65,11 @@ export class OfferSheetImageMagickExtractor extends ImageMagickExtractor {
         itemsToConvey: fullResult.data.personal_property || null,
         homeWarranty: fullResult.data.home_warranty === 'YES' ?
           `Yes - ${fullResult.data.warranty_details || 'Details not specified'}` : 'No',
-        survey: fullResult.data.survey_option || null,
+        survey: fullResult.data.survey_option === 'A' ? null : 
+                fullResult.data.survey_option === 'B' ? 'At Seller\'s Expense' :
+                fullResult.data.survey_option === 'C' ? 'At Buyer\'s Expense' :
+                fullResult.data.survey_option === 'D' ? 'Other (see contract)' :
+                fullResult.data.survey_option || null,
         propertyAddress: fullResult.data.property_address || null,
         loanType: fullResult.data.loan_type || null
       };

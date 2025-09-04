@@ -84,6 +84,11 @@ export class SimpleFormatter {
             text-align: center;
             border-radius: 10px 10px 0 0;
           }
+          .header p {
+            font-size: 18px;
+            font-weight: bold;
+            margin: 10px 0;
+          }
           .content {
             background: #f9f9f9;
             padding: 30px;
@@ -107,26 +112,11 @@ export class SimpleFormatter {
             color: #333;
             text-align: right;
           }
-          .note {
-            margin-top: 30px;
-            padding: 15px;
-            background: #fff3cd;
-            border: 1px solid #ffc107;
-            border-radius: 5px;
-            font-size: 14px;
-          }
           .footer {
             margin-top: 30px;
             text-align: center;
             font-size: 12px;
             color: #666;
-          }
-          .attachment-note {
-            margin-top: 20px;
-            padding: 15px;
-            background: #e8f4fd;
-            border-left: 4px solid #2196F3;
-            font-size: 14px;
           }
         </style>
       </head>
@@ -138,15 +128,6 @@ export class SimpleFormatter {
         
         <div class="content">
           ${sections.join('')}
-          
-          <div class="note">
-            <strong>Note:</strong> This offer summary has been automatically generated from the attached contract. 
-            Please review the original contract for complete details and terms.
-          </div>
-          
-          <div class="attachment-note">
-            📎 <strong>Attachment:</strong> The original contract PDF is attached to this email for your review and forwarding.
-          </div>
         </div>
         
         <div class="footer">
@@ -192,9 +173,6 @@ export class SimpleFormatter {
     if (data.itemsToConvey) lines.push(`Items to Convey: ${data.itemsToConvey}`);
     if (data.homeWarranty) lines.push(`Home Warranty: ${data.homeWarranty}`);
     if (data.survey) lines.push(`Survey: ${data.survey}`);
-    
-    lines.push('\n---\nThis offer summary has been automatically generated.');
-    lines.push('Please review the attached original contract for complete details.');
     
     return lines.join('\n');
   }
