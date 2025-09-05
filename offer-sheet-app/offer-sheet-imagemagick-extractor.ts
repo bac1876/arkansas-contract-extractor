@@ -21,6 +21,8 @@ export interface OfferSheetData {
   survey: string | null;
   propertyAddress: string | null;
   loanType: string | null;
+  sellingAgentName: string | null;
+  sellingAgentPhone: string | null;
 }
 
 export class OfferSheetImageMagickExtractor extends ImageMagickExtractor {
@@ -77,7 +79,9 @@ export class OfferSheetImageMagickExtractor extends ImageMagickExtractor {
                 fullResult.data.survey_option === 'C' ? 'Other (see contract)' :
                 fullResult.data.survey_option || null,
         propertyAddress: fullResult.data.property_address || null,
-        loanType: fullResult.data.loan_type || null
+        loanType: fullResult.data.loan_type || null,
+        sellingAgentName: fullResult.data.selling_agent_name || null,
+        sellingAgentPhone: fullResult.data.selling_agent_phone || null
       };
       
       console.log('✅ Offer sheet extraction complete');

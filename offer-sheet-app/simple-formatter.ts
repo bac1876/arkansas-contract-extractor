@@ -62,6 +62,25 @@ export class SimpleFormatter {
       sections.push(this.formatField('Survey', data.survey));
     }
     
+    // Add agent info at the bottom if available
+    if (data.sellingAgentName || data.sellingAgentPhone) {
+      const agentInfo = [
+        data.sellingAgentName,
+        data.sellingAgentPhone
+      ].filter(Boolean).join(' - ');
+      
+      if (agentInfo) {
+        sections.push(`
+          <div style="margin-top: 20px; padding-top: 20px; border-top: 2px solid #e0e0e0;">
+            <div class="field">
+              <span class="label" style="font-weight: 600;">Selling Agent: </span>
+              <span class="value">${agentInfo}</span>
+            </div>
+          </div>
+        `);
+      }
+    }
+    
     // Build HTML email
     const html = `
       <!DOCTYPE html>
@@ -208,6 +227,19 @@ export class SimpleFormatter {
     if (data.itemsToConvey) lines.push(`Items to Convey: ${data.itemsToConvey}`);
     if (data.homeWarranty) lines.push(`Home Warranty: ${data.homeWarranty}`);
     if (data.survey) lines.push(`Survey: ${data.survey}`);
+    
+    // Add agent info at the bottom
+    if (data.sellingAgentName || data.sellingAgentPhone) {
+      lines.push(''); // blank line
+      lines.push('---');
+      const agentInfo = [
+        data.sellingAgentName,
+        data.sellingAgentPhone
+      ].filter(Boolean).join(' - ');
+      if (agentInfo) {
+        lines.push(`Selling Agent: ${agentInfo}`);
+      }
+    }
     
     return lines.join('\n');
   }
