@@ -280,6 +280,10 @@ export class ImageMagickExtractor {
         else if (pageNumber === 14) {
           console.log('📄 Extracting Page 14 - Para 32 Additional Terms...');
           const page14Data = await this.extractPage14(pagePath);
+          // Map para32_additional_terms to para32_other_terms for consistency
+          if (page14Data.para32_additional_terms) {
+            extractedData.para32_other_terms = page14Data.para32_additional_terms;
+          }
           Object.assign(extractedData, page14Data);
         }
         

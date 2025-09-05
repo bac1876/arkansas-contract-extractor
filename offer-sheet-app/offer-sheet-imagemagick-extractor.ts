@@ -82,7 +82,7 @@ export class OfferSheetImageMagickExtractor extends ImageMagickExtractor {
         loanType: fullResult.data.loan_type || null,
         sellingAgentName: fullResult.data.selling_agent_name || null,
         sellingAgentPhone: fullResult.data.selling_agent_phone || null,
-        otherTerms: fullResult.data.para32_other_terms || fullResult.data.additional_terms || null
+        otherTerms: fullResult.data.para32_additional_terms || fullResult.data.para32_other_terms || fullResult.data.additional_terms || null
       };
       
       console.log('✅ Offer sheet extraction complete');

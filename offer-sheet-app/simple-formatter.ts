@@ -252,7 +252,7 @@ export class SimpleFormatter {
   private formatField(label: string, value: string): string {
     return `
       <div class="field">
-        <span class="label">${label}: </span>
+        <span class="label">${label}:  </span>
         <span class="value">${value}</span>
       </div>
     `;
