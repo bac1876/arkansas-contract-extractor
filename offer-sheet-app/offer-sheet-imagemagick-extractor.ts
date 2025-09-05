@@ -58,17 +58,16 @@ export class OfferSheetImageMagickExtractor extends ImageMagickExtractor {
           parseFloat(fullResult.data.seller_concessions.replace(/[^0-9.]/g, '')) : null,
         earnestMoney: fullResult.data.earnest_money === 'YES' ? 
           `Yes - $${fullResult.data.earnest_money_amount || 'Amount not specified'}` : 'No',
-        nonRefundableDeposit: fullResult.data.non_refundable_deposit === 'YES' ?
-          `Yes - $${fullResult.data.non_refundable_amount || 'Amount not specified'}` : 'No',
+        nonRefundableDeposit: fullResult.data.non_refundable === 'YES' ?
+          `Yes - $${fullResult.data.non_refundable_amount ? fullResult.data.non_refundable_amount.toLocaleString() : 'Amount not specified'}` : 'No',
         contingency: fullResult.data.contingency === 'YES' ? 
           fullResult.data.contingency_details || 'Yes' : null,
         itemsToConvey: fullResult.data.personal_property || null,
         homeWarranty: fullResult.data.home_warranty === 'YES' ?
           `Yes - ${fullResult.data.warranty_details || 'Details not specified'}` : 'No',
-        survey: fullResult.data.survey_option === 'A' ? null : 
-                fullResult.data.survey_option === 'B' ? 'At Seller\'s Expense' :
-                fullResult.data.survey_option === 'C' ? 'At Buyer\'s Expense' :
-                fullResult.data.survey_option === 'D' ? 'Other (see contract)' :
+        survey: fullResult.data.survey_option === 'B' ? null : // B = No survey
+                fullResult.data.survey_option === 'A' ? 'Survey Required (payment terms in contract)' :
+                fullResult.data.survey_option === 'C' ? 'Other (see contract)' :
                 fullResult.data.survey_option || null,
         propertyAddress: fullResult.data.property_address || null,
         loanType: fullResult.data.loan_type || null

@@ -68,6 +68,7 @@ export class SimpleFormatter {
       <html>
       <head>
         <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <style>
           body {
             font-family: Arial, sans-serif;
@@ -117,6 +118,40 @@ export class SimpleFormatter {
             text-align: center;
             font-size: 12px;
             color: #666;
+          }
+          
+          /* Mobile Responsive Styles */
+          @media screen and (max-width: 600px) {
+            body {
+              padding: 10px;
+            }
+            .header {
+              padding: 20px;
+            }
+            .header h1 {
+              font-size: 24px;
+            }
+            .header p {
+              font-size: 14px;
+              word-break: break-word;
+            }
+            .content {
+              padding: 20px;
+            }
+            .field {
+              flex-direction: column;
+              align-items: flex-start;
+              padding: 10px 0;
+            }
+            .label {
+              margin-bottom: 5px;
+              font-size: 14px;
+            }
+            .value {
+              text-align: left;
+              font-size: 14px;
+              word-break: break-word;
+            }
           }
         </style>
       </head>
