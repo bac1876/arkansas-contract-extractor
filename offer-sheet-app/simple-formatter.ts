@@ -181,6 +181,53 @@ export class SimpleFormatter {
               word-break: break-word;
             }
           }
+          
+          /* Enhanced Desktop Styles - Table-like display */
+          @media screen and (min-width: 601px) {
+            body {
+              max-width: 800px;
+              margin: 0 auto;
+            }
+            
+            .content {
+              padding: 35px;
+            }
+            
+            .field {
+              display: table;
+              width: 100%;
+              padding: 14px 0;
+              border-bottom: 1px solid #e0e0e0;
+            }
+            
+            .field .label {
+              display: table-cell;
+              width: 40%;
+              padding-right: 20px;
+              font-weight: 600;
+              color: #555;
+              vertical-align: middle;
+              text-align: left;
+            }
+            
+            .field .value {
+              display: table-cell;
+              width: 60%;
+              text-align: left;
+              color: #333;
+              vertical-align: middle;
+            }
+            
+            /* Make the header more prominent on desktop */
+            .header h1 {
+              font-size: 32px;
+            }
+            
+            .header p {
+              font-size: 20px;
+              font-weight: bold;
+            }
+          }
         </style>
       </head>
       <body>
