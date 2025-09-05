@@ -62,6 +62,10 @@ export class SimpleFormatter {
       sections.push(this.formatField('Survey', data.survey));
     }
     
+    if (data.otherTerms) {
+      sections.push(this.formatField('Other', data.otherTerms));
+    }
+    
     // Add agent info at the bottom if available
     if (data.sellingAgentName || data.sellingAgentPhone) {
       const agentInfo = [
@@ -227,6 +231,7 @@ export class SimpleFormatter {
     if (data.itemsToConvey) lines.push(`Items to Convey: ${data.itemsToConvey}`);
     if (data.homeWarranty) lines.push(`Home Warranty: ${data.homeWarranty}`);
     if (data.survey) lines.push(`Survey: ${data.survey}`);
+    if (data.otherTerms) lines.push(`Other: ${data.otherTerms}`);
     
     // Add agent info at the bottom
     if (data.sellingAgentName || data.sellingAgentPhone) {

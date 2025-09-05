@@ -23,6 +23,7 @@ export interface OfferSheetData {
   loanType: string | null;
   sellingAgentName: string | null;
   sellingAgentPhone: string | null;
+  otherTerms: string | null;
 }
 
 export class OfferSheetImageMagickExtractor extends ImageMagickExtractor {
@@ -58,8 +59,7 @@ export class OfferSheetImageMagickExtractor extends ImageMagickExtractor {
         closeDate: fullResult.data.closing_date || null,
         sellerConcessions: fullResult.data.seller_concessions ? 
           parseFloat(fullResult.data.seller_concessions.replace(/[^0-9.]/g, '')) : null,
-        earnestMoney: fullResult.data.earnest_money === 'YES' ? 
-          `Yes - $${fullResult.data.earnest_money_amount || 'Amount not specified'}` : 'No',
+        earnestMoney: fullResult.data.earnest_money === 'YES' ? 'Yes - See Addendum' : 'No',
         nonRefundableDeposit: fullResult.data.non_refundable === 'YES' ?
           `Yes - $${fullResult.data.non_refundable_amount ? fullResult.data.non_refundable_amount.toLocaleString() : 'Amount not specified'}` : 'No',
         contingency: fullResult.data.contingency === 'YES' ? 
@@ -81,7 +81,8 @@ export class OfferSheetImageMagickExtractor extends ImageMagickExtractor {
         propertyAddress: fullResult.data.property_address || null,
         loanType: fullResult.data.loan_type || null,
         sellingAgentName: fullResult.data.selling_agent_name || null,
-        sellingAgentPhone: fullResult.data.selling_agent_phone || null
+        sellingAgentPhone: fullResult.data.selling_agent_phone || null,
+        otherTerms: fullResult.data.para32_other_terms || fullResult.data.additional_terms || null
       };
       
       console.log('✅ Offer sheet extraction complete');
