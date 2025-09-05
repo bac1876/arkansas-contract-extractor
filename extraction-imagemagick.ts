@@ -269,6 +269,10 @@ export class ImageMagickExtractor {
         else if (pageNumber === 12) {
           console.log('📄 Extracting Page 12 - Para 22 Closing Date...');
           const page12Data = await this.extractPage12(pagePath);
+          // Map para22_closing_date to closing_date
+          if (page12Data.para22_closing_date) {
+            extractedData.closing_date = page12Data.para22_closing_date;
+          }
           Object.assign(extractedData, page12Data);
         }
         
