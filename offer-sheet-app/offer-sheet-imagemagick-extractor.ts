@@ -64,9 +64,16 @@ export class OfferSheetImageMagickExtractor extends ImageMagickExtractor {
           fullResult.data.contingency_details || 'Yes' : null,
         itemsToConvey: fullResult.data.personal_property || null,
         homeWarranty: fullResult.data.home_warranty === 'YES' ?
-          `Yes - ${fullResult.data.warranty_details || 'Details not specified'}` : 'No',
+          `Yes - ${[
+            fullResult.data.warranty_details,
+            fullResult.data.home_warranty_cost ? `$${fullResult.data.home_warranty_cost}` : null,
+            fullResult.data.home_warranty_paid_by ? `Paid by ${fullResult.data.home_warranty_paid_by}` : null
+          ].filter(Boolean).join(' - ') || 'See contract for details'}` : 'No',
         survey: fullResult.data.survey_option === 'B' ? null : // B = No survey
-                fullResult.data.survey_option === 'A' ? 'Survey Required (payment terms in contract)' :
+                fullResult.data.survey_option === 'A' ? 
+                  (fullResult.data.survey_details ? 
+                    `Survey Required - ${fullResult.data.survey_details}` : 
+                    'Survey Required - Paid by Seller') :
                 fullResult.data.survey_option === 'C' ? 'Other (see contract)' :
                 fullResult.data.survey_option || null,
         propertyAddress: fullResult.data.property_address || null,
