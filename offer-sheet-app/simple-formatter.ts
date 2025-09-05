@@ -10,15 +10,26 @@ export class SimpleFormatter {
   formatOfferSheet(data: OfferSheetData): string {
     const sections: string[] = [];
     
-    // Add buyer fields - handle multiple buyers
+    // Add buyer fields - handle multiple buyers and shared last names
     if (data.buyerNames) {
-      const buyers = data.buyerNames.split(' and ');
+      let buyerNames = data.buyerNames;
+      
+      // Check for shared last name pattern: "FirstName and FirstName LastName"
+      const sharedLastNamePattern = /^([A-Za-z]+)\s+and\s+([A-Za-z]+)\s+([A-Za-z]+)$/;
+      const match = buyerNames.match(sharedLastNamePattern);
+      
+      if (match) {
+        // Expand to "FirstName1 LastName and FirstName2 LastName"
+        buyerNames = `${match[1]} ${match[3]} and ${match[2]} ${match[3]}`;
+      }
+      
+      const buyers = buyerNames.split(' and ');
       if (buyers.length > 1) {
         buyers.forEach((buyer, index) => {
           sections.push(this.formatField(`Buyer ${index + 1}`, buyer.trim()));
         });
       } else {
-        sections.push(this.formatField('Buyer', data.buyerNames));
+        sections.push(this.formatField('Buyer', buyerNames));
       }
     }
     
@@ -207,15 +218,26 @@ export class SimpleFormatter {
     }
     lines.push(''); // blank line after header
     
-    // Handle multiple buyers
+    // Handle multiple buyers and shared last names
     if (data.buyerNames) {
-      const buyers = data.buyerNames.split(' and ');
+      let buyerNames = data.buyerNames;
+      
+      // Check for shared last name pattern: "FirstName and FirstName LastName"
+      const sharedLastNamePattern = /^([A-Za-z]+)\s+and\s+([A-Za-z]+)\s+([A-Za-z]+)$/;
+      const match = buyerNames.match(sharedLastNamePattern);
+      
+      if (match) {
+        // Expand to "FirstName1 LastName and FirstName2 LastName"
+        buyerNames = `${match[1]} ${match[3]} and ${match[2]} ${match[3]}`;
+      }
+      
+      const buyers = buyerNames.split(' and ');
       if (buyers.length > 1) {
         buyers.forEach((buyer, index) => {
           lines.push(`Buyer ${index + 1}: ${buyer.trim()}`);
         });
       } else {
-        lines.push(`Buyer: ${data.buyerNames}`);
+        lines.push(`Buyer: ${buyerNames}`);
       }
     }
     
