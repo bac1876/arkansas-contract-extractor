@@ -280,7 +280,8 @@ export class OfferSheetProcessor {
             from.includes('<') ? from.match(/<(.+)>/)?.[1] || from : from,
             pdfPath,
             htmlContent,
-            textContent
+            textContent,
+            offerData.propertyAddress || undefined
           );
           
           if (sent) {

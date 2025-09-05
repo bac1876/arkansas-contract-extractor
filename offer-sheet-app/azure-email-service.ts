@@ -108,7 +108,8 @@ export class AzureEmailService {
     recipientEmail: string,
     contractPath: string,
     htmlContent: string,
-    textContent: string
+    textContent: string,
+    propertyAddress?: string
   ): Promise<boolean> {
     
     // Read the contract file
@@ -118,7 +119,7 @@ export class AzureEmailService {
     // Prepare the email
     const email: OfferSheetEmail = {
       to: recipientEmail,
-      subject: `Offer Summary - ${contractFilename.replace('.pdf', '')}`,
+      subject: propertyAddress ? `Offer ${propertyAddress}` : `Offer ${contractFilename.replace('.pdf', '')}`,
       htmlContent,
       textContent,
       attachments: [{
