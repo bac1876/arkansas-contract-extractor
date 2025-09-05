@@ -78,7 +78,18 @@ export class OfferSheetImageMagickExtractor extends ImageMagickExtractor {
                     'Survey Required - Paid by Seller') :
                 fullResult.data.survey_option === 'C' ? 'Other (see contract)' :
                 fullResult.data.survey_option || null,
-        propertyAddress: fullResult.data.property_address || null,
+        propertyAddress: (() => {
+          // Clean property address - remove anything after ZIP code
+          let cleanAddress = fullResult.data.property_address || null;
+          if (cleanAddress) {
+            // Match up to and including ZIP code (12345 or 12345-6789 format)
+            const zipMatch = cleanAddress.match(/^(.+?\d{5}(?:-\d{4})?)/);
+            if (zipMatch) {
+              cleanAddress = zipMatch[1].trim();
+            }
+          }
+          return cleanAddress;
+        })(),
         loanType: fullResult.data.loan_type || null,
         sellingAgentName: fullResult.data.selling_agent_name || null,
         sellingAgentPhone: fullResult.data.selling_agent_phone || null,
