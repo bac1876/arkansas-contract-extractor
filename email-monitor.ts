@@ -55,9 +55,11 @@ export class EmailMonitor {
   private dropbox?: DropboxIntegration;
   private processedFolder: string = 'processed_contracts';
   private isProcessing: boolean = false;
+  private processingStartTime: Date | null = null;
   private processedEmailsFile: string = 'processed_emails.json';
   private processedEmails: Set<string> = new Set();
   private checkInterval: NodeJS.Timer | null = null;
+  private watchdogInterval: NodeJS.Timer | null = null;
   private lastCheckTime: Date = new Date();
 
   constructor() {
@@ -260,6 +262,9 @@ export class EmailMonitor {
   }
 
   private startMonitoring() {
+    // Start watchdog timer to detect stuck processing
+    this.startWatchdog();
+    
     // Open inbox
     this.imap.openBox('INBOX', false, (err: Error, box: any) => {
       if (err) {
@@ -321,6 +326,7 @@ export class EmailMonitor {
     }
 
     this.isProcessing = true;
+    this.processingStartTime = new Date();
 
     // Search for emails from the last 24 hours to ensure we don't miss any
     const recentTime = new Date();
@@ -329,35 +335,48 @@ export class EmailMonitor {
     
     // Search for UNSEEN (unread) emails only - not historical
     this.imap.search([['UNSEEN']], async (err: Error, uids: number[]) => {
-      if (err) {
-        console.error('❌ Search error:', err);
+      try {
+        if (err) {
+          console.error('❌ Search error:', err);
+          this.isProcessing = false;
+          this.restartPolling();
+          return;
+        }
+
+        if (uids.length === 0) {
+          console.log('📭 No recent emails');
+          this.isProcessing = false;
+          this.restartPolling();
+          return;
+        }
+
+        console.log(`📨 Found ${uids.length} unread email(s)`);
+
+        // Process each unread email with timeout protection
+        for (const uid of uids) {
+          try {
+            // Add 5-minute timeout per email
+            await Promise.race([
+              this.processEmail(uid),
+              new Promise((_, reject) => 
+                setTimeout(() => reject(new Error(`Email ${uid} processing timeout`)), 5 * 60 * 1000)
+              )
+            ]);
+          } catch (emailError) {
+            console.error(`⚠️ Failed to process email ${uid}:`, emailError);
+            // Continue processing other emails even if one fails
+          }
+        }
+
+        console.log('✅ Processing complete, checking for new emails...');
+      } catch (error) {
+        console.error('❌ Unexpected error in email processing:', error);
+      } finally {
+        // ALWAYS reset the processing flag and restart polling
         this.isProcessing = false;
+        this.processingStartTime = null;
         this.restartPolling();
-        return;
       }
-
-      if (uids.length === 0) {
-        console.log('📭 No recent emails');
-        this.isProcessing = false;
-        this.restartPolling();
-        return;
-      }
-
-      console.log(`📨 Found ${uids.length} unread email(s)`);
-
-      // Process each unread email
-      for (const uid of uids) {
-        await this.processEmail(uid);
-      }
-
-      this.isProcessing = false;
-      
-      // After processing, immediately check for new emails
-      console.log('✅ Processing complete, checking for new emails...');
-      this.checkRecentEmails();
-      
-      // Restart polling interval
-      this.restartPolling();
     });
   }
   
@@ -369,6 +388,29 @@ export class EmailMonitor {
         this.checkRecentEmails();
       }, 30000);
     }
+  }
+
+  private startWatchdog() {
+    // Clear existing watchdog if any
+    if (this.watchdogInterval) {
+      clearInterval(this.watchdogInterval);
+    }
+
+    // Check every minute if processing is stuck
+    this.watchdogInterval = setInterval(() => {
+      if (this.isProcessing && this.processingStartTime) {
+        const processingDuration = Date.now() - this.processingStartTime.getTime();
+        const maxDuration = 10 * 60 * 1000; // 10 minutes max
+        
+        if (processingDuration > maxDuration) {
+          console.error(`⚠️ WATCHDOG: Processing stuck for ${Math.round(processingDuration / 60000)} minutes. Forcing reset...`);
+          this.isProcessing = false;
+          this.processingStartTime = null;
+          this.restartPolling();
+          console.log('✅ WATCHDOG: Reset complete, monitoring resumed');
+        }
+      }
+    }, 60000); // Check every minute
   }
 
   private async processEmail(uid: number): Promise<void> {
