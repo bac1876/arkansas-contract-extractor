@@ -496,7 +496,7 @@ export class EmailMonitor {
                     console.log(`   Extraction Rate: ${robustResult.extractionRate}%`);
                     console.log(`   Fields Extracted: ${robustResult.fieldsExtracted}/${robustResult.totalFields}`);
                     console.log(`   Property Address: ${robustResult.data?.property_address || 'EMPTY'}`);
-                    console.log(`   Purchase Price: ${robustResult.data?.purchase_price || 'EMPTY'}`);
+                    console.log(`   Purchase Price: ${robustResult.data?.purchase_price || robustResult.data?.cash_amount || 'EMPTY'}`);
                     
                     // Convert robust result to expected format
                     extractionResult = {
@@ -578,7 +578,8 @@ export class EmailMonitor {
                     
                     // Check for critical fields before generating net sheet
                     const propertyAddress = extractionResult.data?.property_address || '';
-                    const purchasePrice = extractionResult.data?.purchase_price || 0;
+                    // For cash offers, purchase_price is null and cash_amount has the value
+                    const purchasePrice = extractionResult.data?.purchase_price || extractionResult.data?.cash_amount || 0;
                     
                     if (!propertyAddress || purchasePrice === 0) {
                       console.log('⚠️  Skipping net sheet generation - missing critical data');
