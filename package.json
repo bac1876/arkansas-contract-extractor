@@ -1,6 +1,6 @@
 {
   "name": "arkansas-contract-agent",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Arkansas Real Estate Contract Extraction System",
   "main": "server.ts",
   "scripts": {

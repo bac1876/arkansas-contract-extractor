@@ -276,6 +276,6 @@ Railway Container
 
 ---
 
-**Current Version**: 2.0 - Combined Services
-**Last Updated**: December 2024
+**Current Version**: 1.2.0
+**Last Updated**: January 2025
 **Status**: Production Ready 🚀
