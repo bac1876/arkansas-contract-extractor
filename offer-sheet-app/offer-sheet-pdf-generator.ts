@@ -30,8 +30,8 @@ export class OfferSheetPDFGenerator {
       .replace(/\s+/g, '_')
       .trim();
     
-    const timestamp = Date.now();
-    const fileName = `offer_sheet_${cleanAddress}_${timestamp}.pdf`;
+    // Create filename: "Offer Sheet [address].pdf" without timestamp
+    const fileName = `Offer Sheet ${cleanAddress.replace(/_/g, ' ')}.pdf`;
     const filePath = path.join(this.outputDir, fileName);
     
     // Generate HTML content with enhanced styling for PDF

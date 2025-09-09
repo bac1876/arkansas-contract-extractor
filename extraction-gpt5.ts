@@ -260,6 +260,16 @@ export class GPT5Extractor {
       console.log(`   📊 ${fieldsWithData} fields have values, ${fieldsIdentified - fieldsWithData} fields correctly identified as empty`);
       console.log(`💭 Total reasoning tokens used: ${totalReasoningTokens}`);
       
+      // Clean property address - remove anything after ZIP code
+      if (extractedData.property_address) {
+        const zipMatch = extractedData.property_address.match(/^(.+?\d{5}(?:-\d{4})?)/);
+        if (zipMatch) {
+          const cleanedAddress = zipMatch[1].trim();
+          console.log(`🏠 Cleaned address: ${cleanedAddress} (was: ${extractedData.property_address})`);
+          extractedData.property_address = cleanedAddress;
+        }
+      }
+      
       // Validate extraction results
       const filename = path.basename(pdfPath);
       const validationReport = ExtractionValidator.generateReport(filename, extractedData);
