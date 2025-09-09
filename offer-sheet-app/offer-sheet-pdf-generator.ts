@@ -184,10 +184,10 @@ export class OfferSheetPDFGenerator {
           .header {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-            padding: 40px;
+            padding: 25px;
             text-align: center;
             border-radius: 10px;
-            margin-bottom: 30px;
+            margin-bottom: 20px;
           }
           
           .header h1 {
@@ -202,15 +202,9 @@ export class OfferSheetPDFGenerator {
             margin-top: 10px;
           }
           
-          .header .date {
-            font-size: 14px;
-            margin-top: 15px;
-            opacity: 0.9;
-          }
-          
           .content {
             background: #ffffff;
-            padding: 35px;
+            padding: 25px;
             border: 1px solid #e0e0e0;
             border-radius: 8px;
           }
@@ -227,7 +221,7 @@ export class OfferSheetPDFGenerator {
           .field {
             display: flex;
             justify-content: space-between;
-            padding: 14px 0;
+            padding: 10px 0;
             border-bottom: 1px solid #f0f0f0;
           }
           
@@ -246,21 +240,6 @@ export class OfferSheetPDFGenerator {
             font-weight: 400;
             flex: 0 0 60%;
             text-align: right;
-          }
-          
-          .footer {
-            margin-top: 40px;
-            padding-top: 20px;
-            border-top: 2px solid #e0e0e0;
-            text-align: center;
-            color: #999;
-            font-size: 12px;
-          }
-          
-          .footer .company {
-            font-weight: 600;
-            color: #667eea;
-            margin-bottom: 5px;
           }
           
           @media print {
@@ -282,22 +261,11 @@ export class OfferSheetPDFGenerator {
         <div class="header">
           <h1>OFFER SUMMARY</h1>
           <div class="property-address">${data.propertyAddress || 'Property Address Not Available'}</div>
-          <div class="date">Generated: ${new Date().toLocaleDateString('en-US', { 
-            year: 'numeric', 
-            month: 'long', 
-            day: 'numeric' 
-          })}</div>
         </div>
         
         <div class="content">
           <div class="section-title">Contract Details</div>
           ${sections.join('')}
-        </div>
-        
-        <div class="footer">
-          <div class="company">Arkansas Contract Agent</div>
-          <div>This document is a summary of the offer details extracted from the contract.</div>
-          <div>Please review the original contract for complete terms and conditions.</div>
         </div>
       </body>
       </html>
