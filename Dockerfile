@@ -54,7 +54,8 @@ RUN mkdir -p processed_contracts/pdfs \
     net_sheets_pdf \
     net_sheets_csv \
     agent_info_sheets \
-    gpt5_temp
+    gpt5_temp \
+    offer-sheet-app/generated-pdfs
 
 # Set environment variable for production
 ENV NODE_ENV=production
@@ -62,5 +63,5 @@ ENV NODE_ENV=production
 # Expose port for health checks
 EXPOSE 3000
 
-# Use the start script that includes health check
-CMD ["node", "start.js"]
+# Use the combined start script to run both services
+CMD ["node", "start-combined.js"]

@@ -10,6 +10,7 @@ import * as path from 'path';
 import { OfferSheetImageMagickExtractor } from './offer-sheet-imagemagick-extractor';
 import { SimpleFormatter } from './simple-formatter';
 import { AzureEmailService } from './azure-email-service';
+import { OfferSheetPDFGenerator } from './offer-sheet-pdf-generator';
 import { loadEmailConfig } from './config/email-config';
 import * as dotenv from 'dotenv';
 
@@ -28,6 +29,7 @@ export class OfferSheetProcessor {
   private extractor: OfferSheetImageMagickExtractor;
   private formatter: SimpleFormatter;
   private emailService: AzureEmailService;
+  private pdfGenerator: OfferSheetPDFGenerator;
   private config = loadEmailConfig();
   private processedEmails: Set<number> = new Set();
   private isProcessing: boolean = false;
@@ -36,6 +38,7 @@ export class OfferSheetProcessor {
     this.extractor = new OfferSheetImageMagickExtractor();
     this.formatter = new SimpleFormatter();
     this.emailService = new AzureEmailService();
+    this.pdfGenerator = new OfferSheetPDFGenerator();
     
     this.setupDirectories();
     this.loadProcessedEmails();
@@ -274,6 +277,17 @@ export class OfferSheetProcessor {
           const htmlContent = this.formatter.formatOfferSheet(offerData);
           const textContent = this.formatter.formatPlainText(offerData);
           
+          // Generate offer sheet PDF
+          console.log('📄 Generating offer sheet PDF...');
+          let offerSheetPdfPath: string | undefined;
+          try {
+            offerSheetPdfPath = await this.pdfGenerator.generateOfferSheetPDF(offerData);
+            console.log('✅ Offer sheet PDF generated:', offerSheetPdfPath);
+          } catch (error) {
+            console.error('⚠️  Failed to generate offer sheet PDF:', error);
+            // Continue without PDF if generation fails
+          }
+          
           // Send response
           console.log('📤 Sending formatted offer sheet...');
           const sent = await this.emailService.sendContractOfferSheet(
@@ -281,7 +295,8 @@ export class OfferSheetProcessor {
             pdfPath,
             htmlContent,
             textContent,
-            offerData.propertyAddress || undefined
+            offerData.propertyAddress || undefined,
+            offerSheetPdfPath
           );
           
           if (sent) {

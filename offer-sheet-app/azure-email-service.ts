@@ -109,12 +109,31 @@ export class AzureEmailService {
     contractPath: string,
     htmlContent: string,
     textContent: string,
-    propertyAddress?: string
+    propertyAddress?: string,
+    offerSheetPdfPath?: string
   ): Promise<boolean> {
     
     // Read the contract file
     const contractBuffer = await fs.promises.readFile(contractPath);
     const contractFilename = path.basename(contractPath);
+    
+    // Prepare attachments array
+    const attachments: EmailAttachment[] = [{
+      filename: contractFilename,
+      content: contractBuffer,
+      contentType: 'application/pdf'
+    }];
+    
+    // Add offer sheet PDF if provided
+    if (offerSheetPdfPath) {
+      const offerSheetBuffer = await fs.promises.readFile(offerSheetPdfPath);
+      const offerSheetFilename = path.basename(offerSheetPdfPath);
+      attachments.push({
+        filename: offerSheetFilename,
+        content: offerSheetBuffer,
+        contentType: 'application/pdf'
+      });
+    }
     
     // Prepare the email
     const email: OfferSheetEmail = {
@@ -122,11 +141,7 @@ export class AzureEmailService {
       subject: propertyAddress ? `Offer ${propertyAddress}` : `Offer ${contractFilename.replace('.pdf', '')}`,
       htmlContent,
       textContent,
-      attachments: [{
-        filename: contractFilename,
-        content: contractBuffer,
-        contentType: 'application/pdf'
-      }]
+      attachments
     };
     
     return await this.sendOfferSheet(email);
