@@ -22,8 +22,11 @@ export class OfferSheetFormatter {
       sections.push(this.formatField('Purchase Price', this.formatCurrency(data.purchasePrice)));
     }
     
+    // Seller Concessions - always show, N/A if null or 0
     if (data.sellerConcessions && data.sellerConcessions > 0) {
       sections.push(this.formatField('Seller Concessions', this.formatCurrency(data.sellerConcessions)));
+    } else {
+      sections.push(this.formatField('Seller Concessions', 'N/A'));
     }
     
     if (data.closeDate) {
@@ -35,11 +38,17 @@ export class OfferSheetFormatter {
       sections.push(this.formatField('Contingency', data.contingency));
     }
     
-    // Earnest Money - Yes/No
-    sections.push(this.formatField('Earnest Money', data.earnestMoney ? 'Yes' : 'No'));
+    // Earnest Money - always show, N/A if null
+    if (data.earnestMoney === null || data.earnestMoney === undefined) {
+      sections.push(this.formatField('Earnest Money', 'N/A'));
+    } else {
+      sections.push(this.formatField('Earnest Money', data.earnestMoney ? 'Yes' : 'No'));
+    }
     
-    // Non-Refundable Deposit
-    if (data.nonRefundableDeposit.exists) {
+    // Non-Refundable Deposit - always show, N/A if null
+    if (data.nonRefundableDeposit === null || data.nonRefundableDeposit === undefined) {
+      sections.push(this.formatField('Non-Refundable Deposit', 'N/A'));
+    } else if (data.nonRefundableDeposit.exists) {
       const nrdText = data.nonRefundableDeposit.amount 
         ? `Yes - ${this.formatCurrency(data.nonRefundableDeposit.amount)}`
         : 'Yes';
@@ -53,12 +62,16 @@ export class OfferSheetFormatter {
       sections.push(this.formatField('Items to Convey', data.itemsToConvey));
     }
     
-    // Home Warranty - only if included
-    if (data.homeWarranty.included) {
+    // Home Warranty - always show, N/A if null
+    if (data.homeWarranty === null || data.homeWarranty === undefined) {
+      sections.push(this.formatField('Home Warranty', 'N/A'));
+    } else if (data.homeWarranty.included) {
       const warrantyText = data.homeWarranty.amount 
         ? `Yes - ${this.formatCurrency(data.homeWarranty.amount)}`
         : 'Yes';
       sections.push(this.formatField('Home Warranty', warrantyText));
+    } else {
+      sections.push(this.formatField('Home Warranty', 'No'));
     }
     
     // Survey - only if required
@@ -180,10 +193,13 @@ export class OfferSheetFormatter {
       lines.push('');
     }
     
+    // Seller Concessions - always show, N/A if null or 0
     if (data.sellerConcessions && data.sellerConcessions > 0) {
       lines.push(`Seller Concessions: ${this.formatCurrency(data.sellerConcessions)}`);
-      lines.push('');
+    } else {
+      lines.push('Seller Concessions: N/A');
     }
+    lines.push('');
     
     if (data.closeDate) {
       lines.push(`Close Date: ${data.closeDate}`);
@@ -195,32 +211,44 @@ export class OfferSheetFormatter {
       lines.push('');
     }
     
-    lines.push(`Earnest Money: ${data.earnestMoney ? 'Yes' : 'No'}`);
+    // Earnest Money - always show, N/A if null
+    if (data.earnestMoney === null || data.earnestMoney === undefined) {
+      lines.push('Earnest Money: N/A');
+    } else {
+      lines.push(`Earnest Money: ${data.earnestMoney ? 'Yes' : 'No'}`);
+    }
     lines.push('');
     
-    if (data.nonRefundableDeposit.exists) {
+    // Non-Refundable Deposit - always show, N/A if null
+    if (data.nonRefundableDeposit === null || data.nonRefundableDeposit === undefined) {
+      lines.push('Non-Refundable Deposit: N/A');
+    } else if (data.nonRefundableDeposit.exists) {
       const nrdText = data.nonRefundableDeposit.amount 
         ? `Yes - ${this.formatCurrency(data.nonRefundableDeposit.amount)}`
         : 'Yes';
       lines.push(`Non-Refundable Deposit: ${nrdText}`);
-      lines.push('');
     } else {
       lines.push('Non-Refundable Deposit: No');
-      lines.push('');
     }
+    lines.push('');
     
     if (data.itemsToConvey) {
       lines.push(`Items to Convey: ${data.itemsToConvey}`);
       lines.push('');
     }
     
-    if (data.homeWarranty.included) {
+    // Home Warranty - always show, N/A if null
+    if (data.homeWarranty === null || data.homeWarranty === undefined) {
+      lines.push('Home Warranty: N/A');
+    } else if (data.homeWarranty.included) {
       const warrantyText = data.homeWarranty.amount 
         ? `Yes - ${this.formatCurrency(data.homeWarranty.amount)}`
         : 'Yes';
       lines.push(`Home Warranty: ${warrantyText}`);
-      lines.push('');
+    } else {
+      lines.push('Home Warranty: No');
     }
+    lines.push('');
     
     if (data.survey.required) {
       const surveyText = data.survey.details || 'Yes';
