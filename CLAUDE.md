@@ -82,3 +82,4 @@ node -r ts-node/register convert-contract2-to-images.ts
   - Added prefix matching so sheet entries like "890 Clark" match longer addresses from PDFs
   - Now handles all variations: full addresses, partial addresses, different cases
 - **Result**: Tax data ($4702) now correctly pulled for "890 Clark" property regardless of address format
+- do not use locally unless we are testing

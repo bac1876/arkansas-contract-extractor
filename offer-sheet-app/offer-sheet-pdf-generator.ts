@@ -134,7 +134,7 @@ export class OfferSheetPDFGenerator {
       sections.push(this.formatField('Home Warranty', data.homeWarranty));
     }
     
-    if (data.survey) {
+    if (data.survey && data.survey.trim() && data.survey.toLowerCase() !== 'text') {
       sections.push(this.formatField('Survey', data.survey));
     }
     
