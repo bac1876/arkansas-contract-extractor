@@ -877,10 +877,20 @@ export class EmailMonitor {
               console.log(`  Subject: ${parsed.subject || 'unknown'}`);
               console.log(`  Has text body: ${!!parsed.text}`);
               console.log(`  Has HTML body: ${!!parsed.html}`);
+
+              // IMPORTANT: Mark emails without attachments as read so they don't get reprocessed
+              console.log('✅ Marking non-contract email as read...');
+              this.imap.addFlags(emailUid, '\\Seen', (err: Error) => {
+                if (err) {
+                  console.error('⚠️  Could not mark email as read:', err);
+                } else {
+                  console.log('✅ Email marked as read (no attachments)');
+                }
+              });
             }
 
             console.log('='.repeat(60) + '\n');
-            
+
             // Only mark as processed if extraction was successful
             const hasSuccessfulExtraction = results.extractionResults.some(r => r.success);
             
