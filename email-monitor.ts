@@ -880,12 +880,15 @@ export class EmailMonitor {
 
               // IMPORTANT: Mark emails without attachments as read so they don't get reprocessed
               console.log('✅ Marking non-contract email as read...');
-              this.imap.addFlags(emailUid, '\\Seen', (err: Error) => {
-                if (err) {
-                  console.error('⚠️  Could not mark email as read:', err);
-                } else {
-                  console.log('✅ Email marked as read (no attachments)');
-                }
+              await new Promise<void>((resolve) => {
+                this.imap.addFlags(emailUid, '\\Seen', (err: Error) => {
+                  if (err) {
+                    console.error('⚠️  Could not mark email as read:', err);
+                  } else {
+                    console.log('✅ Email marked as read (no attachments)');
+                  }
+                  resolve(); // Always resolve to continue processing
+                });
               });
             }
 
@@ -901,12 +904,15 @@ export class EmailMonitor {
               console.log(`✅ Marking email as read and adding "Processed Contracts" label...`);
               
               // First mark as read
-              this.imap.addFlags(emailUid, '\\Seen', (err: Error) => {
-                if (err) {
-                  console.error('⚠️  Could not mark email as read:', err);
-                } else {
-                  console.log('✅ Email marked as read');
-                }
+              await new Promise<void>((resolve) => {
+                this.imap.addFlags(emailUid, '\\Seen', (err: Error) => {
+                  if (err) {
+                    console.error('⚠️  Could not mark email as read:', err);
+                  } else {
+                    console.log('✅ Email marked as read');
+                  }
+                  resolve(); // Always resolve to continue processing
+                });
               });
               
               // Gmail label adding would require additional configuration
