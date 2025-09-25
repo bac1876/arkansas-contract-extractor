@@ -45,8 +45,23 @@ export class GoogleDriveIntegration {
       
       console.log('✅ Google Drive API initialized');
       
-      // Check if using Shared Drive
-      if (process.env.GOOGLE_SHARED_DRIVE_ID) {
+      // Check if using Shared Drive or regular folder
+      if (process.env.GOOGLE_DRIVE_FOLDER_ID) {
+        // New configuration - regular Google Drive folder
+        this.sharedFolderId = process.env.GOOGLE_DRIVE_FOLDER_ID;
+        this.netSheetsFolderId = this.sharedFolderId;
+        console.log('📁 Using Google Drive folder: Arkansas Contract Data');
+        // Test access to the folder
+        try {
+          const folder = await this.drive.files.get({
+            fileId: this.sharedFolderId,
+            fields: 'id, name'
+          });
+          console.log(`✅ Connected to folder: ${folder.data.name}`);
+        } catch (error: any) {
+          console.error('❌ Could not access folder:', error.message);
+        }
+      } else if (process.env.GOOGLE_SHARED_DRIVE_ID) {
         this.sharedDriveId = process.env.GOOGLE_SHARED_DRIVE_ID;
         console.log('📁 Using Shared Drive: Arkansas Contract Data');
         // Test access to Shared Drive
