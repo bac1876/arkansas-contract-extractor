@@ -239,9 +239,11 @@ export class GoogleSheetsIntegration {
       // Convert column index to column letter(s) - handles AA, AB, etc.
       const getColumnLetter = (index: number): string => {
         let letter = '';
-        while (index >= 0) {
-          letter = String.fromCharCode((index % 26) + 65) + letter;
-          index = Math.floor(index / 26) - 1;
+        let num = index;
+        while (num >= 0) {
+          letter = String.fromCharCode((num % 26) + 65) + letter;
+          num = Math.floor(num / 26) - 1;
+          if (num < 0) break;
         }
         return letter;
       };
