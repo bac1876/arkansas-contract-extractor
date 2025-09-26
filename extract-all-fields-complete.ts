@@ -235,9 +235,10 @@ Return JSON:
             text: `Extract ALL information from paragraphs 5-8:
 
 PARAGRAPH 5 - LOAN AND CLOSING COSTS:
-- Any dollar amounts in blanks
-- Any custom text about seller paying costs
-- Complete text from all filled blanks
+- Any dollar amounts in blanks (e.g., "$5,000")
+- Any percentages mentioned (e.g., "3%" or "3 percent")
+- Look for phrases like "up to X% of purchase price" or "X% of sales price"
+- Complete text from all filled blanks including percentage expressions
 
 PARAGRAPH 6 - APPRAISAL:
 - Which option is checked (A or B)?
@@ -620,6 +621,18 @@ Return: {"contract_date": "date", "closing_date": "date"}` },
       ...otherPagesData
     };
 
+    // Calculate seller concessions if it's a percentage
+    const purchasePrice = parseFloat(String(completeData.purchase_price || '0').replace(/[$,]/g, ''));
+    if (completeData.para5_custom_text || completeData.seller_concessions) {
+      const textToCheck = completeData.para5_custom_text || completeData.seller_concessions || '';
+      const calculatedAmount = calculateSellerConcessions(textToCheck, purchasePrice);
+
+      if (calculatedAmount !== null) {
+        completeData.seller_concessions_calculated = calculatedAmount;
+        console.log(`💰 Calculated seller concessions: $${calculatedAmount.toLocaleString()} from "${textToCheck}"`);
+      }
+    }
+
     console.log('\n✅ Extraction Complete\n');
     return completeData;
   }
@@ -707,6 +720,35 @@ Return: {"contract_date": "date", "closing_date": "date"}` },
     const filledCount = row.filter(v => v !== '').length;
     console.log(`📊 Extracted ${filledCount} out of ${fieldMappings.length} fields (${Math.round(filledCount/fieldMappings.length*100)}%)`);
   }
+}
+
+// Helper function to calculate seller concessions from text
+function calculateSellerConcessions(para5_text: string, purchase_price: number): number | null {
+  if (!para5_text) return null;
+
+  // Check for percentage pattern: "3%", "up to 3%", "3 percent", etc.
+  const percentPatterns = [
+    /(\d+\.?\d*)\s*%\s*(of\s+)?(the\s+)?(purchase\s+price|sales\s+price|contract\s+price)/i,
+    /up\s+to\s+(\d+\.?\d*)\s*%/i,
+    /(\d+\.?\d*)\s*percent/i
+  ];
+
+  for (const pattern of percentPatterns) {
+    const match = para5_text.match(pattern);
+    if (match) {
+      const percent = parseFloat(match[1]) / 100;
+      return Math.round(purchase_price * percent); // Round to nearest dollar
+    }
+  }
+
+  // Otherwise try to extract dollar amount
+  const dollarPattern = /\$\s*([\d,]+)/;
+  const dollarMatch = para5_text.match(dollarPattern);
+  if (dollarMatch) {
+    return parseFloat(dollarMatch[1].replace(/,/g, ''));
+  }
+
+  return null;
 }
 
 // Main execution

@@ -388,11 +388,28 @@ Return as JSON:
       // Handle both purchase_price (financed) and cash_amount (cash)
       purchasePrice: data.purchase_price || data.cash_amount || null,
       
-      // Parse seller concessions
-      sellerConcessions: data.seller_concessions ? 
-        (typeof data.seller_concessions === 'string' ? 
-          parseInt(data.seller_concessions.replace(/[^0-9]/g, '')) || null : 
-          data.seller_concessions) : null,
+      // Parse seller concessions (handle percentage-based concessions)
+      sellerConcessions: (() => {
+        // Check if we have a calculated value from percentage
+        if (data.seller_concessions_calculated) {
+          return data.seller_concessions_calculated;
+        }
+
+        // Check for percentage in the text
+        const concessionText = data.seller_concessions || data.para5_custom_text || '';
+        if (concessionText && typeof concessionText === 'string') {
+          const percentMatch = concessionText.match(/(\d+\.?\d*)\s*%/);
+          if (percentMatch && purchasePrice) {
+            const percent = parseFloat(percentMatch[1]) / 100;
+            return Math.round(purchasePrice * percent);
+          }
+          // Otherwise try to extract dollar amount
+          const amount = parseInt(concessionText.replace(/[^0-9]/g, ''));
+          return amount || null;
+        }
+
+        return data.seller_concessions || null;
+      })(),
       
       // Earnest money
       earnestMoney: data.earnest_money === 'YES',

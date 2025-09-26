@@ -613,8 +613,9 @@ export class EmailMonitor {
                       const netSheetInput = {
                         purchase_price: data?.purchase_price || 0,
                         cash_amount: data?.cash_amount || 0,
-                        seller_concessions: data?.seller_pays_buyer_costs || 
-                                          data?.para5_custom_text || 
+                        seller_concessions: data?.seller_concessions_calculated ||  // Use calculated value first
+                                          data?.seller_pays_buyer_costs ||
+                                          data?.para5_custom_text ||
                                           data?.seller_concessions ||
                                           data?.paragraph_5?.seller_specific_payment_text ||
                                           data?.paragraph_5?.seller_specific_payment_amount?.toString(),
