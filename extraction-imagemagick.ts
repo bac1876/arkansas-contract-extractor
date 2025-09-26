@@ -308,13 +308,26 @@ export class ImageMagickExtractor {
       
       console.log(`✅ Extraction complete: ${fieldsExtracted}/${totalFields} fields (${extractionRate}%)`);
       
+      // Calculate seller concessions if it's a percentage
+      const purchasePrice = parseFloat(String(extractedData.purchase_price || extractedData.cash_amount || '0').replace(/[$,]/g, ''));
+      if (extractedData.para5_custom_text || extractedData.seller_concessions) {
+        const textToCheck = extractedData.para5_custom_text || extractedData.seller_concessions || '';
+        const calculatedAmount = this.calculateSellerConcessions(textToCheck, purchasePrice);
+
+        if (calculatedAmount !== null) {
+          extractedData.seller_concessions_calculated = calculatedAmount;
+          console.log(`💰 Calculated seller concessions: $${calculatedAmount.toLocaleString()} from "${textToCheck}"`);
+        }
+      }
+
       // Log key fields to verify extraction
       console.log('🔑 Key Fields Extracted:');
       console.log('  - Buyers:', extractedData.buyers || 'NOT FOUND');
       console.log('  - Property:', extractedData.property_address || 'NOT FOUND');
       console.log('  - Purchase Type:', extractedData.purchase_type || 'NOT FOUND');
       console.log('  - Amount:', extractedData.cash_amount || extractedData.purchase_price || 'NOT FOUND');
-      
+      console.log('  - Seller Concessions:', extractedData.seller_concessions_calculated || extractedData.seller_concessions || 'NOT FOUND');
+
       return {
         success: true,
         data: extractedData as ContractExtractionResult,
@@ -339,6 +352,37 @@ export class ImageMagickExtractor {
   }
 
   // GPT-4 Vision API extraction methods - same as before but with real images!
+  /**
+   * Calculate seller concessions from text (handles percentages and dollar amounts)
+   */
+  private calculateSellerConcessions(text: string, purchasePrice: number): number | null {
+    if (!text || !purchasePrice) return null;
+
+    // Check for percentage patterns
+    const percentPatterns = [
+      /(\d+\.?\d*)\s*%\s*(of\s+)?(the\s+)?(purchase\s+price|sales\s+price|contract\s+price)/i,
+      /up\s+to\s+(\d+\.?\d*)\s*%/i,
+      /(\d+\.?\d*)\s*percent/i
+    ];
+
+    for (const pattern of percentPatterns) {
+      const match = text.match(pattern);
+      if (match) {
+        const percent = parseFloat(match[1]) / 100;
+        return Math.round(purchasePrice * percent);
+      }
+    }
+
+    // Extract dollar amount if no percentage found
+    const dollarPattern = /\$\s*([\d,]+)/;
+    const dollarMatch = text.match(dollarPattern);
+    if (dollarMatch) {
+      return parseFloat(dollarMatch[1].replace(/,/g, ''));
+    }
+
+    return null;
+  }
+
   private async extractPage1(imagePath: string): Promise<Partial<ContractExtractionResult>> {
     const img = await fs.readFile(imagePath);
     
@@ -471,9 +515,12 @@ Return JSON:
             text: `Extract ALL information from paragraphs 5-8:
 
 PARAGRAPH 5 - LOAN AND CLOSING COSTS:
-- Any dollar amounts in blanks
-- Any custom text about seller paying costs
-- Complete text from all filled blanks
+CRITICAL: Extract the COMPLETE text from ALL blanks in paragraph 5
+- Look for: "Seller to pay up to _____"
+- The blank may contain: "$5,000" OR "3% of the purchase price" OR similar
+- Extract EXACTLY what is written, including percentages (3%, 2.5%, etc.)
+- Include the full phrase if it says "X% of purchase price" or "X% of sales price"
+- Return the COMPLETE text, not just numbers
 
 PARAGRAPH 6 - APPRAISAL:
 - Which option is checked (A or B)?
@@ -494,9 +541,9 @@ PARAGRAPH 8 - NON-REFUNDABLE DEPOSIT:
 
 Return JSON:
 {
-  "para5_amounts": ["all amounts found"],
-  "para5_custom_text": "complete custom text",
-  "seller_concessions": "seller pays text if any",
+  "para5_amounts": ["all amounts found including '3%' or '$5000'"],
+  "para5_custom_text": "EXACT complete text from the blank including percentage if present",
+  "seller_concessions": "EXACT text: could be '$5000' OR '3% of purchase price' etc",
   "appraisal_option": "A" or "B",
   "appraisal_details": "what the option means",
   "earnest_money": "YES" or "NO",
