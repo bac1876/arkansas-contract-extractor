@@ -57,8 +57,43 @@ export class OfferSheetImageMagickExtractor extends ImageMagickExtractor {
         buyerNames: fullResult.data.buyers?.join(' and ') || null,
         purchasePrice: fullResult.data.purchase_price || fullResult.data.cash_amount || null,
         closeDate: fullResult.data.closing_date || null,
-        sellerConcessions: fullResult.data.seller_concessions ? 
-          parseFloat(fullResult.data.seller_concessions.replace(/[^0-9.]/g, '')) : null,
+        sellerConcessions: (() => {
+          // First check if we already have a calculated value
+          if (fullResult.data.seller_concessions_calculated) {
+            return fullResult.data.seller_concessions_calculated;
+          }
+
+          // Get the concession text
+          const concessionText = fullResult.data.seller_concessions ||
+                                 fullResult.data.para5_custom_text || '';
+
+          if (!concessionText) return null;
+
+          // Check if it contains a percentage sign - our trigger!
+          if (concessionText.includes('%')) {
+            // Extract the percentage number
+            const percentMatch = concessionText.match(/(\d+\.?\d*)\s*%/);
+            if (percentMatch) {
+              const percent = parseFloat(percentMatch[1]) / 100;
+              const purchasePrice = fullResult.data.purchase_price ||
+                                    fullResult.data.cash_amount || 0;
+              return Math.round(purchasePrice * percent);
+            }
+          }
+
+          // Otherwise try to parse as dollar amount
+          const dollarMatch = concessionText.match(/\$\s*([\d,]+)/);
+          if (dollarMatch) {
+            return parseFloat(dollarMatch[1].replace(/,/g, ''));
+          }
+
+          // Last resort: try to parse as plain number
+          if (typeof fullResult.data.seller_concessions === 'number') {
+            return fullResult.data.seller_concessions;
+          }
+
+          return null;
+        })(),
         earnestMoney: fullResult.data.earnest_money === 'YES' ? 'Yes - See Addendum' : 'No',
         nonRefundableDeposit: fullResult.data.non_refundable === 'YES' ?
           `Yes - $${fullResult.data.non_refundable_amount ? fullResult.data.non_refundable_amount.toLocaleString() : 'Amount not specified'}` : 'No',
