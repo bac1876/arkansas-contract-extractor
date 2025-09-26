@@ -270,13 +270,38 @@ export class GPT5Extractor {
         }
       }
       
+      // Calculate seller concessions if it's a percentage
+      const purchasePrice = parseFloat(String(extractedData.purchase_price || extractedData.cash_amount || '0').replace(/[$,]/g, ''));
+      const concessionText = extractedData.seller_pays_buyer_costs || extractedData.para5_custom_text || '';
+
+      if (concessionText && typeof concessionText === 'string') {
+        // Check if it contains a percentage sign - our trigger!
+        if (concessionText.includes('%')) {
+          const percentMatch = concessionText.match(/(\d+\.?\d*)\s*%/);
+          if (percentMatch) {
+            const percent = parseFloat(percentMatch[1]) / 100;
+            extractedData.seller_concessions_calculated = Math.round(purchasePrice * percent);
+            console.log(`💰 Calculated seller concessions: $${extractedData.seller_concessions_calculated.toLocaleString()} from "${concessionText}"`);
+          }
+        } else {
+          // Try to parse as dollar amount
+          const dollarMatch = concessionText.match(/\$\s*([\d,]+)/);
+          if (dollarMatch) {
+            extractedData.seller_concessions_calculated = parseFloat(dollarMatch[1].replace(/,/g, ''));
+          } else if (/^\d+(\.\d+)?$/.test(String(concessionText).trim())) {
+            // If it's just a number, use it directly
+            extractedData.seller_concessions_calculated = parseFloat(concessionText);
+          }
+        }
+      }
+
       // Validate extraction results
       const filename = path.basename(pdfPath);
       const validationReport = ExtractionValidator.generateReport(filename, extractedData);
       console.log(validationReport);
-      
+
       const validation = ExtractionValidator.validateExtraction(filename, extractedData);
-      
+
       return {
         success: true,
         data: extractedData,
@@ -460,10 +485,12 @@ Return valid JSON with ACTUAL filled-in values:
         return `Extract ALL information from paragraphs 5-8:
 
 PARAGRAPH 5 - LOAN AND CLOSING COSTS:
-   CRITICAL: Find the FILLED-IN values in the blanks, not the pre-printed text!
-   - Look for typed amounts like "$10k", "$10,000", "10000" filled in the blank spaces
-   - Common location: "Seller to pay up to $____" <- find what's in this blank
-   - Extract ONLY the amount (e.g., "10000" or "10k")
+   CRITICAL: Find the COMPLETE text in the blanks, including percentages!
+   - Look for: "Seller to pay up to _____" <- extract EXACTLY what's in this blank
+   - The blank may contain: "$10,000" OR "3% of the purchase price" OR similar
+   - Extract the COMPLETE text, including "%" if present
+   - Examples: "10000", "$10k", "3%", "3% of purchase price", etc.
+   - DO NOT strip out percentage signs or text
 
 PARAGRAPH 7 - EARNEST MONEY:
    - Which box is checked: A (earnest money) or B (no earnest money)?
@@ -475,7 +502,7 @@ PARAGRAPH 8 - NON-REFUNDABLE:
 
 Return JSON with ACTUAL FILLED-IN values:
 {
-  "seller_pays_buyer_costs": numeric amount or string like "10000" or "10k",
+  "seller_pays_buyer_costs": "EXACT text from blank including % if present",
   "earnest_money": "A" or "B",
   "non_refundable": "YES" or "NO",
   "non_refundable_amount": numeric amount if YES, null otherwise
