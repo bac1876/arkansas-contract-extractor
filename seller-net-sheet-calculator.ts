@@ -104,19 +104,34 @@ export class SellerNetSheetCalculator {
     return option === 'A' ? rate.lenderPolicy : rate.ownerPolicy;
   }
   
-  private extractSellerConcessions(para5Text?: string | number): number {
+  private extractSellerConcessions(para5Text?: string | number, purchasePrice?: number): number {
     if (!para5Text) return 0;
-    
+
     // If it's already a number, return it directly
     if (typeof para5Text === 'number') {
       return para5Text;
     }
-    
+
     // If it's just a number string like "5000", parse it directly
     if (/^\d+(\.\d+)?$/.test(para5Text.trim())) {
       return parseFloat(para5Text);
     }
-    
+
+    // Check for percentage patterns FIRST (before looking for dollar amounts)
+    const percentPatterns = [
+      /(\d+\.?\d*)\s*%\s*(of\s+)?(the\s+)?(purchase\s+price|sales\s+price|contract\s+price)/i,
+      /up\s+to\s+(\d+\.?\d*)\s*%/i,
+      /(\d+\.?\d*)\s*percent/i
+    ];
+
+    for (const pattern of percentPatterns) {
+      const match = para5Text.match(pattern);
+      if (match && purchasePrice) {
+        const percent = parseFloat(match[1]) / 100;
+        return Math.round(purchasePrice * percent);
+      }
+    }
+
     // Look for dollar amounts in the text
     const matches = para5Text.match(/\$([0-9,]+(?:\.\d{2})?)/g);
     if (matches && matches.length > 0) {
@@ -124,8 +139,8 @@ export class SellerNetSheetCalculator {
       for (const match of matches) {
         const amount = parseFloat(match.replace(/[$,]/g, ''));
         // Check for common phrases indicating seller concessions
-        if (para5Text.toLowerCase().includes('buyer') && 
-            (para5Text.toLowerCase().includes('closing cost') || 
+        if (para5Text.toLowerCase().includes('buyer') &&
+            (para5Text.toLowerCase().includes('closing cost') ||
              para5Text.toLowerCase().includes('concession') ||
              para5Text.toLowerCase().includes('prepaid'))) {
           return amount;
@@ -134,7 +149,7 @@ export class SellerNetSheetCalculator {
       // If no specific buyer mention, return the first amount found
       return parseFloat(matches[0].replace(/[$,]/g, ''));
     }
-    
+
     return 0;
   }
   
@@ -199,7 +214,7 @@ export class SellerNetSheetCalculator {
     // Extract values from contract data
     // Use purchase_price for financed deals (3A) or cash_amount for cash deals (3C)
     const salesPrice = input.purchase_price || input.cash_amount || 0;
-    const sellerConcessions = this.extractSellerConcessions(input.seller_concessions);
+    const sellerConcessions = this.extractSellerConcessions(input.seller_concessions, salesPrice);
     
     // Calculate prorated taxes
     const taxCalc = this.calculateProratedTaxes(

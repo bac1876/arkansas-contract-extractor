@@ -30,7 +30,7 @@ async function generateSellerNetSheet(contractResultPath: string, annualTaxes?: 
     // Prepare input for calculator
     const input = {
       purchase_price: data.purchase_price || data.cash_amount || 0,
-      seller_concessions: data.para5_custom_text || data.seller_concessions,
+      seller_concessions: data.seller_concessions_calculated || data.para5_custom_text || data.seller_concessions,
       closing_date: data.closing_date,
       home_warranty: data.home_warranty,
       warranty_amount: data.warranty_amount,
