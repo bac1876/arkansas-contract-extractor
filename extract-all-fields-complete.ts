@@ -235,10 +235,12 @@ Return JSON:
             text: `Extract ALL information from paragraphs 5-8:
 
 PARAGRAPH 5 - LOAN AND CLOSING COSTS:
-- Any dollar amounts in blanks (e.g., "$5,000")
-- Any percentages mentioned (e.g., "3%" or "3 percent")
-- Look for phrases like "up to X% of purchase price" or "X% of sales price"
-- Complete text from all filled blanks including percentage expressions
+CRITICAL: Extract the COMPLETE text from ALL blanks in paragraph 5
+- Look for: "Seller to pay up to _____"
+- The blank may contain: "$5,000" OR "3% of the purchase price" OR similar
+- Extract EXACTLY what is written, including percentages (3%, 2.5%, etc.)
+- Include the full phrase if it says "X% of purchase price" or "X% of sales price"
+- Return the COMPLETE text, not just numbers
 
 PARAGRAPH 6 - APPRAISAL:
 - Which option is checked (A or B)?
@@ -257,9 +259,9 @@ PARAGRAPH 8 - NON-REFUNDABLE DEPOSIT:
 
 Return JSON:
 {
-  "para5_amounts": ["all amounts found"],
-  "para5_custom_text": "complete custom text",
-  "seller_concessions": "seller pays text if any",
+  "para5_amounts": ["all amounts found including '3%' or '$5000'"],
+  "para5_custom_text": "EXACT complete text from the blank including percentage if present",
+  "seller_concessions": "EXACT text: could be '$5000' OR '3% of purchase price' etc",
   "appraisal_option": "A" or "B",
   "appraisal_details": "what the option means",
   "earnest_money": "YES" or "NO",
