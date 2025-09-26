@@ -379,7 +379,38 @@ Return as JSON:
       contingency: results[5]?.contingency || null
     };
   }
-  
+
+  /**
+   * Calculate seller concessions from text (handles percentages and dollar amounts)
+   */
+  private calculateSellerConcessions(text: string, purchasePrice: number): number | null {
+    if (!text || !purchasePrice) return null;
+
+    // Check for percentage patterns
+    const percentPatterns = [
+      /(\d+\.?\d*)\s*%\s*(of\s+)?(the\s+)?(purchase\s+price|sales\s+price|contract\s+price)/i,
+      /up\s+to\s+(\d+\.?\d*)\s*%/i,
+      /(\d+\.?\d*)\s*percent/i
+    ];
+
+    for (const pattern of percentPatterns) {
+      const match = text.match(pattern);
+      if (match) {
+        const percent = parseFloat(match[1]) / 100;
+        return Math.round(purchasePrice * percent);
+      }
+    }
+
+    // Extract dollar amount if no percentage found
+    const dollarPattern = /\$\s*([\d,]+)/;
+    const dollarMatch = text.match(dollarPattern);
+    if (dollarMatch) {
+      return parseFloat(dollarMatch[1].replace(/,/g, ''));
+    }
+
+    return null;
+  }
+
   private mapFullExtractionToOfferSheet(data: any): OfferSheetData {
     // Map the full extraction data to our simplified offer sheet format
     return {
@@ -387,7 +418,7 @@ Return as JSON:
       
       // Handle both purchase_price (financed) and cash_amount (cash)
       purchasePrice: data.purchase_price || data.cash_amount || null,
-      
+
       // Parse seller concessions (handle percentage-based concessions)
       sellerConcessions: (() => {
         // Check if we have a calculated value from percentage
@@ -395,20 +426,26 @@ Return as JSON:
           return data.seller_concessions_calculated;
         }
 
-        // Check for percentage in the text
+        // Get the purchase price for calculation
+        const purchasePrice = data.purchase_price || data.cash_amount || 0;
+
+        // Get the concession text
         const concessionText = data.seller_concessions || data.para5_custom_text || '';
+
+        // Use the calculation function
         if (concessionText && typeof concessionText === 'string') {
-          const percentMatch = concessionText.match(/(\d+\.?\d*)\s*%/);
-          if (percentMatch && purchasePrice) {
-            const percent = parseFloat(percentMatch[1]) / 100;
-            return Math.round(purchasePrice * percent);
+          const calculated = this.calculateSellerConcessions(concessionText, purchasePrice);
+          if (calculated !== null) {
+            return calculated;
           }
-          // Otherwise try to extract dollar amount
-          const amount = parseInt(concessionText.replace(/[^0-9]/g, ''));
-          return amount || null;
         }
 
-        return data.seller_concessions || null;
+        // Fallback: try to parse as number if it's already a number
+        if (typeof data.seller_concessions === 'number') {
+          return data.seller_concessions;
+        }
+
+        return null;
       })(),
       
       // Earnest money
