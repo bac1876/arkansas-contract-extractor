@@ -1,5 +1,45 @@
 # Changelog
 
+## Version 1.3.0 - Percentage-Based Seller Concessions
+*Released: September 26, 2025*
+
+### ✨ Major Enhancement
+- **Percentage-Based Seller Concessions**: Full support for percentage-based amounts in paragraph 5
+  - Automatically detects "%" sign as trigger for calculation
+  - Calculates actual dollar amount from percentage of purchase price
+  - Example: "3% of purchase price" on $219,000 → correctly calculates $6,570
+
+### 🐛 Critical Fixes
+- **Offer Sheet**: Fixed issue where percentage concessions showed only the number (e.g., "$3" instead of "$6,570")
+- **Net Sheet**: Fixed issue where percentage concessions showed "$0" instead of calculated amount
+- **GPT-5 Extractor**: Now captures complete text including percentage symbols
+- **ImageMagick Extractor**: Added calculation logic for percentage-based amounts
+- **Offer Sheet Extractor**: Updated to use pre-calculated values when available
+
+### 🔧 Technical Implementation
+- Added `calculateSellerConcessions` method to handle both percentage and dollar amounts
+- Enhanced extraction prompts to preserve percentage text (e.g., "3% of the purchase price")
+- Implemented `seller_concessions_calculated` field for storing computed values
+- Updated all three extractors: GPT-5, ImageMagick, and Offer Sheet ImageMagick
+
+### 📝 Testing
+- Comprehensive test suite added: `test-netsheet-percentage-flow.ts`
+- Verified both offer sheet and net sheet display correct calculated amounts
+- Tested with `testcontractsellerconcessions.pdf` containing "3% of purchase price"
+
+---
+
+## Version 1.2.0 - Standardization Update
+*Released: September 25, 2025*
+
+### 🔧 Improvements
+- Standardized version numbering across the system
+- Fixed Google Drive integration with new service account
+- Enhanced survey field display logic
+- Improved formatting for seller concessions, earnest money, and home warranty fields
+
+---
+
 ## Version 1.1.0 - Dropbox Integration
 *Released: September 2, 2025*
 
