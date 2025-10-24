@@ -90,8 +90,35 @@ export class ListingInfoService {
    * Normalize an address for matching by extracting key components
    */
   private normalizeAddress(address: string): { number: string; street: string; full: string } {
-    const normalized = address.toLowerCase().trim();
-    
+    let normalized = address.toLowerCase().trim();
+
+    // FIRST: Standardize "highway" to "hwy" (before other replacements)
+    normalized = normalized.replace(/\bhighway\b/gi, 'hwy');
+
+    // Remove Arkansas city names (common ones)
+    const arkansasCities = [
+      'bentonville', 'rogers', 'springdale', 'fayetteville', 'lowell', 'cave springs',
+      'bella vista', 'siloam springs', 'pea ridge', 'gentry', 'gravette', 'centerton',
+      'little rock', 'fort smith', 'jonesboro', 'conway', 'winslow', 'eureka springs'
+    ];
+    arkansasCities.forEach(city => {
+      const regex = new RegExp('\\b' + city + '\\b', 'gi');
+      normalized = normalized.replace(regex, '');
+    });
+
+    // Remove state abbreviations and names
+    normalized = normalized.replace(/\b(arkansas|ar)\b/gi, '');
+
+    // Remove zip codes (5 or 9 digit)
+    normalized = normalized.replace(/\b\d{5}(-\d{4})?\b/g, '');
+
+    // Remove county information
+    normalized = normalized.replace(/\b\w+\s+county\b/gi, '');
+
+    // Remove acreage information
+    normalized = normalized.replace(/\b\d+\.?\d*\s*(acre|acres|ac)\s*(m\/l|more or less)?\b/gi, '');
+    normalized = normalized.replace(/\bm\/l\b/gi, ''); // Remove standalone M/L
+
     // Remove common suffixes and directions for matching
     // This helps "1199 Splash" match "1199 S Splash Dr"
     const simplified = normalized
@@ -100,12 +127,12 @@ export class ListingInfoService {
       .replace(/[,.]|suite.*|apt.*|unit.*/gi, '') // Remove punctuation and unit numbers
       .replace(/\s+/g, ' ') // Normalize spaces
       .trim();
-    
+
     // Extract street number and primary street name
     const parts = simplified.split(' ').filter(p => p.length > 0);
     const number = parts[0] || '';
     const street = parts[1] || '';
-    
+
     return { number, street, full: simplified };
   }
 
