@@ -33,13 +33,34 @@ Determined Embrace      = offers@searchnwa.com
 ## Current Status (as of 2025-10-24)
 
 ### Courageous Appreciation Status
-- **Issue:** Missing `EMAIL_PASSWORD` environment variable
-- **Fix Needed:** Add EMAIL_PASSWORD in Railway dashboard for this service
+- **Status:** ✅ FIXED - Email-back functionality restored
+- **What it does:**
+  - Monitors contractextraction@gmail.com via IMAP
+  - Extracts contract data from PDF attachments
+  - Generates offer sheet (agent info sheet)
+  - **Emails offer sheet + original contract back to sender**
+- **How it works:** email-monitor.ts detects when running as contractextraction@gmail.com and automatically sends emails back using nodemailer
 
 ### Determined Embrace Status
 - **Status:** ✅ Working at 100%
+- **What it does:**
+  - Monitors offers@searchnwa.com via IMAP
+  - Extracts contract data from PDF attachments
+  - Generates seller net sheets
+  - Uploads to Google Drive
 - **Recent Fix:** Address normalization for highway variations
 
 ---
+
+## Key Difference Between Services
+
+**Both services run the SAME code (email-monitor.ts) but behave differently based on EMAIL_USER:**
+
+| Feature | Courageous Appreciation | Determined Embrace |
+|---------|------------------------|-------------------|
+| Email Account | contractextraction@gmail.com | offers@searchnwa.com |
+| Generates | Offer Sheet | Seller Net Sheet |
+| Emails Back | ✅ YES | ❌ NO |
+| Uploads to Drive | ❌ NO | ✅ YES |
 
 **This mapping must NEVER be confused. Both services run the same code but monitor different email accounts based on their environment variables.**
