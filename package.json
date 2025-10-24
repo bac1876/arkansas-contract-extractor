@@ -5,6 +5,7 @@
   "main": "server.ts",
   "scripts": {
     "start": "node start.js",
+    "start:offer": "node start.js",
     "dev": "ts-node server.ts",
     "monitor": "node -r ts-node/register email-monitor.ts",
     "api": "ts-node api-server.ts",
