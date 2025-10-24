@@ -6,6 +6,7 @@
 // Load dependencies
 const Imap = require('imap');
 const { simpleParser } = require('mailparser');
+import * as nodemailer from 'nodemailer';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import { RobustExtractor } from './extraction-robust';
@@ -57,6 +58,8 @@ export class EmailMonitor {
   private processedEmails: Set<string> = new Set();
   private checkInterval: NodeJS.Timer | null = null;
   private lastCheckTime: Date = new Date();
+  private emailTransporter?: nodemailer.Transporter;
+  private currentEmailAccount?: string;
 
   constructor() {
     // Set ImageMagick policy path to allow PDF processing
@@ -209,7 +212,22 @@ export class EmailMonitor {
       console.log(`   Email: ${config.user}`);
       console.log(`   Password: ${config.password.substring(0, 4)}****${config.password.substring(12)}`);
       console.log(`   Host: ${config.host || 'imap.gmail.com'}`);
-      
+
+      // Store current email account for later use
+      this.currentEmailAccount = config.user;
+
+      // Initialize email transporter for sending replies (only for contractextraction@gmail.com)
+      if (config.user === 'contractextraction@gmail.com') {
+        console.log('📤 Initializing email reply service for contractextraction@gmail.com');
+        this.emailTransporter = nodemailer.createTransport({
+          service: 'gmail',
+          auth: {
+            user: config.user,
+            pass: config.password
+          }
+        });
+      }
+
       this.imap = new Imap({
         user: config.user,
         password: config.password,
@@ -700,13 +718,58 @@ export class EmailMonitor {
                               pdfPath,
                               agentInfoResult.path
                             );
-                            
+
                             if (dropboxResults.netSheetLink || dropboxResults.agentInfoLink) {
                               console.log('☁️  Files backed up to Dropbox successfully');
                             }
                           } catch (dropboxError) {
                             console.error('⚠️  Dropbox upload failed:', dropboxError);
                             // Continue - Dropbox is optional
+                          }
+                        }
+
+                        // Send email back with offer sheet (only for contractextraction@gmail.com)
+                        if (this.emailTransporter && this.currentEmailAccount === 'contractextraction@gmail.com') {
+                          try {
+                            console.log('📤 Sending email back to sender with offer sheet...');
+
+                            const mailOptions = {
+                              from: '"Arkansas Contract Agent - Offer Sheet" <contractextraction@gmail.com>',
+                              to: parsed.from?.text,
+                              subject: `Offer ${propertyAddress}`,
+                              html: `
+                                <div style="font-family: Arial, sans-serif;">
+                                  <h2>Contract Processing Complete</h2>
+                                  <p>Your contract has been processed successfully.</p>
+                                  <p><strong>Property:</strong> ${propertyAddress}</p>
+                                  <p><strong>Purchase Price:</strong> $${extractionResult.data.purchase_price?.toLocaleString() || 'N/A'}</p>
+                                  <p><strong>Buyers:</strong> ${Array.isArray(extractionResult.data.buyers) ? extractionResult.data.buyers.join(', ') : extractionResult.data.buyers || 'N/A'}</p>
+                                  <hr>
+                                  <p>Please find attached:</p>
+                                  <ul>
+                                    <li>Offer Sheet (Agent Information)</li>
+                                    <li>Original Contract PDF</li>
+                                  </ul>
+                                  <p style="color: #666; font-size: 12px;">Processed at: ${new Date().toLocaleString()}</p>
+                                </div>
+                              `,
+                              attachments: [
+                                {
+                                  filename: `Offer_Sheet_${propertyAddress.replace(/[^a-zA-Z0-9]/g, '_')}.pdf`,
+                                  path: agentInfoResult.path
+                                },
+                                {
+                                  filename: path.basename(pdfPath),
+                                  path: pdfPath
+                                }
+                              ]
+                            };
+
+                            await this.emailTransporter.sendMail(mailOptions);
+                            console.log(`✅ Email sent successfully to: ${parsed.from?.text}`);
+                          } catch (emailError) {
+                            console.error('⚠️  Failed to send email back:', emailError);
+                            // Continue - this is not critical
                           }
                         }
                       } catch (agentInfoError) {
