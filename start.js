@@ -126,10 +126,15 @@ const server = app.listen(PORT, '0.0.0.0', () => {
   );
   console.log(envKeys.join(', '));
   
-  // Check for required environment variables
-  const requiredVars = ['EMAIL_PASSWORD', 'OPENAI_API_KEY'];
+  // Check for required environment variables (backward compatible with old names)
+  const requiredVars = ['OPENAI_API_KEY'];
+  const hasPassword = process.env.EMAIL_PASSWORD || process.env.OFFER_SHEET_PASSWORD;
   const missingVars = requiredVars.filter(v => !process.env[v]);
-  
+
+  if (!hasPassword) {
+    missingVars.push('EMAIL_PASSWORD (or OFFER_SHEET_PASSWORD)');
+  }
+
   if (missingVars.length > 0) {
     console.error('❌ Missing required environment variables:', missingVars.join(', '));
     console.log('⚠️ Email monitor cannot start without these variables');
@@ -142,9 +147,10 @@ const server = app.listen(PORT, '0.0.0.0', () => {
   try {
     const { EmailMonitor } = require('./email-monitor.ts');
     const monitor = new EmailMonitor();
-    
-    const email = process.env.EMAIL_USER || 'offers@searchnwa.com';
-    const password = process.env.EMAIL_PASSWORD;
+
+    // Backward compatible: support both old and new environment variable names
+    const email = process.env.EMAIL_USER || process.env.OFFER_SHEET_EMAIL || 'offers@searchnwa.com';
+    const password = process.env.EMAIL_PASSWORD || process.env.OFFER_SHEET_PASSWORD;
     
     console.log('📧 Connecting to email:', email);
     
