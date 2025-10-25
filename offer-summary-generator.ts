@@ -57,10 +57,34 @@ export class OfferSummaryGenerator {
   }
 
   /**
+   * Normalize property address - remove legal descriptions
+   */
+  private normalizeAddress(address: string): string {
+    if (!address) return address;
+
+    // Remove common legal description patterns
+    let normalized = address
+      // Remove lot/block/subdivision info: "Lot 56 Breckenridge Sub-Div"
+      .replace(/\s+Lot\s+\d+[A-Z]?\s+.*/i, '')
+      // Remove "Benton County Arkansas" type suffixes
+      .replace(/\s+(Benton|Washington|Madison|Carroll)\s+County\s+Arkansas/i, '')
+      // Remove standalone "Arkansas"
+      .replace(/\s+Arkansas$/i, '')
+      // Clean up multiple spaces
+      .replace(/\s+/g, ' ')
+      .trim();
+
+    return normalized;
+  }
+
+  /**
    * Generate offer summary PDF
    * Returns object with type and path for email monitor compatibility
    */
   async generateOfferSummary(data: OfferSummaryData): Promise<{ type: string; path: string }> {
+    // Debug logging for buyer_agency_fee
+    console.log(`🔍 DEBUG - buyer_agency_fee value: "${data.buyer_agency_fee}"`);
+
     // Clean address for filename
     const cleanAddress = data.property_address
       .replace(/[^a-zA-Z0-9\s]/g, ' ')
@@ -192,7 +216,7 @@ export class OfferSummaryGenerator {
 
     .header {
       background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      padding: 40px 20px;
+      padding: 25px 20px;
       text-align: center;
       border-radius: 8px 8px 0 0;
       margin-bottom: 0;
@@ -200,16 +224,16 @@ export class OfferSummaryGenerator {
 
     .header h1 {
       color: white;
-      font-size: 32px;
+      font-size: 28px;
       font-weight: 300;
       letter-spacing: 2px;
       text-transform: uppercase;
-      margin-bottom: 15px;
+      margin-bottom: 10px;
     }
 
     .header .property-address {
       color: white;
-      font-size: 18px;
+      font-size: 16px;
       font-weight: 400;
     }
 
@@ -218,17 +242,17 @@ export class OfferSummaryGenerator {
       border: 1px solid #e0e0e0;
       border-top: none;
       border-radius: 0 0 8px 8px;
-      padding: 30px;
+      padding: 20px;
     }
 
     .section-title {
       color: #4a5568;
-      font-size: 14px;
+      font-size: 13px;
       font-weight: 600;
       text-transform: uppercase;
       letter-spacing: 1px;
-      margin-bottom: 20px;
-      padding-bottom: 10px;
+      margin-bottom: 12px;
+      padding-bottom: 8px;
       border-bottom: 2px solid #667eea;
     }
 
@@ -246,8 +270,8 @@ export class OfferSummaryGenerator {
     }
 
     .details-table td {
-      padding: 12px 0;
-      font-size: 15px;
+      padding: 7px 0;
+      font-size: 13px;
     }
 
     .details-table td:first-child {
@@ -263,12 +287,12 @@ export class OfferSummaryGenerator {
     }
 
     .selling-agent {
-      margin-top: 30px;
-      padding-top: 20px;
+      margin-top: 15px;
+      padding-top: 12px;
       border-top: 2px solid #e0e0e0;
       text-align: center;
       color: #666;
-      font-size: 14px;
+      font-size: 12px;
     }
 
     @media print {
@@ -288,7 +312,7 @@ export class OfferSummaryGenerator {
     <!-- Purple Gradient Header -->
     <div class="header">
       <h1>OFFER SUMMARY</h1>
-      <div class="property-address">${data.property_address}</div>
+      <div class="property-address">${this.normalizeAddress(data.property_address)}</div>
     </div>
 
     <!-- Contract Details -->
