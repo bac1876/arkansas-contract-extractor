@@ -443,14 +443,14 @@ export class EmailMonitor {
                   
                   // Save PDF
                   const timestamp = Date.now();
-                  const pdfPath = path.join(
-                    this.processedFolder, 
-                    'pdfs', 
+                  const originalContractPath = path.join(
+                    this.processedFolder,
+                    'pdfs',
                     `${timestamp}_${attachment.filename}`
                   );
-                  
-                  await fs.writeFile(pdfPath, attachment.content);
-                  console.log(`💾 PDF saved to: ${pdfPath}`);
+
+                  await fs.writeFile(originalContractPath, attachment.content);
+                  console.log(`💾 PDF saved to: ${originalContractPath}`);
                   console.log(`   Size: ${attachment.content.length} bytes`);
                   results.attachments.push(attachment.filename);
 
@@ -460,7 +460,7 @@ export class EmailMonitor {
                   
                   try {
                     // Use the robust extractor which handles all retry logic internally
-                    const robustResult = await this.robustExtractor.extractFromPDF(pdfPath);
+                    const robustResult = await this.robustExtractor.extractFromPDF(originalContractPath);
                     
                     console.log('📄 Extraction completed:');
                     console.log(`   Success: ${robustResult.success}`);
@@ -565,97 +565,102 @@ export class EmailMonitor {
                       });
                       continue; // Skip to next attachment
                     }
-                    
+
                     try {
-                      // Look up property-specific taxes and commission
-                      const propertyData = this.listingInfo.getPropertyData(
-                        propertyAddress,
-                        { taxes: 3650, commission: 3 } // Defaults
-                      );
-                      
-                      const data = extractionResult.data as any;
-                      
-                      // Debug logging
-                      console.log('🔍 DEBUG - Extracted data fields:');
-                      console.log('  paragraph_5:', data?.paragraph_5);
-                      console.log('  additional_terms:', data?.additional_terms);
-                      console.log('  para5_custom_text:', data?.para5_custom_text);
-                      
-                      const netSheetInput = {
-                        purchase_price: data?.purchase_price || 0,
-                        cash_amount: data?.cash_amount || 0,
-                        seller_concessions: data?.seller_pays_buyer_costs || 
-                                          data?.para5_custom_text || 
-                                          data?.seller_concessions ||
-                                          data?.paragraph_5?.seller_specific_payment_text ||
-                                          data?.paragraph_5?.seller_specific_payment_amount?.toString(),
-                        closing_date: data?.closing_date,
-                        para15_home_warranty: data?.para15_home_warranty,
-                        para15_warranty_paid_by: data?.para15_warranty_paid_by,
-                        para15_warranty_cost: data?.para15_warranty_cost,
-                        home_warranty: data?.para15_home_warranty || data?.home_warranty || data?.home_warranty?.selected_option,
-                        warranty_amount: data?.para15_warranty_cost || data?.warranty_amount,
-                        title_option: data?.para10_title_option || data?.title_option,
-                        para32_other_terms: data?.para32_additional_terms || data?.para32_other_terms || 
-                                          data?.additional_terms,
-                        para11_survey_option: data?.para11_survey_option,
-                        para11_survey_paid_by: data?.para11_survey_paid_by,
-                        buyer_agency_fee: data?.buyer_agency_fee,  // Add buyer agency fee
-                        annual_taxes: propertyData.annualTaxes,
-                        seller_commission_percent: propertyData.commissionPercent
-                      };
-                      
-                      console.log('📊 Net sheet input values:');
-                      console.log('  seller_concessions:', netSheetInput.seller_concessions);
-                      console.log('  para32_other_terms:', netSheetInput.para32_other_terms);
-                      
-                      console.log(`📊 Using ${propertyData.source} data: Taxes=$${propertyData.annualTaxes}, Commission=${(propertyData.commissionPercent * 100).toFixed(1)}%`);
-                      if (propertyData.taxWarning) {
-                        console.log('❗ TAX WARNING: Using default tax value - NEEDS MANUAL VERIFICATION');
-                      }
-
-                      const netSheetData = this.calculator.calculate(netSheetInput);
-                      
-                      // Add tax warning flag to net sheet data
-                      (netSheetData as any).taxWarning = propertyData.taxWarning;
-                      
-                      // Property address already defined above for lookup
-                      
-                      // Save net sheet JSON
-                      const netSheetPath = path.join(
-                        this.processedFolder,
-                        'seller_net_sheets',
-                        `${timestamp}_${attachment.filename.replace('.pdf', '')}_net_sheet.json`
-                      );
-                      await fs.mkdir(path.dirname(netSheetPath), { recursive: true });
-                      await fs.writeFile(netSheetPath, JSON.stringify(netSheetData, null, 2));
-
-                      // Generate PDF net sheet with proper naming
-                      let pdfPath: string | undefined;
-                      
-                      // Generate PDF net sheet
-                      try {
-                        pdfPath = await this.pdfGenerator.generateNetSheetPDF(
-                          netSheetData,
+                      // NET SHEET GENERATION - Only for offers@searchnwa.com
+                      if (this.currentEmailAccount === 'offers@searchnwa.com') {
+                        // Look up property-specific taxes and commission
+                        const propertyData = this.listingInfo.getPropertyData(
                           propertyAddress,
-                          extractionResult.data
+                          { taxes: 3650, commission: 3 } // Defaults
                         );
-                        console.log(`📑 Generated net sheet: ${path.basename(pdfPath)}`);
-                      } catch (pdfError) {
-                        console.error('⚠️  Could not generate PDF:', pdfError);
-                      }
 
-                      // Upload PDF file to Google Drive
-                      if (this.drive && pdfPath) {
-                        try {
-                          const uploadResults = await this.drive.uploadNetSheetFiles(pdfPath, undefined);
-                          if (uploadResults.pdfLink) {
-                            console.log('📤 Uploaded PDF to Google Drive');
-                            console.log(`   📎 PDF Link: ${uploadResults.pdfLink}`);
-                          }
-                        } catch (uploadError) {
-                          console.error('⚠️  Could not upload files to Google Drive:', uploadError);
+                        const data = extractionResult.data as any;
+
+                        // Debug logging
+                        console.log('🔍 DEBUG - Extracted data fields:');
+                        console.log('  paragraph_5:', data?.paragraph_5);
+                        console.log('  additional_terms:', data?.additional_terms);
+                        console.log('  para5_custom_text:', data?.para5_custom_text);
+
+                        const netSheetInput = {
+                          purchase_price: data?.purchase_price || 0,
+                          cash_amount: data?.cash_amount || 0,
+                          seller_concessions: data?.seller_pays_buyer_costs ||
+                                            data?.para5_custom_text ||
+                                            data?.seller_concessions ||
+                                            data?.paragraph_5?.seller_specific_payment_text ||
+                                            data?.paragraph_5?.seller_specific_payment_amount?.toString(),
+                          closing_date: data?.closing_date,
+                          para15_home_warranty: data?.para15_home_warranty,
+                          para15_warranty_paid_by: data?.para15_warranty_paid_by,
+                          para15_warranty_cost: data?.para15_warranty_cost,
+                          home_warranty: data?.para15_home_warranty || data?.home_warranty || data?.home_warranty?.selected_option,
+                          warranty_amount: data?.para15_warranty_cost || data?.warranty_amount,
+                          title_option: data?.para10_title_option || data?.title_option,
+                          para32_other_terms: data?.para32_additional_terms || data?.para32_other_terms ||
+                                            data?.additional_terms,
+                          para11_survey_option: data?.para11_survey_option,
+                          para11_survey_paid_by: data?.para11_survey_paid_by,
+                          buyer_agency_fee: data?.buyer_agency_fee,  // Add buyer agency fee
+                          annual_taxes: propertyData.annualTaxes,
+                          seller_commission_percent: propertyData.commissionPercent
+                        };
+
+                        console.log('📊 Net sheet input values:');
+                        console.log('  seller_concessions:', netSheetInput.seller_concessions);
+                        console.log('  para32_other_terms:', netSheetInput.para32_other_terms);
+
+                        console.log(`📊 Using ${propertyData.source} data: Taxes=$${propertyData.annualTaxes}, Commission=${(propertyData.commissionPercent * 100).toFixed(1)}%`);
+                        if (propertyData.taxWarning) {
+                          console.log('❗ TAX WARNING: Using default tax value - NEEDS MANUAL VERIFICATION');
                         }
+
+                        const netSheetData = this.calculator.calculate(netSheetInput);
+
+                        // Add tax warning flag to net sheet data
+                        (netSheetData as any).taxWarning = propertyData.taxWarning;
+
+                        // Property address already defined above for lookup
+
+                        // Save net sheet JSON
+                        const netSheetPath = path.join(
+                          this.processedFolder,
+                          'seller_net_sheets',
+                          `${timestamp}_${attachment.filename.replace('.pdf', '')}_net_sheet.json`
+                        );
+                        await fs.mkdir(path.dirname(netSheetPath), { recursive: true });
+                        await fs.writeFile(netSheetPath, JSON.stringify(netSheetData, null, 2));
+
+                        // Generate PDF net sheet with proper naming
+                        let pdfPath: string | undefined;
+
+                        // Generate PDF net sheet
+                        try {
+                          pdfPath = await this.pdfGenerator.generateNetSheetPDF(
+                            netSheetData,
+                            propertyAddress,
+                            extractionResult.data
+                          );
+                          console.log(`📑 Generated net sheet: ${path.basename(pdfPath)}`);
+                        } catch (pdfError) {
+                          console.error('⚠️  Could not generate PDF:', pdfError);
+                        }
+
+                        // Upload PDF file to Google Drive
+                        if (this.drive && pdfPath) {
+                          try {
+                            const uploadResults = await this.drive.uploadNetSheetFiles(pdfPath, undefined);
+                            if (uploadResults.pdfLink) {
+                              console.log('📤 Uploaded PDF to Google Drive');
+                              console.log(`   📎 PDF Link: ${uploadResults.pdfLink}`);
+                            }
+                          } catch (uploadError) {
+                            console.error('⚠️  Could not upload files to Google Drive:', uploadError);
+                          }
+                        }
+
+                        console.log('💰 Net sheet generated successfully');
                       }
 
                       // Generate Agent Information Sheet OR Offer Summary
@@ -719,20 +724,20 @@ export class EmailMonitor {
                           agentInfoResult = await this.agentInfoGenerator.generateAgentInfoSheet(agentInfoData);
                           console.log(`📋 Generated agent info sheet ${agentInfoResult.type.toUpperCase()}: ${path.basename(agentInfoResult.path)}`);
                         }
-                        
-                        // Upload agent info sheet to Google Drive
-                        if (this.drive && agentInfoResult) {
+
+                        // Upload agent info sheet to Google Drive (only for offers@searchnwa.com)
+                        if (this.currentEmailAccount === 'offers@searchnwa.com' && this.drive && agentInfoResult) {
                           try {
                             // Use correct MIME type based on actual file type
                             const fileName = path.basename(agentInfoResult.path);
                             const fileExt = path.extname(fileName).toLowerCase();
                             let mimeType = 'application/pdf';
-                            
+
                             if (fileExt === '.html') {
                               mimeType = 'text/html';
                               console.log('   Uploading as HTML (PDF generation failed)');
                             }
-                            
+
                             const agentInfoUpload = await this.drive.uploadFile(
                               agentInfoResult.path,
                               fileName,
@@ -744,9 +749,9 @@ export class EmailMonitor {
                             console.error('⚠️  Could not upload agent info sheet:', uploadError);
                           }
                         }
-                        
-                        // Upload to Dropbox if configured
-                        if (this.dropbox && this.dropbox.isReady()) {
+
+                        // Upload to Dropbox if configured (only for offers@searchnwa.com)
+                        if (this.currentEmailAccount === 'offers@searchnwa.com' && this.dropbox && this.dropbox.isReady()) {
                           try {
                             console.log('📤 Uploading to Dropbox...');
                             const dropboxResults = await this.dropbox.uploadContractFiles(
@@ -794,8 +799,8 @@ export class EmailMonitor {
                                   path: agentInfoResult.path
                                 },
                                 {
-                                  filename: path.basename(pdfPath),
-                                  path: pdfPath
+                                  filename: path.basename(originalContractPath),
+                                  path: originalContractPath
                                 }
                               ]
                             };
@@ -810,37 +815,38 @@ export class EmailMonitor {
                       } catch (agentInfoError) {
                         console.error('⚠️  Could not generate agent info sheet:', agentInfoError);
                       }
-                      
-                      // Try to create Google Sheet (will likely fail due to quota)
-                      if (this.drive) {
-                        try {
-                          const driveResult = await this.drive.createSellerNetSheet(
-                            netSheetData,
-                            propertyAddress,
-                            extractionResult.data
-                          );
-                          console.log('📊 Created individual net sheet in Google Drive');
-                          console.log(`   📎 Link: ${driveResult.shareableLink}`);
-                        } catch (driveError) {
-                          console.log('⚠️  Google Drive sheet creation blocked (service account quota)');
-                        }
-                      }
-                      
-                      // Also save to tracking spreadsheet if configured
-                      if (this.sheets) {
-                        try {
-                          await this.sheets.saveCompleteExtraction(
-                            extractionResult.data,
-                            netSheetData,
-                            `Email: ${parsed.from?.text}`
-                          );
-                          console.log('📊 Saved to tracking spreadsheet');
-                        } catch (sheetsError: any) {
-                          console.log('⚠️  Could not save to tracking sheet:', sheetsError.message);
-                        }
-                      }
 
-                      console.log('💰 Net sheet generated successfully');
+                      // Google Sheets operations - Only for offers@searchnwa.com
+                      if (this.currentEmailAccount === 'offers@searchnwa.com') {
+                        // Try to create Google Sheet (will likely fail due to quota)
+                        if (this.drive) {
+                          try {
+                            const driveResult = await this.drive.createSellerNetSheet(
+                              netSheetData,
+                              propertyAddress,
+                              extractionResult.data
+                            );
+                            console.log('📊 Created individual net sheet in Google Drive');
+                            console.log(`   📎 Link: ${driveResult.shareableLink}`);
+                          } catch (driveError) {
+                            console.log('⚠️  Google Drive sheet creation blocked (service account quota)');
+                          }
+                        }
+
+                        // Also save to tracking spreadsheet if configured
+                        if (this.sheets) {
+                          try {
+                            await this.sheets.saveCompleteExtraction(
+                              extractionResult.data,
+                              netSheetData,
+                              `Email: ${parsed.from?.text}`
+                            );
+                            console.log('📊 Saved to tracking spreadsheet');
+                          } catch (sheetsError: any) {
+                            console.log('⚠️  Could not save to tracking sheet:', sheetsError.message);
+                          }
+                        }
+                      }
                     } catch (netSheetError) {
                       console.error('⚠️  Could not generate net sheet:', netSheetError);
                     }
