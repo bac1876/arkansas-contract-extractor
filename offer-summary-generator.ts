@@ -451,11 +451,12 @@ export class OfferSummaryGenerator {
       return 'None specified';
     }
 
-    // Check if it's a percentage or dollar amount
+    // Check if it's a percentage - format as simple statement
     if (buyerAgencyFee.includes('%')) {
-      return `Seller to pay buyer agent fee in the amount of ${buyerAgencyFee} of the purchase price to Coldwell Banker Harris McHaney & Faucette, at closing.`;
+      return `Seller agrees to pay ${buyerAgencyFee} of the purchase price towards buyer agency fees`;
     }
 
+    // Return as-is for other formats
     return buyerAgencyFee;
   }
 
