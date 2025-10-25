@@ -18,6 +18,7 @@ import GoogleDriveIntegration from './google-drive-integration';
 import SellerNetSheetCalculator from './seller-net-sheet-calculator';
 import PDFGenerator from './pdf-generator';
 import AgentInfoSheetGenerator from './agent-info-sheet-generator';
+import OfferSummaryGenerator from './offer-summary-generator';
 import { ListingInfoService } from './listing-info-service';
 import * as dotenv from 'dotenv';
 
@@ -51,6 +52,7 @@ export class EmailMonitor {
   private calculator: SellerNetSheetCalculator;
   private pdfGenerator: PDFGenerator;
   private agentInfoGenerator: AgentInfoSheetGenerator;
+  private offerSummaryGenerator: OfferSummaryGenerator;
   private listingInfo: ListingInfoService;
   private processedFolder: string = 'processed_contracts';
   private isProcessing: boolean = false;
@@ -78,6 +80,7 @@ export class EmailMonitor {
     this.calculator = new SellerNetSheetCalculator();
     this.pdfGenerator = new PDFGenerator();
     this.agentInfoGenerator = new AgentInfoSheetGenerator();
+    this.offerSummaryGenerator = new OfferSummaryGenerator();
     this.listingInfo = new ListingInfoService();
     this.setupFolders();
     this.initGoogleSheets();
@@ -655,35 +658,67 @@ export class EmailMonitor {
                         }
                       }
 
-                      // Generate Agent Information Sheet
+                      // Generate Agent Information Sheet OR Offer Summary
                       try {
-                        const agentInfoData = {
-                          property_address: propertyAddress,
-                          purchase_price: data?.purchase_price || data?.cash_amount || 0,
-                          buyers: data?.buyers || data?.buyer_names,
-                          closing_date: data?.closing_date,
-                          contract_expiration_date: data?.para38_expiration_date,
-                          contract_expiration_time: data?.para38_expiration_time,
-                          listing_agent_commission: propertyData.commissionPercent ? propertyData.commissionPercent * 100 : undefined,
-                          selling_agent_commission: 3, // Default 3% - could be extracted from contract if specified
-                          selling_firm_name: data?.selling_firm_name,
-                          selling_agent_name: data?.selling_agent_name,
-                          selling_agent_phone: data?.selling_agent_phone,
-                          selling_agent_email: data?.selling_agent_email,
-                          selling_agent_arec: data?.selling_agent_arec,
-                          selling_agent_mls: data?.selling_agent_mls,
-                          para15_other_details: data?.para15_other_details,
-                          // Additional contract details for notes
-                          earnest_money: data?.earnest_money,
-                          non_refundable: data?.non_refundable,
-                          non_refundable_amount: data?.non_refundable_amount,
-                          para14_contingency: data?.para14_contingency,
-                          para13_items_included: data?.para13_items_included,
-                          para13_items_excluded: data?.para13_items_excluded
-                        };
-                        
-                        const agentInfoResult = await this.agentInfoGenerator.generateAgentInfoSheet(agentInfoData);
-                        console.log(`📋 Generated agent info sheet ${agentInfoResult.type.toUpperCase()}: ${path.basename(agentInfoResult.path)}`);
+                        let agentInfoResult;
+
+                        // For contractextraction@gmail.com: Generate Offer Summary
+                        if (this.currentEmailAccount === 'contractextraction@gmail.com') {
+                          const offerSummaryData = {
+                            property_address: propertyAddress,
+                            purchase_price: data?.purchase_price || data?.cash_amount || 0,
+                            buyers: data?.buyers || data?.buyer_names,
+                            closing_date: data?.closing_date,
+                            seller_concessions: data?.para5_custom_text || data?.seller_pays_buyer_costs,
+                            loan_type: data?.loan_type,
+                            earnest_money: data?.earnest_money,
+                            non_refundable: data?.non_refundable,
+                            non_refundable_amount: data?.non_refundable_amount,
+                            para11_survey_option: data?.para11_survey_option,
+                            para11_survey_paid_by: data?.para11_survey_paid_by,
+                            para13_items_included: data?.para13_items_included,
+                            para13_items_excluded: data?.para13_items_excluded,
+                            para14_contingency: data?.para14_contingency,
+                            para15_home_warranty: data?.para15_home_warranty,
+                            para15_warranty_cost: data?.para15_warranty_cost,
+                            buyer_agency_fee: data?.buyer_agency_fee,
+                            selling_agent_name: data?.selling_agent_name,
+                            selling_agent_phone: data?.selling_agent_phone
+                          };
+
+                          agentInfoResult = await this.offerSummaryGenerator.generateOfferSummary(offerSummaryData);
+                          console.log(`📋 Generated offer summary ${agentInfoResult.type.toUpperCase()}: ${path.basename(agentInfoResult.path)}`);
+                        }
+                        // For offers@searchnwa.com: Generate Agent Info Sheet (existing behavior)
+                        else {
+                          const agentInfoData = {
+                            property_address: propertyAddress,
+                            purchase_price: data?.purchase_price || data?.cash_amount || 0,
+                            buyers: data?.buyers || data?.buyer_names,
+                            closing_date: data?.closing_date,
+                            contract_expiration_date: data?.para38_expiration_date,
+                            contract_expiration_time: data?.para38_expiration_time,
+                            listing_agent_commission: propertyData.commissionPercent ? propertyData.commissionPercent * 100 : undefined,
+                            selling_agent_commission: 3, // Default 3% - could be extracted from contract if specified
+                            selling_firm_name: data?.selling_firm_name,
+                            selling_agent_name: data?.selling_agent_name,
+                            selling_agent_phone: data?.selling_agent_phone,
+                            selling_agent_email: data?.selling_agent_email,
+                            selling_agent_arec: data?.selling_agent_arec,
+                            selling_agent_mls: data?.selling_agent_mls,
+                            para15_other_details: data?.para15_other_details,
+                            // Additional contract details for notes
+                            earnest_money: data?.earnest_money,
+                            non_refundable: data?.non_refundable,
+                            non_refundable_amount: data?.non_refundable_amount,
+                            para14_contingency: data?.para14_contingency,
+                            para13_items_included: data?.para13_items_included,
+                            para13_items_excluded: data?.para13_items_excluded
+                          };
+
+                          agentInfoResult = await this.agentInfoGenerator.generateAgentInfoSheet(agentInfoData);
+                          console.log(`📋 Generated agent info sheet ${agentInfoResult.type.toUpperCase()}: ${path.basename(agentInfoResult.path)}`);
+                        }
                         
                         // Upload agent info sheet to Google Drive
                         if (this.drive && agentInfoResult) {
