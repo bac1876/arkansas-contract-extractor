@@ -798,7 +798,7 @@ export class EmailMonitor {
                               `,
                               attachments: [
                                 {
-                                  filename: `Offer_Sheet_${propertyAddress.replace(/[^a-zA-Z0-9]/g, '_')}.pdf`,
+                                  filename: path.basename(agentInfoResult.path),
                                   path: agentInfoResult.path
                                 },
                                 {
