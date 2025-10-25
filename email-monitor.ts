@@ -688,6 +688,7 @@ export class EmailMonitor {
                             para14_contingency: data?.para14_contingency,
                             para15_home_warranty: data?.para15_home_warranty,
                             para15_warranty_cost: data?.para15_warranty_cost,
+                            para15_warranty_paid_by: data?.para15_warranty_paid_by,
                             buyer_agency_fee: data?.buyer_agency_fee,
                             selling_agent_name: data?.selling_agent_name,
                             selling_agent_phone: data?.selling_agent_phone

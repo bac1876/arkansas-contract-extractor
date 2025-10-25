@@ -36,6 +36,7 @@ export interface OfferSummaryData {
   // Home Warranty (Para 15)
   para15_home_warranty?: string; // "A", "B", "C", or "D"
   para15_warranty_cost?: number;
+  para15_warranty_paid_by?: string; // "Seller", "Buyer"
 
   // Other terms (Para 32)
   buyer_agency_fee?: string;
@@ -85,13 +86,14 @@ export class OfferSummaryGenerator {
     // Debug logging for buyer_agency_fee
     console.log(`🔍 DEBUG - buyer_agency_fee value: "${data.buyer_agency_fee}"`);
 
-    // Clean address for filename
-    const cleanAddress = data.property_address
+    // Normalize and clean address for filename
+    const normalizedAddress = this.normalizeAddress(data.property_address);
+    const cleanAddress = normalizedAddress
       .replace(/[^a-zA-Z0-9\s]/g, ' ')
-      .replace(/\s+/g, '_')
+      .replace(/\s+/g, ' ')
       .trim();
 
-    const fileName = `offer_summary_${cleanAddress}.pdf`;
+    const fileName = `Offer Sheet ${cleanAddress}.pdf`;
     const filePath = path.join(this.outputDir, fileName);
 
     // Generate HTML content
@@ -187,7 +189,7 @@ export class OfferSummaryGenerator {
       rows.push(this.createRow('Contingency', contingency));
     }
 
-    rows.push(this.createRow('Home Warranty', this.formatHomeWarranty(data.para15_home_warranty, data.para15_warranty_cost)));
+    rows.push(this.createRow('Home Warranty', this.formatHomeWarranty(data.para15_home_warranty, data.para15_warranty_cost, data.para15_warranty_paid_by)));
     rows.push(this.createRow('Other', this.formatOther(data.buyer_agency_fee)));
 
     return `
@@ -391,10 +393,14 @@ export class OfferSummaryGenerator {
     if (!option || option === 'C') return null; // C means no survey
 
     if (option === 'A' && paidBy) {
-      return `Yes - ${paidBy} pays`;
+      // Format: "Yes - Paid by Seller" or "Yes - Split"
+      if (paidBy.toLowerCase() === 'equally') {
+        return 'Yes - Split';
+      }
+      return `Yes - Paid by ${paidBy}`;
     }
     if (option === 'B') {
-      return 'Buyer pays for new survey';
+      return 'Yes - Paid by Buyer (new survey)';
     }
     return null;
   }
@@ -427,17 +433,19 @@ export class OfferSummaryGenerator {
   /**
    * Format home warranty
    */
-  private formatHomeWarranty(option: string | undefined, cost: number | undefined): string {
+  private formatHomeWarranty(option: string | undefined, cost: number | undefined, paidBy: string | undefined): string {
     if (!option || option === 'A') return 'No';
 
     if (option === 'B' && cost) {
-      return `Yes - $${cost.toLocaleString()}`;
+      // Option B means seller pays
+      return `Yes - Paid by Seller - $${cost.toLocaleString()}`;
     }
     if (option === 'C') {
-      return 'Buyer pays';
+      // Option C means buyer pays
+      return 'Yes - Paid by Buyer';
     }
     if (option === 'D') {
-      return 'Other arrangement';
+      return 'Yes - Other arrangement';
     }
 
     return 'No';
