@@ -567,15 +567,17 @@ export class EmailMonitor {
                     }
 
                     try {
+                      // Get extraction data - needed by both net sheet AND generators
+                      const data = extractionResult.data as any;
+
+                      // Look up property data - needed by both net sheet AND agent info sheet
+                      const propertyData = this.listingInfo.getPropertyData(
+                        propertyAddress,
+                        { taxes: 3650, commission: 3 } // Defaults
+                      );
+
                       // NET SHEET GENERATION - Only for offers@searchnwa.com
                       if (this.currentEmailAccount === 'offers@searchnwa.com') {
-                        // Look up property-specific taxes and commission
-                        const propertyData = this.listingInfo.getPropertyData(
-                          propertyAddress,
-                          { taxes: 3650, commission: 3 } // Defaults
-                        );
-
-                        const data = extractionResult.data as any;
 
                         // Debug logging
                         console.log('🔍 DEBUG - Extracted data fields:');
