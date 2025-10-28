@@ -401,8 +401,8 @@ export class OfferSummaryGenerator {
     }
 
     if (option === 'B') {
-      // Box B: Buyer declines survey = NO SURVEY
-      return 'No';
+      // Box B: Buyer declines survey = NO SURVEY (don't show field)
+      return null;
     }
 
     // Box C: Other - don't show survey field
