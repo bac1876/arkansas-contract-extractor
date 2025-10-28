@@ -576,6 +576,9 @@ export class EmailMonitor {
                         { taxes: 3650, commission: 3 } // Defaults
                       );
 
+                      // Declare netSheetData outside conditional so it's available in both blocks
+                      let netSheetData: any;
+
                       // NET SHEET GENERATION - Only for offers@searchnwa.com
                       if (this.currentEmailAccount === 'offers@searchnwa.com') {
 
@@ -618,7 +621,7 @@ export class EmailMonitor {
                           console.log('❗ TAX WARNING: Using default tax value - NEEDS MANUAL VERIFICATION');
                         }
 
-                        const netSheetData = this.calculator.calculate(netSheetInput);
+                        netSheetData = this.calculator.calculate(netSheetInput);
 
                         // Add tax warning flag to net sheet data
                         (netSheetData as any).taxWarning = propertyData.taxWarning;

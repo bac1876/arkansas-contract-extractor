@@ -42,7 +42,7 @@ export class RobustExtractor {
     maxPrimaryAttempts: 3,      // Try main extraction 3 times
     maxFallbackAttempts: 2,      // Try fallback extraction 2 times
     retryDelay: 2000,           // Wait 2 seconds between retries
-    timeoutPerAttempt: 90000,   // 90 seconds timeout per attempt
+    timeoutPerAttempt: 300000,  // 300 seconds (5 min) timeout per attempt - allows ~17 pages at 60s each
     minFieldsForSuccess: 15,    // Minimum fields to consider extraction successful
     acceptPartialAfterAttempts: 2  // Accept partial extraction after 2 failed attempts
   };
