@@ -390,18 +390,22 @@ export class OfferSummaryGenerator {
    * Format survey - only returns value if survey is specified
    */
   private formatSurvey(option: string | undefined, paidBy: string | undefined): string | null {
-    if (!option || option === 'C') return null; // C means no survey
+    if (!option) return null;
 
     if (option === 'A' && paidBy) {
-      // Format: "Yes - Paid by Seller" or "Yes - Split"
+      // Box A: New survey with who pays
       if (paidBy.toLowerCase() === 'equally') {
         return 'Yes - Split';
       }
       return `Yes - Paid by ${paidBy}`;
     }
+
     if (option === 'B') {
-      return 'Yes - Paid by Buyer (new survey)';
+      // Box B: Buyer declines survey = NO SURVEY
+      return 'No';
     }
+
+    // Box C: Other - don't show survey field
     return null;
   }
 
