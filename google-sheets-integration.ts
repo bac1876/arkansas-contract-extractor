@@ -45,6 +45,19 @@ export class GoogleSheetsIntegration {
   }
   
   /**
+   * Convert column index to Excel-style column letters
+   * 0 -> A, 25 -> Z, 26 -> AA, 27 -> AB, 283 -> JA, etc.
+   */
+  private columnIndexToLetter(index: number): string {
+    let letter = '';
+    while (index >= 0) {
+      letter = String.fromCharCode(65 + (index % 26)) + letter;
+      index = Math.floor(index / 26) - 1;
+    }
+    return letter;
+  }
+
+  /**
    * Create headers for contract data sheet
    */
   private getContractHeaders(): string[] {
@@ -229,13 +242,13 @@ export class GoogleSheetsIntegration {
       // Get current sheet data to find next available column
       const currentData = await this.sheets.spreadsheets.values.get({
         spreadsheetId: this.spreadsheetId,
-        range: 'NetSheets!A1:ZZ1'
+        range: 'NetSheets!1:1' // Get entire first row (no column limit)
       });
       
       // Find next column (D, E, F, etc. - skipping A, B, C for labels and notes)
       const currentColumns = currentData.data.values?.[0]?.length || 3;
       const columnIndex = Math.max(3, currentColumns); // Ensure we start at column D (index 3)
-      const nextColumn = String.fromCharCode(65 + columnIndex); // A=65, D=68
+      const nextColumn = this.columnIndexToLetter(columnIndex); // Handles A-Z, AA-ZZ, AAA+
       
       // Update the column with net sheet data
       await this.sheets.spreadsheets.values.update({
