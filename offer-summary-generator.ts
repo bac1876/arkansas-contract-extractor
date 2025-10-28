@@ -415,14 +415,18 @@ export class OfferSummaryGenerator {
   private formatFixtures(included: string | undefined, excluded: string | undefined): string | null {
     const items: string[] = [];
 
-    if (included && included.trim()) {
+    // Filter out "n/a" or empty values for included fixtures
+    if (included && included.trim() && included.trim().toLowerCase() !== 'n/a') {
       items.push(included.trim());
     }
-    if (excluded && excluded.trim()) {
+
+    // Filter out "n/a" or empty values for excluded fixtures
+    if (excluded && excluded.trim() && excluded.trim().toLowerCase() !== 'n/a') {
       items.push(`NOT: ${excluded.trim()}`);
     }
 
-    return items.length > 0 ? items.join('; ') : null;
+    // Return null if no fixtures, otherwise format with line breaks
+    return items.length > 0 ? items.join('<br>') : null;
   }
 
   /**
