@@ -65,13 +65,22 @@ export class OfferSummaryGenerator {
 
     // Remove common legal description patterns
     let normalized = address
+      // Remove everything after semicolon (often separates legal description)
+      .replace(/[;,]\s*LOT\s+.*/i, '')
+      .replace(/[;,]\s*BLOCK\s+.*/i, '')
       // Remove lot/block/subdivision info: "Lot 56 Breckenridge Sub-Div"
-      .replace(/\s+Lot\s+\d+[A-Z]?\s+.*/i, '')
-      // Remove "Benton County Arkansas" type suffixes
-      .replace(/\s+(Benton|Washington|Madison|Carroll)\s+County\s+Arkansas/i, '')
-      // Remove standalone "Arkansas"
-      .replace(/\s+Arkansas$/i, '')
-      // Clean up multiple spaces
+      .replace(/\s+LOT\s+\d+[A-Z]?\s*,?\s*BLOCK\s+.*/i, '')
+      .replace(/\s+LOT\s+\d+[A-Z]?\s+.*/i, '')
+      .replace(/\s+BLOCK\s+\d+[A-Z]?\s+.*/i, '')
+      // Remove subdivision names in all caps (e.g., "WOODLAND HEIGHTS III")
+      .replace(/[,;]\s*[A-Z\s]+(?:SUBDIVISION|SUB-DIV|HEIGHTS|HILLS|ESTATES|ADDITION)[^,]*/i, '')
+      // Remove county/state suffixes: "SPRINGDALE, WASHINGTON COUNTY, ARKANSAS"
+      .replace(/,\s*[A-Z\s]+,\s*(Benton|Washington|Madison|Carroll)\s+County/i, '')
+      .replace(/[,;]\s*(Benton|Washington|Madison|Carroll)\s+County[,\s]*(Arkansas)?/i, '')
+      // Remove standalone "Arkansas" or "AR" at end
+      .replace(/[,;]?\s*(Arkansas|AR)\s*$/i, '')
+      // Clean up trailing commas, semicolons, and extra spaces
+      .replace(/[,;]+\s*$/, '')
       .replace(/\s+/g, ' ')
       .trim();
 
