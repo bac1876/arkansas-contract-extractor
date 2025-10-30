@@ -974,7 +974,9 @@ export class EmailMonitor {
                         }
 
                         // Also save to tracking spreadsheet if configured
-                        if (this.sheets) {
+                        // DISABLED: Tracking sheet hitting column limit (26 columns, needs 27+)
+                        // This is optional logging - not critical to app operation
+                        if (false && this.sheets) {
                           try {
                             await this.sheets.saveCompleteExtraction(
                               extractionResult.data,
