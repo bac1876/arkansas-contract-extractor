@@ -66,13 +66,16 @@ export class EmailMonitor {
   private currentEmailAccount?: string;
 
   constructor() {
+    // SAFETY FIX: Validate environment variables before initializing
+    this.validateEnvironment();
+
     // Set ImageMagick policy path to allow PDF processing
     // This overrides the default restrictive policy - see Section 4.2 of deployment guide
     if (process.platform !== 'win32') {
       process.env.MAGICK_CONFIGURE_PATH = '/app/config';
       console.log('🎨 Set MAGICK_CONFIGURE_PATH for custom ImageMagick policy');
     }
-    
+
     // Use RobustExtractor with multiple retries and fallback logic
     // Ensures extraction always attempts multiple times before giving up
     this.robustExtractor = new RobustExtractor();
@@ -92,6 +95,37 @@ export class EmailMonitor {
     this.loadProcessedEmails();
   }
 
+  /**
+   * SAFETY FIX: Validate required environment variables at startup
+   * Fail-fast with clear error messages instead of cryptic runtime failures
+   */
+  private validateEnvironment(): void {
+    const required = ['EMAIL_PASSWORD', 'OPENAI_API_KEY'];
+    const missing = required.filter(key => !process.env[key]);
+
+    if (missing.length > 0) {
+      console.error('❌ CRITICAL: Missing required environment variables:');
+      missing.forEach(key => console.error(`   - ${key}`));
+      console.error('\n💡 Set these in Railway Variables tab or .env file');
+      throw new Error(`Missing required environment variables: ${missing.join(', ')}`);
+    }
+
+    // Validate password format (Gmail app passwords are 16 chars)
+    const password = process.env.EMAIL_PASSWORD!;
+    if (password.length < 10) {
+      console.warn('⚠️  EMAIL_PASSWORD seems too short (expected Gmail app password ~16 chars)');
+      console.warn('   Connection may fail if this is not a valid app password');
+    }
+
+    // Validate OpenAI API key format
+    const apiKey = process.env.OPENAI_API_KEY!;
+    if (!apiKey.startsWith('sk-')) {
+      console.warn('⚠️  OPENAI_API_KEY does not start with "sk-" - may be invalid');
+    }
+
+    console.log('✅ Environment variables validated');
+  }
+
   async loadProcessedEmails() {
     try {
       const data = await fs.readFile(this.processedEmailsFile, 'utf-8');
@@ -104,10 +138,23 @@ export class EmailMonitor {
     }
   }
 
-  async saveProcessedEmail(messageId: string) {
-    this.processedEmails.add(messageId);
-    const data = { processedEmails: Array.from(this.processedEmails) };
-    await fs.writeFile(this.processedEmailsFile, JSON.stringify(data, null, 2));
+  /**
+   * SAFETY FIX: Handle file write failures to prevent silent errors
+   * Returns true if save succeeded, false otherwise
+   */
+  async saveProcessedEmail(messageId: string): Promise<boolean> {
+    try {
+      this.processedEmails.add(messageId);
+      const data = { processedEmails: Array.from(this.processedEmails) };
+      await fs.writeFile(this.processedEmailsFile, JSON.stringify(data, null, 2));
+      return true;
+    } catch (error) {
+      console.error('❌ CRITICAL: Failed to save processed email to file:', error);
+      console.error(`   Email ${messageId} may be reprocessed on next check!`);
+      console.error(`   File: ${this.processedEmailsFile}`);
+      // Don't throw - allow processing to continue
+      return false;
+    }
   }
 
   private async trackFailedExtraction(messageId: string, emailUid: number, subject: string, filename: string, error: string) {
@@ -240,12 +287,18 @@ export class EmailMonitor {
         });
 
         // Verify transporter can send emails (async, but don't block connection)
-        this.emailTransporter.verify()
+        // SAFETY FIX: Add 10-second timeout to prevent indefinite hangs
+        Promise.race([
+          this.emailTransporter.verify(),
+          new Promise((_, reject) =>
+            setTimeout(() => reject(new Error('Email verification timeout after 10s')), 10000)
+          )
+        ])
           .then(() => {
             console.log('✅ Email transporter verified and ready to send');
           })
-          .catch((verifyError) => {
-            console.error('⚠️  Email transporter verification failed:', verifyError);
+          .catch((verifyError: any) => {
+            console.error('⚠️  Email transporter verification failed:', verifyError.message || verifyError);
             console.error('   Emails may not send correctly - check EMAIL_PASSWORD is valid!');
           });
       }
@@ -601,11 +654,13 @@ export class EmailMonitor {
                     
                   } catch (extractionError) {
                     console.error('❌ Robust extraction system failed:', extractionError);
+                    console.error('   PDF Path:', originalContractPath);
+                    console.error('   Account:', this.currentEmailAccount);
                     if (extractionError instanceof Error) {
                       console.error('   Error message:', extractionError.message);
                       console.error('   Stack trace:', extractionError.stack);
                     }
-                    
+
                     // This should rarely happen as robust extractor handles most errors internally
                     extractionResult = {
                       success: false,
@@ -1116,6 +1171,12 @@ export class EmailMonitor {
 
               } catch (processingError) {
                 console.error('❌ Error processing email:', processingError);
+                console.error('   Context:', {
+                  emailFrom: parsed.from?.text || 'Unknown',
+                  emailSubject: parsed.subject || 'No Subject',
+                  hasAttachments: parsed.attachments?.length || 0,
+                  messageId: parsed.messageId || 'unknown'
+                });
                 // Continue processing other emails even if this one fails
               }
             
@@ -1130,6 +1191,15 @@ export class EmailMonitor {
       });
       } catch (outerError) {
         console.error('❌ Fatal error in processEmail:', outerError);
+        console.error('   This is a critical failure - the entire email processing pipeline crashed');
+        console.error('   Account:', this.currentEmailAccount);
+        if (outerError instanceof Error) {
+          console.error('   Error details:', {
+            name: outerError.name,
+            message: outerError.message,
+            stack: outerError.stack?.split('\n').slice(0, 3).join('\n')
+          });
+        }
         resolve(); // Always resolve to prevent hanging
       }
     });

@@ -48,13 +48,60 @@ export interface OfferSummaryData {
 
 export class OfferSummaryGenerator {
   private outputDir: string = '.';
+  private readonly MAX_FILE_AGE_DAYS = 7; // Cleanup files older than 7 days
 
   constructor() {
     this.ensureOutputDir();
+    // SAFETY FIX: Cleanup old temp files on startup to prevent disk space issues
+    this.cleanupOldFiles().catch(err =>
+      console.warn('⚠️  Failed to cleanup old offer summary files:', err.message)
+    );
   }
 
   private async ensureOutputDir() {
     await fs.mkdir(this.outputDir, { recursive: true });
+  }
+
+  /**
+   * SAFETY FIX: Remove old PDF/HTML files to prevent disk space issues
+   * Runs asynchronously on startup - failures are logged but don't block operations
+   */
+  private async cleanupOldFiles(): Promise<void> {
+    try {
+      const files = await fs.readdir(this.outputDir);
+      const now = Date.now();
+      const maxAge = this.MAX_FILE_AGE_DAYS * 24 * 60 * 60 * 1000; // Convert days to ms
+      let deletedCount = 0;
+
+      for (const file of files) {
+        // Only cleanup offer summary files ("Offer Sheet *.pdf" or "Offer Sheet *.html")
+        if (!file.startsWith('Offer Sheet ') ||
+            (!file.endsWith('.pdf') && !file.endsWith('.html'))) {
+          continue;
+        }
+
+        const filePath = path.join(this.outputDir, file);
+        try {
+          const stats = await fs.stat(filePath);
+          const fileAge = now - stats.mtimeMs;
+
+          if (fileAge > maxAge) {
+            await fs.unlink(filePath);
+            deletedCount++;
+          }
+        } catch (err) {
+          // Ignore errors for individual files (may be in use or already deleted)
+          console.warn(`⚠️  Could not cleanup file ${file}:`, err);
+        }
+      }
+
+      if (deletedCount > 0) {
+        console.log(`🧹 Cleaned up ${deletedCount} old offer summary file(s) (older than ${this.MAX_FILE_AGE_DAYS} days)`);
+      }
+    } catch (error) {
+      // Directory may not exist yet or may be inaccessible
+      console.warn('⚠️  Could not cleanup old offer summary files:', error);
+    }
   }
 
   /**
@@ -109,8 +156,10 @@ export class OfferSummaryGenerator {
     const htmlContent = this.generateHTML(data);
 
     // Generate PDF using Playwright
+    // SAFETY FIX: Ensure browser is always closed, even on error
+    let browser = null;
     try {
-      const browser = await chromium.launch({
+      browser = await chromium.launch({
         headless: true,
         args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage']
       });
@@ -131,11 +180,22 @@ export class OfferSummaryGenerator {
       });
 
       await browser.close();
+      browser = null; // Mark as closed
 
       console.log(`📄 Offer summary PDF generated: ${filePath}`);
       return { type: 'pdf', path: filePath };
     } catch (error: any) {
       console.error('⚠️ Failed to generate offer summary PDF:', error.message);
+
+      // Ensure browser is closed if it was opened
+      if (browser) {
+        try {
+          await browser.close();
+          console.log('🔒 Closed browser after PDF error');
+        } catch (closeError) {
+          console.error('⚠️  Failed to close browser:', closeError);
+        }
+      }
 
       // Fallback to HTML
       const htmlPath = filePath.replace('.pdf', '.html');

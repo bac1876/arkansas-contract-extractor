@@ -36,7 +36,10 @@ export class RobustExtractor {
   private hybridExtractor: HybridExtractor;
   private fallbackExtractor: FallbackExtractor;
   private imagemagickExtractor: ImageMagickExtractor;
-  
+
+  // SAFETY FIX: Add absolute limit to prevent unbounded array growth
+  private readonly MAX_TOTAL_ATTEMPTS = 10;
+
   // Configuration for retry behavior
   private config = {
     maxPrimaryAttempts: 3,      // Try main extraction 3 times
@@ -78,9 +81,15 @@ export class RobustExtractor {
         }),
         attempt
       );
-      
+
+      // SAFETY FIX: Enforce maximum attempts limit
+      if (attempts.length >= this.MAX_TOTAL_ATTEMPTS) {
+        console.error(`❌ Safety limit reached: ${this.MAX_TOTAL_ATTEMPTS} attempts exceeded`);
+        break;
+      }
+
       attempts.push(attemptResult);
-      
+
       // Check if extraction was successful
       if (attemptResult.success && attemptResult.fieldsExtracted) {
         // If we got enough fields, we're done
@@ -125,7 +134,13 @@ export class RobustExtractor {
         async () => this.imagemagickExtractor.extractFromPDF(pdfPath),
         attempt
       );
-      
+
+      // SAFETY FIX: Enforce maximum attempts limit
+      if (attempts.length >= this.MAX_TOTAL_ATTEMPTS) {
+        console.error(`❌ Safety limit reached: ${this.MAX_TOTAL_ATTEMPTS} attempts exceeded`);
+        break;
+      }
+
       attempts.push(attemptResult);
       
       if (attemptResult.success && attemptResult.fieldsExtracted) {
@@ -178,7 +193,13 @@ export class RobustExtractor {
         },
         attempt
       );
-      
+
+      // SAFETY FIX: Enforce maximum attempts limit
+      if (attempts.length >= this.MAX_TOTAL_ATTEMPTS) {
+        console.error(`❌ Safety limit reached: ${this.MAX_TOTAL_ATTEMPTS} attempts exceeded`);
+        break;
+      }
+
       attempts.push(attemptResult);
       
       if (attemptResult.success && attemptResult.fieldsExtracted) {
