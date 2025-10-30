@@ -576,7 +576,8 @@ export class EmailMonitor {
                     console.log(`   Extraction Rate: ${robustResult.extractionRate}%`);
                     console.log(`   Fields Extracted: ${robustResult.fieldsExtracted}/${robustResult.totalFields}`);
                     console.log(`   Property Address: ${robustResult.data?.property_address || 'EMPTY'}`);
-                    console.log(`   Purchase Price: ${robustResult.data?.purchase_price || 'EMPTY'}`);
+                    console.log(`   Purchase Price (financed): ${robustResult.data?.purchase_price || 'EMPTY'}`);
+                    console.log(`   Cash Amount (cash offer): ${robustResult.data?.cash_amount || 'EMPTY'}`);
                     
                     // Convert robust result to expected format
                     extractionResult = {
@@ -657,13 +658,16 @@ export class EmailMonitor {
                     }
                     
                     // Check for critical fields before generating net sheet
+                    // IMPORTANT: For cash offers, price is in cash_amount; for financed, it's in purchase_price
                     const propertyAddress = extractionResult.data?.property_address || '';
-                    const purchasePrice = extractionResult.data?.purchase_price || 0;
-                    
+                    const purchasePrice = extractionResult.data?.purchase_price || extractionResult.data?.cash_amount || 0;
+
                     if (!propertyAddress || purchasePrice === 0) {
                       console.log('⚠️  Skipping net sheet generation - missing critical data');
                       console.log(`   Property Address: "${propertyAddress}"`);
-                      console.log(`   Purchase Price: $${purchasePrice}`);
+                      console.log(`   Purchase Price (financed): $${extractionResult.data?.purchase_price || 0}`);
+                      console.log(`   Cash Amount (cash offer): $${extractionResult.data?.cash_amount || 0}`);
+                      console.log(`   Final Price Used: $${purchasePrice}`);
                       results.extractionResults.push({
                         attachment: attachment.filename,
                         success: false,
@@ -673,6 +677,10 @@ export class EmailMonitor {
                       });
                       continue; // Skip to next attachment
                     }
+
+                    console.log(`✅ Critical fields validated:`);
+                    console.log(`   Property Address: "${propertyAddress}"`);
+                    console.log(`   Purchase Price: $${purchasePrice.toLocaleString()} (${extractionResult.data?.loan_type === 'CASH' ? 'Cash Offer' : 'Financed'})`);
 
                     try {
                       // Get extraction data - needed by both net sheet AND generators
@@ -1001,13 +1009,14 @@ export class EmailMonitor {
                     
                     // Still try to generate a basic net sheet with minimal data
                     console.log('⚠️  Attempting to generate net sheet with available data...');
-                    
+
                     // Use whatever data we have, even if partial
                     const partialData = extractionResult.data || {};
-                    if (partialData.property_address && partialData.purchase_price) {
+                    const partialPrice = partialData.purchase_price || partialData.cash_amount || 0;
+                    if (partialData.property_address && partialPrice > 0) {
                       try {
                         const basicNetSheet = {
-                          purchase_price: partialData.purchase_price || 0,
+                          purchase_price: partialPrice,
                           closing_date: partialData.closing_date,
                           annual_taxes: 3650, // Default
                           seller_commission_percent: 0.03 // Default
