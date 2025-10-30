@@ -15,6 +15,7 @@ import { FallbackExtractor } from './extraction-fallback';
 import { ExtractionStatusTracker } from './extraction-status-tracker';
 import GoogleSheetsIntegration from './google-sheets-integration';
 import GoogleDriveIntegration from './google-drive-integration';
+import DropboxIntegration from './dropbox-integration';
 import SellerNetSheetCalculator from './seller-net-sheet-calculator';
 import PDFGenerator from './pdf-generator';
 import AgentInfoSheetGenerator from './agent-info-sheet-generator';
@@ -49,6 +50,7 @@ export class EmailMonitor {
   private statusTracker: ExtractionStatusTracker;
   private sheets?: GoogleSheetsIntegration;
   private drive?: GoogleDriveIntegration;
+  private dropbox?: DropboxIntegration;
   private calculator: SellerNetSheetCalculator;
   private pdfGenerator: PDFGenerator;
   private agentInfoGenerator: AgentInfoSheetGenerator;
@@ -58,7 +60,7 @@ export class EmailMonitor {
   private isProcessing: boolean = false;
   private processedEmailsFile: string = 'processed_emails.json';
   private processedEmails: Set<string> = new Set();
-  private checkInterval: NodeJS.Timer | null = null;
+  private checkInterval: NodeJS.Timeout | null = null;
   private lastCheckTime: Date = new Date();
   private emailTransporter?: nodemailer.Transporter;
   private currentEmailAccount?: string;
@@ -84,8 +86,8 @@ export class EmailMonitor {
     this.listingInfo = new ListingInfoService();
     this.setupFolders();
     this.initGoogleSheets();
-    this.initGoogleDrive();
-    this.initDropbox();
+    // Google Drive and Dropbox are initialized conditionally in connect()
+    // based on email account (only for offers@searchnwa.com)
     this.initListingInfo();
     this.loadProcessedEmails();
   }
@@ -159,7 +161,7 @@ export class EmailMonitor {
         this.sheets = new GoogleSheetsIntegration(spreadsheetId);
         await this.sheets.initialize();
         console.log('📊 Google Sheets integration configured and initialized');
-      } catch (error) {
+      } catch (error: any) {
         console.log('⚠️  Google Sheets integration not available:', error.message);
       }
     }
@@ -229,6 +231,25 @@ export class EmailMonitor {
             pass: config.password
           }
         });
+
+        // Verify transporter can send emails (async, but don't block connection)
+        this.emailTransporter.verify()
+          .then(() => {
+            console.log('✅ Email transporter verified and ready to send');
+          })
+          .catch((verifyError) => {
+            console.error('⚠️  Email transporter verification failed:', verifyError);
+            console.error('   Emails may not send correctly - check EMAIL_PASSWORD is valid!');
+          });
+      }
+
+      // Initialize Google Drive and Dropbox (only for offers@searchnwa.com)
+      if (config.user === 'offers@searchnwa.com') {
+        console.log('📁 Initializing Google Drive and Dropbox for offers@searchnwa.com');
+        this.initGoogleDrive();
+        this.initDropbox();
+      } else {
+        console.log('ℹ️  Skipping Google Drive and Dropbox (not needed for contractextraction@gmail.com)');
       }
 
       this.imap = new Imap({
@@ -464,7 +485,6 @@ export class EmailMonitor {
                     
                     console.log('📄 Extraction completed:');
                     console.log(`   Success: ${robustResult.success}`);
-                    console.log(`   Method: ${robustResult.method}`);
                     console.log(`   Extraction Rate: ${robustResult.extractionRate}%`);
                     console.log(`   Fields Extracted: ${robustResult.fieldsExtracted}/${robustResult.totalFields}`);
                     console.log(`   Property Address: ${robustResult.data?.property_address || 'EMPTY'}`);
@@ -576,8 +596,9 @@ export class EmailMonitor {
                         { taxes: 3650, commission: 3 } // Defaults
                       );
 
-                      // Declare netSheetData outside conditional so it's available in both blocks
+                      // Declare netSheetData and pdfPath outside conditional so they're available in both blocks
                       let netSheetData: any;
+                      let pdfPath: string | undefined;
 
                       // NET SHEET GENERATION - Only for offers@searchnwa.com
                       if (this.currentEmailAccount === 'offers@searchnwa.com') {
@@ -638,7 +659,7 @@ export class EmailMonitor {
                         await fs.writeFile(netSheetPath, JSON.stringify(netSheetData, null, 2));
 
                         // Generate PDF net sheet with proper naming
-                        let pdfPath: string | undefined;
+                        // (pdfPath already declared at function scope above)
 
                         // Generate PDF net sheet
                         try {
@@ -750,7 +771,7 @@ export class EmailMonitor {
                               mimeType
                             );
                             console.log('📤 Uploaded agent info sheet to Google Drive');
-                            console.log(`   📎 Link: ${agentInfoUpload.webViewLink || agentInfoUpload.shareableLink}`);
+                            console.log(`   📎 Link: ${agentInfoUpload.webViewLink}`);
                           } catch (uploadError) {
                             console.error('⚠️  Could not upload agent info sheet:', uploadError);
                           }
@@ -777,11 +798,20 @@ export class EmailMonitor {
                         // Send email back with offer sheet (only for contractextraction@gmail.com)
                         if (this.emailTransporter && this.currentEmailAccount === 'contractextraction@gmail.com') {
                           try {
-                            console.log('📤 Sending email back to sender with offer sheet...');
+                            // Validate that offer summary was generated
+                            if (!agentInfoResult || !agentInfoResult.path) {
+                              console.error('⚠️  Cannot send email: Offer summary was not generated');
+                              console.error('   agentInfoResult:', agentInfoResult);
+                            } else {
+                              console.log('📤 Sending email back to sender with offer sheet...');
 
-                            const mailOptions = {
+                              // Extract email address from "Name <email>" format if needed
+                              const senderEmail = parsed.from?.value?.[0]?.address || parsed.from?.text || '';
+                              console.log(`   Recipient: ${senderEmail}`);
+
+                              const mailOptions = {
                               from: '"Arkansas Contract Agent - Offer Sheet" <contractextraction@gmail.com>',
-                              to: parsed.from?.text,
+                              to: senderEmail,
                               subject: `Offer ${propertyAddress}`,
                               html: `
                                 <div style="font-family: Arial, sans-serif;">
@@ -811,11 +841,19 @@ export class EmailMonitor {
                               ]
                             };
 
-                            await this.emailTransporter.sendMail(mailOptions);
-                            console.log(`✅ Email sent successfully to: ${parsed.from?.text}`);
-                          } catch (emailError) {
+                              const emailResult = await this.emailTransporter.sendMail(mailOptions);
+                              console.log(`✅ Email sent successfully to: ${senderEmail}`);
+                              console.log(`   Message ID: ${emailResult.messageId}`);
+                              console.log(`   Response: ${emailResult.response}`);
+                            }
+                          } catch (emailError: any) {
                             console.error('⚠️  Failed to send email back:', emailError);
-                            // Continue - this is not critical
+                            console.error('   Error details:', {
+                              message: emailError.message,
+                              code: emailError.code,
+                              command: emailError.command
+                            });
+                            // Continue - don't crash on email send failure
                           }
                         }
                       } catch (agentInfoError) {
