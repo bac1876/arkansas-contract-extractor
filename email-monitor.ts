@@ -279,6 +279,19 @@ export class EmailMonitor {
 
       this.imap.once('error', (err: Error) => {
         console.error('❌ IMAP Error:', err);
+        console.error(`   Error code: ${(err as any).code}, Source: ${(err as any).source}`);
+
+        // CRITICAL FIX #5: Reset processing state when connection errors occur
+        if (this.isProcessing) {
+          console.log('⚠️  Resetting isProcessing flag due to IMAP error');
+          this.isProcessing = false;
+        }
+        if (this.checkInterval) {
+          console.log('⚠️  Clearing polling interval due to IMAP error');
+          clearInterval(this.checkInterval);
+          this.checkInterval = null;
+        }
+
         // Try to reconnect after error
         setTimeout(() => {
           console.log('🔄 Attempting to reconnect after error...');
@@ -289,6 +302,18 @@ export class EmailMonitor {
 
       this.imap.once('end', () => {
         console.log('📧 Email connection ended');
+
+        // CRITICAL FIX #5: Reset processing state when connection ends
+        if (this.isProcessing) {
+          console.log('⚠️  Resetting isProcessing flag due to connection end');
+          this.isProcessing = false;
+        }
+        if (this.checkInterval) {
+          console.log('⚠️  Clearing polling interval due to connection end');
+          clearInterval(this.checkInterval);
+          this.checkInterval = null;
+        }
+
         // Try to reconnect after connection ends
         setTimeout(() => {
           console.log('🔄 Attempting to reconnect after disconnect...');
@@ -355,6 +380,21 @@ export class EmailMonitor {
       return;
     }
 
+    // CRITICAL FIX #3: Validate IMAP connection state before attempting operations
+    if (!this.imap) {
+      console.error('❌ IMAP connection is null - cannot check emails');
+      console.log('🔄 Triggering reconnect...');
+      this.reconnect();
+      return;
+    }
+
+    if (this.imap.state !== 'authenticated') {
+      console.error(`❌ IMAP not authenticated (state: ${this.imap.state})`);
+      console.log('🔄 Triggering reconnect to restore connection...');
+      this.reconnect();
+      return;
+    }
+
     // Stop polling while we process
     if (this.checkInterval) {
       clearInterval(this.checkInterval);
@@ -368,13 +408,35 @@ export class EmailMonitor {
     const recentTime = new Date();
     recentTime.setHours(recentTime.getHours() - 24);
     const dateString = recentTime.toISOString().split('T')[0];
-    
+
+    // CRITICAL FIX #4: Add timeout for search callback to prevent hanging
+    let searchCompleted = false;
+    const searchTimeout = setTimeout(() => {
+      if (!searchCompleted) {
+        console.error('❌ TIMEOUT: IMAP search callback never fired after 30 seconds');
+        console.error('   Connection likely dead - triggering reconnect');
+        this.isProcessing = false;
+        this.reconnect();
+      }
+    }, 30000); // 30 second timeout for search callback
+
     // Search for UNSEEN (unread) emails only - not historical
     this.imap.search([['UNSEEN']], async (err: Error, uids: number[]) => {
+      searchCompleted = true;
+      clearTimeout(searchTimeout);
+
       if (err) {
         console.error('❌ Search error:', err);
+        console.error(`   Error type: ${err.name}, Message: ${err.message}`);
         this.isProcessing = false;
-        this.restartPolling();
+
+        // If error indicates connection issue, reconnect instead of just restarting polling
+        if (err.message && (err.message.includes('Not authenticated') || err.message.includes('connection') || err.message.includes('socket'))) {
+          console.log('🔄 Search error indicates connection issue - triggering reconnect');
+          this.reconnect();
+        } else {
+          this.restartPolling();
+        }
         return;
       }
 
@@ -414,6 +476,22 @@ export class EmailMonitor {
   }
 
   private async processEmail(uid: number): Promise<void> {
+    // CRITICAL FIX #2: Add timeout wrapper to prevent hanging forever
+    const timeoutPromise = new Promise<void>((resolve) => {
+      setTimeout(() => {
+        console.error(`❌ TIMEOUT: Email processing exceeded 2 minutes for UID ${uid}`);
+        console.error(`   This email may have hung - forcing completion to prevent stuck state`);
+        resolve(); // Resolve to allow processing to continue
+      }, 120000); // 2 minute timeout
+    });
+
+    const processingPromise = this.processEmailInternal(uid);
+
+    // Race between timeout and actual processing
+    return Promise.race([processingPromise, timeoutPromise]);
+  }
+
+  private async processEmailInternal(uid: number): Promise<void> {
     return new Promise((resolve) => {
       try {
         const emailUid = uid; // Store uid for use in mark as read
@@ -1056,12 +1134,31 @@ export class EmailMonitor {
 
   private async reconnect() {
     try {
+      console.log('🔄 Starting reconnect process...');
+
+      // CRITICAL FIX #1: Reset isProcessing flag to prevent permanent stuck state
+      if (this.isProcessing) {
+        console.log('⚠️  Resetting stuck isProcessing flag from true → false');
+        this.isProcessing = false;
+      }
+
       // Clean up existing connection
       if (this.checkInterval) {
+        console.log('🧹 Clearing existing polling interval');
         clearInterval(this.checkInterval);
         this.checkInterval = null;
       }
-      
+
+      // Close old IMAP connection before creating new one
+      if (this.imap) {
+        try {
+          console.log('🔌 Closing old IMAP connection...');
+          this.imap.end();
+        } catch (closeError) {
+          console.log('⚠️  Error closing old connection (may already be closed):', closeError);
+        }
+      }
+
       // Get credentials from environment
       const email = process.env.EMAIL_USER || 'offers@searchnwa.com';
       const password = process.env.EMAIL_PASSWORD;
