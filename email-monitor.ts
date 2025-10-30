@@ -132,9 +132,16 @@ export class EmailMonitor {
       // After 3 retries, mark as permanently failed
       if (failures[existingIndex].retryCount >= 3) {
         console.error(`❌ PERMANENT FAILURE after 3 retries: ${filename}`);
-        // Mark as read to stop retrying
-        this.imap.addFlags(emailUid, '\\Seen', (err: Error) => {
-          if (!err) console.log('📧 Marked failed email as read after 3 attempts');
+        // Mark as read to stop retrying - await to ensure it completes
+        await new Promise<void>((resolve) => {
+          this.imap.addFlags(emailUid, '\\Seen', (err: Error) => {
+            if (!err) {
+              console.log('📧 Marked failed email as read after 3 attempts');
+            } else {
+              console.error('⚠️  Could not mark failed email as read:', err);
+            }
+            resolve(); // Always resolve to prevent hanging
+          });
         });
         await this.saveProcessedEmail(messageId);
       }
@@ -430,10 +437,13 @@ export class EmailMonitor {
             // Check if we've already processed this email
             const messageId = parsed.messageId || `${parsed.date}_${parsed.subject}`;
             if (this.processedEmails.has(messageId)) {
-              console.log(`⏭️  Skipping already processed email: ${parsed.subject}`);
+              console.log(`⏭️  Skipping already processed email (in memory): ${parsed.subject}`);
+              console.log(`   Message ID: ${messageId}`);
               resolve();
               return;
             }
+
+            console.log(`🆕 New email detected - Message ID: ${messageId}`);
 
             console.log('\n' + '='.repeat(60));
             console.log(`📧 Processing email from: ${parsed.from?.text}`);
@@ -972,24 +982,32 @@ export class EmailMonitor {
             
             // Only mark as processed if extraction was successful
             const hasSuccessfulExtraction = results.extractionResults.some(r => r.success);
-            
+
             if (messageId && hasSuccessfulExtraction) {
+              console.log(`📌 Saving email to processed list...`);
               await this.saveProcessedEmail(messageId);
-              
-              // Mark email as read AND add "Processed Contracts" label
-              console.log(`✅ Marking email as read and adding "Processed Contracts" label...`);
-              
-              // First mark as read
-              this.imap.addFlags(emailUid, '\\Seen', (err: Error) => {
-                if (err) {
-                  console.error('⚠️  Could not mark email as read:', err);
-                } else {
-                  console.log('✅ Email marked as read');
-                }
+              console.log(`   ✅ Saved to processed_emails.json (${this.processedEmails.size} total)`);
+
+              // Mark email as read - MUST complete before next polling cycle
+              console.log(`📌 Marking email as READ in IMAP server...`);
+
+              // Promisify the addFlags callback to ensure it completes
+              await new Promise<void>((resolve, reject) => {
+                this.imap.addFlags(emailUid, '\\Seen', (err: Error) => {
+                  if (err) {
+                    console.error('❌ CRITICAL: Could not mark email as read:', err);
+                    console.error('   This email may be reprocessed on next cycle!');
+                    // Still resolve - don't block on this error
+                    resolve();
+                  } else {
+                    console.log('   ✅ Email marked as READ (\\Seen flag set)');
+                    resolve();
+                  }
+                });
               });
-              
-              // Gmail label adding would require additional configuration
-              // The email is already marked as read which is sufficient for tracking
+
+              console.log(`✅ Email processing complete and marked as read`);
+              console.log(`   This email will NOT appear in future UNSEEN searches`);
             } else if (messageId && !hasSuccessfulExtraction && parsed.attachments?.length > 0) {
               // Track failed extraction but don't mark as processed
               console.error('❌ EXTRACTION FAILED - Email will be retried on next check');
@@ -999,8 +1017,14 @@ export class EmailMonitor {
               
               // Don't mark as read so it will be retried
               console.log('⚠️  Keeping email unread for retry...');
+            } else {
+              // Log when email is not being marked as processed
+              console.log(`ℹ️  Email not marked as processed:`);
+              console.log(`   - Has messageId: ${!!messageId}`);
+              console.log(`   - Has successful extraction: ${hasSuccessfulExtraction}`);
+              console.log(`   - Has attachments: ${parsed.attachments?.length || 0}`);
             }
-            
+
               } catch (processingError) {
                 console.error('❌ Error processing email:', processingError);
                 // Continue processing other emails even if this one fails
