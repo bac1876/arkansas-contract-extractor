@@ -98,10 +98,17 @@ export class EmailMonitor {
   /**
    * SAFETY FIX: Validate required environment variables at startup
    * Fail-fast with clear error messages instead of cryptic runtime failures
+   * Supports backward compatibility with OFFER_SHEET_PASSWORD
    */
   private validateEnvironment(): void {
-    const required = ['EMAIL_PASSWORD', 'OPENAI_API_KEY'];
+    const required = ['OPENAI_API_KEY'];
     const missing = required.filter(key => !process.env[key]);
+
+    // Check for password (backward compatible with old variable name)
+    const hasPassword = process.env.EMAIL_PASSWORD || process.env.OFFER_SHEET_PASSWORD;
+    if (!hasPassword) {
+      missing.push('EMAIL_PASSWORD (or OFFER_SHEET_PASSWORD)');
+    }
 
     if (missing.length > 0) {
       console.error('❌ CRITICAL: Missing required environment variables:');
@@ -111,9 +118,9 @@ export class EmailMonitor {
     }
 
     // Validate password format (Gmail app passwords are 16 chars)
-    const password = process.env.EMAIL_PASSWORD!;
-    if (password.length < 10) {
-      console.warn('⚠️  EMAIL_PASSWORD seems too short (expected Gmail app password ~16 chars)');
+    const password = process.env.EMAIL_PASSWORD || process.env.OFFER_SHEET_PASSWORD;
+    if (password && password.length < 10) {
+      console.warn('⚠️  Password seems too short (expected Gmail app password ~16 chars)');
       console.warn('   Connection may fail if this is not a valid app password');
     }
 
