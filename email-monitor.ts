@@ -64,6 +64,7 @@ export class EmailMonitor {
   private lastCheckTime: Date = new Date();
   private emailTransporter?: nodemailer.Transporter;
   private currentEmailAccount?: string;
+  private timeoutAttempts: Map<number, number> = new Map();
 
   constructor() {
     // SAFETY FIX: Validate environment variables before initializing
@@ -538,9 +539,30 @@ export class EmailMonitor {
   private async processEmail(uid: number): Promise<void> {
     // CRITICAL FIX #2: Add timeout wrapper to prevent hanging forever
     const timeoutPromise = new Promise<void>((resolve) => {
-      setTimeout(() => {
+      setTimeout(async () => {
+        const attempts = (this.timeoutAttempts.get(uid) || 0) + 1;
+        this.timeoutAttempts.set(uid, attempts);
+
         console.error(`❌ TIMEOUT: Email processing exceeded 2 minutes for UID ${uid}`);
         console.error(`   This email may have hung - forcing completion to prevent stuck state`);
+        console.error(`   Timeout attempt ${attempts} of 3`);
+
+        if (attempts >= 3) {
+          console.error(`⚠️  PERMANENT TIMEOUT after ${attempts} attempts - marking as read to prevent infinite retry`);
+          // Mark as read to stop retrying - this is critical to prevent stuck emails
+          await new Promise<void>((markResolve) => {
+            this.imap.addFlags(uid, '\\Seen', (err: Error) => {
+              if (!err) {
+                console.log(`   ✅ UID ${uid} marked as read - will not retry`);
+                this.timeoutAttempts.delete(uid); // Clean up tracking
+              } else {
+                console.error(`   ❌ Failed to mark UID ${uid} as read:`, err);
+              }
+              markResolve(); // Always resolve to prevent hanging
+            });
+          });
+        }
+
         resolve(); // Resolve to allow processing to continue
       }, 120000); // 2 minute timeout
     });
@@ -1152,6 +1174,8 @@ export class EmailMonitor {
                     resolve();
                   } else {
                     console.log('   ✅ Email marked as READ (\\Seen flag set)');
+                    // Clear timeout tracking for successfully processed email
+                    this.timeoutAttempts.delete(emailUid);
                     resolve();
                   }
                 });
