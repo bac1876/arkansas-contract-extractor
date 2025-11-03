@@ -538,8 +538,11 @@ export class EmailMonitor {
 
   private async processEmail(uid: number): Promise<void> {
     // CRITICAL FIX #2: Add timeout wrapper to prevent hanging forever
+    // Store timeout ID so we can cancel it if processing completes successfully
+    let timeoutId: NodeJS.Timeout;
+
     const timeoutPromise = new Promise<void>((resolve) => {
-      setTimeout(async () => {
+      timeoutId = setTimeout(async () => {
         const attempts = (this.timeoutAttempts.get(uid) || 0) + 1;
         this.timeoutAttempts.set(uid, attempts);
 
@@ -567,7 +570,11 @@ export class EmailMonitor {
       }, 120000); // 2 minute timeout
     });
 
-    const processingPromise = this.processEmailInternal(uid);
+    // Wrap processing to clear timeout on successful completion
+    const processingPromise = this.processEmailInternal(uid).then(() => {
+      // Processing completed successfully - cancel the timeout
+      clearTimeout(timeoutId);
+    });
 
     // Race between timeout and actual processing
     return Promise.race([processingPromise, timeoutPromise]);
